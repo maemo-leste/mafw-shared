@@ -1,0 +1,457 @@
+<chapter id="chapter-initializing-mafw">
+
+  <title>Getting started</title>
+
+  <section id="section-getting-mafw">
+    
+    <title>Getting MAFW</title>
+
+    <para>
+      MAFW is available in the form of debian packages, so it can be installed using
+      tools like dpkg or apt.
+    </para>
+
+    <para>
+      MAFW can also be installed from sources. To build and install a MAFW package
+      from sources, move to the root directory of the sources and execute:
+    </para>
+
+    <programlisting role="shell">
+./autogen.sh
+make
+make install
+    </programlisting>
+
+    <para>
+      When building from sources, one can also pass certain flags to the
+      <code>autogen.sh</code> script. Check the <code>configure.ac</code> 
+      file for a list of available build flags for the package. Common and
+      useful supported flags among all MAFW packages are:
+    </para>
+
+    <itemizedlist>
+      <listitem><para><emphasis>--prefix=PATH</emphasis>, installs MAFW
+      files at PATH.</para></listitem>
+      <listitem><para><emphasis>--disable-tests</emphasis>, disables tests
+      (speeds up compilation time).</para></listitem>
+      <listitem><para><emphasis>--enable-debug</emphasis>, compile
+       with debug options enabled. Useful for debugging and developing
+       since it adds flags that increase the compiler
+       strictness.</para></listitem>
+    </itemizedlist>
+
+    <para>
+      Also, when building MAFW from sources, one should take into account the 
+      package dependencies. MAFW should be built in this order:
+    </para>
+
+    <itemizedlist>
+      <listitem>mafw</listitem>
+      <listitem>mafw-shared</listitem>
+      <listitem>source and renderer plugins</listitem>
+    </itemizedlist>
+
+  </section>
+
+  <section id="section-preparations">
+  
+    <title>Initial preparations</title>
+    
+    <para>
+      Before running MAFW applications, one should ensure the environment
+      is properly setup.
+    </para>
+
+    <para>
+      The first thing that should be checked is the playlist
+      daemon. This manual will cover the playlist daemon in more
+      detail in <link linkend="playlist-daemon-sect">later
+      sections</link>, but for now it is enough to know that this
+      daemon provides the means to access and manipulate playlists to
+      applications.
+    </para>
+
+    <para>
+      In order to run the playlist daemon, one should execute the following
+      command:
+    </para>
+
+    <programlisting role="shell">
+mafw-playlist-daemon -d
+    </programlisting>
+
+    <para>
+      Also, if the decision has been made to use out-of-process plugins,
+      one must be sure these plugins are running (remember that out-of-process
+      extensions live in separate processes).
+    </para>
+
+    <para>
+      There is a tool to load out-of-process extensions called
+      <code>mafw-dbus-wrapper</code>. In order to load a particular
+      plugin in out-of-process mode do the following:
+    </para>
+
+    <programlisting role="shell">
+mafw-dbus-wrapper PLUGIN &amp;
+    </programlisting>
+
+    <para>
+      This command will load the specified plugin, searching for it in the 
+      MAFW plugin directory, and set the program as a daemon. Sometimes one
+      may want to load a plugin that is not located at the plugins directory.
+      For this purpose, <code>mafw-dbus-wrapper</code> also accepts absolute
+      paths to plugin files:
+    </para>
+
+    <programlisting role="shell">
+mafw-dbus-wrapper /home/user/mafw-plugin/bar-mafw-plugin.so
+    </programlisting>
+
+  <para>
+    Usually, one would not invoke mafw-dbus-wrapper directly, instead, it is
+    recommended to create an init script to start all the plugins and the
+    playlist daemon at boot time. Something like this:
+  </para>
+
+    <programlisting role="shell">
+/etc/init.d/mafw [start|restart|stop]
+    </programlisting>
+
+  <para>
+    As with many other Maemo components, take into account that
+    running commands in a <emphasis>Scrathchbox</emphasis> environment requires
+    additional environment preparations. Particularly, the Maemo environment 
+    has to be started in the first place, and then
+    any shell commands must be run using the run-standalone.sh script, so
+    they are get appropriate environment settings:
+  </para>
+
+    <programlisting role="shell">
+export DISPLAY=:2
+sb-fremantle-init.sh start
+run-standalone.sh mafw-playlist-daemon -d
+run-standalone.sh mafw-dbus-wrapper PLUGIN &amp;
+    </programlisting>
+
+  </section>
+
+
+  <section id="section-initializing">
+
+    <title>Program initialization</title>
+
+    <para>As MAFW is based on &gobject; the first step to write a MAFW based
+    application is to initialize the #GType system. You can do this by invoking
+    #g_type_init at the beginning of your program:
+    </para>
+
+    <programlisting role="c">
+g_type_init ();
+    </programlisting>
+
+    <para>Of course, this step is not necessary if the developer is using 
+    another &gobject; based framework, like GTK+. In this case, initializing
+    such framework already initializes the #GType system.</para>
+
+    <para>The next step is to check for available extensions (sources and
+    renderers). Depending on whether you are using in-process or out-of-process
+    extensions, this process may differ slightly:</para>
+
+    <section id="section-outp-init">
+
+      <title>Loading out-of-process extensions</title>
+
+      <para>
+        As we already pointed out, with the out-of-process approach
+        extensions are loaded by the
+        <link linkend="section-daemon-wrapper"><code>mafw-dbus-wrapper</code></link>
+        in a separate address space and they are shared by all applications, which
+        use these extensions through &dbus; services. In order to use these
+        out-of-process extensions, the first step is to discover their availability
+	on the bus. This is done by invoking #mafw_shared_init. Once the discovery
+        has been started, the application will be notified of new available
+        extensions through signals. Likewise, when a certain extension is no
+        longer available, a signal is received on the application side so the
+        situation can be handled properly.
+      </para>
+
+      <programlisting role="c">
+/* Start extension discovery service */
+registry = MAFW_REGISTRY(mafw_registry_get_instance());
+if (registry == NULL) {
+        /* Error management here */
+}
+
+mafw_shared_init(registry, &amp;error);
+if (error != NULL) {
+        /* Error management here */
+} 
+
+g_signal_connect(registry,
+		 "renderer-added", G_CALLBACK(renderer_added_cb), NULL);
+
+g_signal_connect(registry,
+		 "renderer-removed", G_CALLBACK(renderer_removed_cb), NULL);
+
+g_signal_connect(registry,
+		 "source-added", G_CALLBACK(source_added_cb), NULL);
+
+g_signal_connect(registry,
+		 "source-removed", G_CALLBACK(source_removed_cb), NULL);
+      </programlisting>
+
+      <para>
+        The #MafwRegistry object is a singleton instance where all the
+        available extensions are registered. It provides an interface for
+        application developers to access the available sources and
+        renderers. In the case of out-of-process extensions, the registry 
+        will provide proxies to the actual remote extensions that handle 
+        the &dbus; communications transparently for the application
+        developer.
+      </para>
+
+      <para>
+	After getting a reference to the #MafwRegistry object, invoking 
+        #mafw_shared_init starts the extension discovery, which will
+	look for available extensions and register them. Whenever a new
+        extension is found or removed, the registry emits a signal to
+        inform the application.
+      </para>
+
+      <para>
+	It is also possible that extensions were loaded in the registry before the
+	application attached its signal handlers. In this case the application will
+	not get any signals for these extensions and has to query the registry
+	for them  using mafw\_registry\_get\_renderers and 
+	mafw\_registry\_get\_sources. One should notice that these lists of
+	available extensions must not be freed:
+      </para>
+
+      <programlisting role="c">
+extension_list = mafw_registry_get_renderers(registry);
+while (extension_list)
+{
+	renderer_added_cb(registry, G_OBJECT(extension_list->data), NULL);
+	extension_list = g_list_next(extension_list);
+}
+
+extension_list = mafw_registry_get_sources(registry);
+while (extension_list)
+{
+	source_added_cb(registry, G_OBJECT(extension_list->data), NULL);
+	extension_list = g_list_next(extension_list);
+}
+      </programlisting>
+
+      <para>
+        Notice that these lists of available extensions	should not be freed. 
+
+      </para>
+
+      <para>
+	The source-added and renderer-added callbacks look like this:
+      </para>
+
+      <programlisting id="code-extension-callbacks" role="c">
+static void 
+source_added_cb(MafwRegistry *registry, GObject *source, gpointer user_data)
+{
+	if (MAFW_IS_SOURCE(source)) {
+                /* Handle new source extension */
+	}
+}
+
+static void 
+renderer_added_cb(MafwRegistry *registry, GObject *renderer, gpointer user_data)
+{
+	if (MAFW_IS_RENDERER(renderer)) {
+                /* Handle new renderer extension here */
+	}
+}
+      </programlisting>
+
+    </section>
+
+    <section id="section-inp-init">
+
+      <title>Loading in-process extensions</title>
+
+      <para>
+        Contrary to the <link linkend="section-outp-init">out-of-process
+        approach</link>, in-process extensions are loaded in the same
+        address space of the application's process. In this case we do
+        not have to start a discovery process, instead we can either
+        load all the available plugins or load specific plugins. As in
+        the out-of-process case, this is done through the #MafwRegistry
+        object.
+      </para>
+
+      <programlisting role="c">
+registry = MAFW_REGISTRY(mafw_registry_get_instance());
+if (registry == NULL) {
+        /* Error management here */
+}
+      </programlisting>
+
+        <section>
+
+          <title>Loading all available extensions</title>
+
+          <para>
+            After getting a reference to the registry, execute:
+          </para>
+
+          <programlisting role="c">
+mafw_registry_load_plugins(registry);
+          </programlisting>
+
+        </section>
+
+        <section>
+          
+          <title>Loading extensions manually</title>
+
+          <para>
+            Individual extensions can be loaded manually by using
+            #mafw_registry_load_plugin and declaring the extension
+            to load:
+          </para>
+
+          <programlisting role="c">
+mafw_registry_load_plugin(MAFW_REGISTRY(registry),
+                           "mafw-plugin.so", &amp;error);
+if (error != NULL) {
+        /* Error management here */
+} 
+          </programlisting>
+
+          <para>
+            The second parameter of #mafw_registry_load_plugin can be
+            just a filename (in this case the default plugin directory
+            will be used) or the absolute path of the plugin file.
+          </para>
+
+        </section>
+
+      <section>
+
+        <title>Being aware of loaded extensions</title>
+
+        <para>
+	  As in the 
+          <link linkend="section-outp-init">out-of-process
+          approach</link>, the application has to be informed of loaded 
+	  extensions. The <link linkend="section-outp-init">same
+          code as for the out-of-process case</link> can be used here.
+        </para>
+
+        <section>
+
+          <title>Querying available extensions after loading</title>
+
+          <para>
+            This approach loads the extensions in the registry first and
+            then queries it for the lists of available renderers and sources,
+	    like this:
+          </para>
+
+          <programlisting role="c">
+mafw_registry_load_plugins(registry);
+
+extension_list = mafw_registry_get_renderers(registry);
+while (extension_list)
+{
+	renderer_added_cb(registry, G_OBJECT(extension_list->data), NULL);
+	extension_list = g_list_next(extension_list);
+}
+
+extension_list = mafw_registry_get_sources(registry);
+while (extension_list)
+{
+	source_added_cb(registry, G_OBJECT(extension_list->data), NULL);
+	extension_list = g_list_next(extension_list);
+}
+          </programlisting>
+
+        </section>
+
+        <section>
+
+          <title>Using signals and callbacks</title>
+
+          <para>
+            This approach is more asynchronous and it is recommended
+            because it can easily handle sources or renderers added
+            after the application was started. It is done by
+            connecting callbacks to the #MafwRegistry::source-added
+            and #MafwRegistry::renderer-added signals.  As soon as a
+            plugin is loaded, a signal is emitted and the application
+            can react to it, preparing everything to use that
+            extension, like this:
+          </para>
+
+          <programlisting role="c">
+registry = MAFW_REGISTRY(mafw_registry_get_instance());
+if (registry == NULL) {
+        /* Error handling here */
+}
+
+g_signal_connect(registry,
+		 "renderer_added", G_CALLBACK(renderer_added_cb), NULL);
+
+g_signal_connect(registry,
+		 "source_added", G_CALLBACK(source_added_cb), NULL);
+
+g_signal_connect(registry,
+		 "renderer_removed", G_CALLBACK(renderer_removed_cb), NULL);
+
+g_signal_connect(registry,
+		 "source_removed", G_CALLBACK(source_removed_cb), NULL);
+
+mafw_registry_load_plugins(registry);
+          </programlisting>
+
+          <para>
+            The form of the callbacks for these signals is the same as in the
+            <link linkend="code-extension-callbacks">out-of-process case</link>.
+          </para>
+
+        </section>
+
+      </section>
+
+    </section>
+
+    <section>
+    
+      <title>In-process versus out-of-process extensions</title>
+
+      <para>There are a few issues to consider when making 
+	the decision of using in-process or out-of-process extensions:</para>
+
+      <itemizedlist>
+	<listitem>In-process extensions do not need inter-process 
+	  communications, speeding up certain operations.</listitem>
+	<listitem>Out-of-process extensions use multiple processes 
+	  and &dbus; (which serializes and integrates these 
+	  communications nicely with the main loop) avoiding the need
+	  of threads in the main application in most cases. In the in-process case,
+	  developers may need to use threads or idle calls to execute 
+	  certain extension operations in order to avoid blocking the user 
+	  interface while the extensions work (for example source 
+	  browsing).</listitem>
+	<listitem>In the in-process case, signals coming from extensions are 
+	  normal &gobject; signals. However, in the out-of-process case, these
+	  signals have to be sent through &dbus;. For developers, this means
+	  that callbacks for these signals are not invoked as soon as the signal
+	  is emitted, but as soon as the &dbus; message is received and
+	  processed by the main loop.</listitem>
+      </itemizedlist>
+
+
+    </section>
+
+  </section>
+
+</chapter>

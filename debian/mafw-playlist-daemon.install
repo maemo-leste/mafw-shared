@@ -1,0 +1,6 @@
+usr/bin/mafw-playlist-daemon
+usr/share/dbus-1/services/com.nokia.mafw.playlist.service
+etc/osso-backup/applications/mafw-playlists.conf
+etc/osso-backup/pre-backup.d/mafw-playlists.prebackup.sh
+etc/osso-backup/restore.d/always/mafw-playlists.restore.sh
+etc/osso-cud-scripts/mafw-playlists-cud.sh

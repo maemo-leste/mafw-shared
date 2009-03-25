@@ -1,0 +1,6 @@
+usr/bin/mafw-dbus-wrapper
+../mafw.sh usr/bin
+etc/osso-backup/applications/mafw-db.conf
+etc/osso-backup/pre-backup.d/mafw-db.prebackup.sh
+etc/osso-backup/restore.d/always/mafw-db.restore.sh
+etc/osso-cud-scripts/mafw-db-cud.sh

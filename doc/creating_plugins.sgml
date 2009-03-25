@@ -1,0 +1,394 @@
+<chapter id="chapter-creating-plugins">
+
+  <title>Creating plugins</title>
+
+  <section id="sect-creating-source">
+
+    <title>Creating a source</title>
+
+    <section>
+
+      <title>Definition</title>
+
+      <para>
+        A MAFW source is an element that can provide media information,
+        this means available media resources over a protocol and their
+        metadata. Accessing the media files stored in your local file 
+	system or the media served through UPnP servers are some examples.
+      </para>
+
+      <para>
+        Creating a MAFW source means creating a <emphasis>shared
+         library</emphasis> containing a &gobject; that inherits from
+        #MafwSource and provide an implementation for some of the methods
+         defined in that class.
+      </para>
+
+      <para>
+        All the methods have a default implementation in #MafwSource
+        that raise an error by default, so it is not mandatory to implement 
+	all the methods, but only the ones you want to support. The most
+        important ones are:
+      </para>
+
+      <itemizedlist>
+        <listitem>
+          <para>
+            <code>#mafw_source_browse</code>: it is used to query the source about
+            the available media.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <code>#mafw_source_cancel_browse</code>: #mafw_source_browse
+            operations can take some time, so this method is intended to cancel
+	    ongoing browse operations.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <code>#mafw_source_get_metadata</code>: it is used to request the metadata
+            associated to a given media served by a source. For example, 
+	    when a renderer tries to play a certain media included in a playlist,
+	    it has to obtain the URI associated to that media, this is done
+	    by calling get_metadata and passing the object identifier of the 
+	    media.
+          </para>
+        </listitem>
+      </itemizedlist>
+
+      <para>
+        Other methods are those related to creation or 
+        destruction of media items or metadata modification. Even if your 
+	source does not need to implement these  methods, it may still be
+	interesting to provide dummy implementations so that other
+	components that use the source do not get errors then using these
+        services. For example, a renderer may use the #mafw_source_set_metadata method to 
+	automatically increase the play-count of media items when played.
+	If a source returns an error when this method is invoked instead of
+	of providing an empty implementation, the application could end up
+        receiving that error message or the renderer may abort the playback
+        operation, which may or may not be the intended behaviors.
+      </para>
+
+      <itemizedlist>
+        <listitem>
+          <para>
+            <code>#mafw_source_set_metadata</code>: Sets metadata for a particular media 
+	    resource.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <code>#mafw_source_create_object</code>: Adds a new media resource or container 
+	    to a particular source.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <code>#mafw_source_destroy_object</code>: Removes a media item or container from a
+            particular source.
+          </para>
+        </listitem>
+      </itemizedlist>
+
+      <para>
+        Other than creating a &gobject; the developer has to
+	define a symbol containing the plugin name and functions to 
+	initialize and deinitialize the plugin. An example of this is:
+      </para>
+
+      <programlisting role="c">
+# define MAFW_SOURCE_PLUGIN_NAME "MySource-Plugin"
+# define MAFW_SOURCE_NAME        "My Source"
+# define MAFW_SOURCE_UUID        "mysource"
+      </programlisting>
+
+      <programlisting role="c">
+
+static gboolean mafw_my_source_initialize(MafwRegistry *registry,
+					  GError **error);
+
+static void mafw_my_source_deinitialize(GError **error);
+
+/*
+ * Registers the plugin descriptor making this plugin available to the
+ * framework and applications
+ */
+G_MODULE_EXPORT MafwPluginDescriptor mafw_my_source_plugin_description = {
+	{ .name = MAFW_MY_SOURCE_PLUGIN_NAME },
+	.initialize = mafw_my_source_initialize,
+	.deinitialize = mafw_my_source_deinitialize,
+};
+
+/*
+ * Plugin initialization. Sets UUID and name of this source and then
+ * adds it to the registry, making it available to applications.
+ */
+static gboolean 
+mafw_my_source_initialize(MafwRegistry *registry,
+                          GError **error)
+{
+	MafwMySource *self = MAFW_MY_SOURCE(mafw_my_source_new());
+	mafw_registry_add_extension(registry, MAFW_EXTENSION(self));
+	return TRUE;
+}
+
+/*
+ * Plugin deinit
+ */
+static void
+mafw_my_source_deinitialize(GError **error) { }
+      </programlisting>
+
+      <para>
+        The code above shows a plugin that can be recognized and
+        loaded. The <code>mafw_my_source_initialize</code> function
+        creates an instance of the source by using the object constructor
+        method, and registers the source in the registry, making it
+        available to applications.
+      </para>
+
+      <programlisting role="c">
+MafwSource *mafw_my_source_new(void)
+{
+	return MAFW_MY_SOURCE(g_object_new(MAFW_TYPE_MY_SOURCE,
+					"plugin", MAFW_MY_SOURCE_PLUGIN_NAME,
+					"uuid", MAFW_MY_SOURCE_UUID,
+					"name", MAFW_MY_SOURCE_NAME,
+					NULL));
+}
+      </programlisting>
+
+      <para>
+        Notice that the plugin initialization function may instantiate and
+        register several objects (sources in this case). For example,
+        a &upnp; plugin may check for available &upnp; servers and register
+        a source object per server discovered.
+      </para>
+
+      <para>
+        For further details about the parameters received by functions
+        and a deeper description of the #MafwSource class, please take
+        a look at the &mafw_reference;.
+      </para>
+
+    </section>
+
+  </section>
+
+  <section>
+
+    <title>Creating a renderer</title>
+
+    <section>
+
+      <title>Definition</title>
+
+      <para>
+        A renderer is an element capable of playing media elements and
+        playlists of media elements.
+      </para>
+
+      <para>
+        As in the case of MAFW sources, in order to create a renderer plugin
+        a <emphasis>shared library</emphasis>  should be implemented, as well
+        as a module initializer and a  &gobject; inheriting from #MafwRenderer.
+        An example would be very similar to
+        the <link linkend="sect-creating-source">Mafw source's
+        one</link>.
+      </para>
+
+      <para>
+        Of course, the methods that have to be redefined are the ones
+        defined at #MafwRenderer, and again, the developer may choose
+        not to provide an implementation for some of them. The #MafwRenderer
+        class defines many methods that can be classified like this:
+      </para>
+
+      <itemizedlist>
+        <listitem>
+          <para>
+            <emphasis>Playback</emphasis>: Those used to control playback (play, 
+            stop, pause, resume, volume, etc)
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis>Playlist management</emphasis>: Those used to
+            assign a playlist to the renderer and manipulate it.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis>Status</emphasis>: Used to query the status of the renderer, like its 
+	    current playback state or selected media.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis>Position</emphasis>: Used to query the current playback position or set
+            it (seeking).
+          </para>
+        </listitem>
+      </itemizedlist>
+
+    </section>
+
+    <section>
+
+      <title>Signals</title>
+
+      <para>
+        Renderers also define some signals that should be taken into account, such as:
+      </para>
+
+      <itemizedlist>
+        <listitem>
+	  #MafwRenderer::playlist-changed, which should be emitted when a new
+          playlist is assigned to the renderer.
+        </listitem>
+        <listitem>
+	  #MafwRenderer::media-changed, which should be emitted when new media is
+          selected in the renderer.
+        </listitem>
+        <listitem>
+	  #MafwRenderer::state-changed, which should be emitted when the renderer
+          changes from on state to another.
+        </listitem>
+        <listitem>
+	  #MafwRenderer::buffering-info, which should be emitted to inform about the
+          buffering progress when playing streams.
+        </listitem>
+        <listitem>
+	  #MafwRenderer::metadata-changed, which should be emitted when the renderer
+          obtains metadata information from the currently selected media.
+        </listitem>
+      </itemizedlist>
+
+    </section>
+
+  </section>
+
+  <section>
+
+    <title>Other issues</title>
+
+    <section>
+
+      <title>Properties</title>
+      
+      <para>
+        #MafwExtension objects (renderers and sources) can define properties (#MafwExtension
+        properties, not &gobject;'s) to configure them on execution
+        time. To use them, get and set functions have to be provided 
+        and hooked in the <code>class_init</code> method.
+        method:
+      </para>
+
+      <informalexample>
+        <programlisting>
+static void 
+mafw_my_renderer_get_property(MafwExtension *self,
+	 		      const gchar *key,
+			      MafwExtensionPropertyCallback callback,
+			      gpointer user_data)
+{
+	MafwMyRenderer *renderer;
+	GValue *value = NULL;
+	GError *error = NULL;
+
+	g_return_if_fail(MAFW_IS_MY_RENDERER(self));
+	g_return_if_fail(callback != NULL);
+	g_return_if_fail(key != NULL);
+
+	renderer = MAFW_MY_RENDERER(self);
+	if (!strcmp(key, MAFW_PROPERTY_RENDERER_VOLUME)) {
+		value = g_new0(GValue, 1);
+		g_value_init(value, G_TYPE_UINT);
+		g_value_set_uint(value, volume);
+	}
+	else if (!strcmp(key, MAFW_PROPERTY_RENDERER_MUTE)) {
+           ...
+	}
+	else {
+		/* Unsupported property */
+		error = g_error_new(MAFW_MY_RENDERER_ERROR,
+				    MAFW_EXTENSION_ERROR_GET_PROPERTY,
+				    "Unsupported property");
+	}
+
+	callback(self, key, value, user_data, error);
+}
+
+static gboolean
+mafw_my_renderer_set_property(MafwExtension *self,
+                              const gchar *key,
+                              const GValue *value)
+{
+	MafwMyRenderer *renderer;
+
+	g_return_if_fail(MAFW_IS_MY_RENDERER(self));
+	g_return_if_fail(key != NULL);
+
+	renderer = MAFW_MY_RENDERER(self);
+
+	if (!strcmp(key, MAFW_PROPERTY_RENDERER_VOLUME)) {
+		guint volume = g_value_get_uint(value);
+		volume = CLAMP(volume, 0, 100);
+                _do_set_volume(renderer, volume);
+	}
+	else if (!strcmp(key, MAFW_PROPERTY_RENDERER_MUTE)) {
+         ...
+        }
+	else {
+		/* Unsupported property */
+                return FALSE;
+	}
+
+	mafw_extension_emit_property_changed(self, key, value);
+
+        return TRUE;
+}
+
+static void mafw_my_renderer_class_init(MafwMyRendererClass *klass)
+{
+        ...
+        MAFW_EXTENSION_CLASS(klass)->get_extension_property =
+          (gpointer) mafw_my_renderer_get_property;
+        MAFW_EXTENSION_CLASS(klass)->set_extension_property =
+          (gpointer) mafw_my_renderer_set_property;
+        ...
+}
+        </programlisting>
+      </informalexample>
+
+      <para>
+        Properties declaration is done in the object's <code>init</code>
+        function:
+      </para>
+
+      <informalexample>
+        <programlisting>
+static void mafw_my_renderer_init(MafwMyRenderer *self)
+{
+        ...
+	mafw_extension_add_property(MAFW_EXTENSION(self), "volume", G_TYPE_UINT);
+	mafw_extension_add_property(MAFW_EXTENSION(self), "mute", G_TYPE_BOOLEAN);
+        ...
+}
+        </programlisting>
+      </informalexample>
+
+      <para>
+        The code shows examples of renderer properties, but the same
+        could be applied to sources (as this is a mechanism defined for 
+	any kind of extension), for example, a slow source could use 
+	properties to define an eager vs. lazy strategy or the use of caches.
+      </para>
+
+    </section>
+
+  </section>
+
+</chapter>

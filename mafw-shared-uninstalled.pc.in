@@ -1,0 +1,12 @@
+prefix=
+exec_prefix=
+libdir=${pcfiledir}/libmafw-shared
+includedir=${pcfiledir}/
+
+Name: mafw-dbus
+Description: Media Application Framework (MAFW) D-Bus library
+Version: @VERSION@
+Libs: ${libdir}/libmafw-shared.la
+Cflags: -I${includedir}
+Requires: gobject-2.0 mafw dbus-1 dbus-glib-1
+Requires.Private:

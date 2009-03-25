@@ -1,0 +1,71 @@
+Source: mafw-shared
+Section: misc
+Priority: optional
+Maintainer: Mika Tapojärvi <ext-mika.tapojarvi@nokia.com>
+Build-Depends: debhelper (>= 5),
+               libglib2.0-dev (>= 2.8.6),
+               libdbus-1-dev (>= 0.61),
+               libdbus-glib-1-dev (>= 0.61),
+               libmafw0-dev (>= 0.1),
+               checkmore, gtk-doc-tools, dbus, libtotem-plparser-dev, libxml2-dev
+Standards-Version: 3.7.2
+
+Package: libmafw-shared0
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: MAFW UI library
+ Media Application framework UI library.
+ With this package it is possible to use shared playlists, shared
+ sources and renderers.
+
+Package: libmafw-shared0-dev
+Section: libdevel
+Architecture: any
+Depends: libmafw-shared0 (= ${binary:Version}), ${shlibs:Depends},
+         libdbus-1-dev, libdbus-glib-1-dev
+Description: Development files for application developers
+ Development files for Media Application framework.
+
+Package: libmafw-shared0-dbg
+Architecture: any
+Depends: libmafw-shared0 (= ${binary:Version})
+Priority: extra
+Description: Debug symbols for libmafw-shared0
+ Makes debugging a pleasure.
+
+Package: libmafw-shared-doc
+Architecture: all
+Section: doc
+Suggests: libmafw-shared0
+Description: Documentation for libmafw-shared
+ Contains the generated gtk-doc documentation.
+
+Package: mafw-dbus-daemon
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: MAFW UI library
+ Media Application framework UI library.
+
+Package: mafw-dbus-daemon-dbg
+Architecture: any
+Depends: mafw-dbus-daemon (= ${binary:Version})
+Priority: extra
+Description: Debug symbols for mafw-dbus-daemon
+ Makes debugging a pleasure.
+
+Package: mafw-playlist-daemon
+Section: libs
+Architecture: any
+Depends:  ${shlibs:Depends}
+Description: MAFW Playlist daemon
+ MAFW Playlist daemon makes the possibility to share
+ playlists through applications
+
+Package: mafw-playlist-daemon-dbg
+Architecture: any
+Depends: mafw-playlist-daemon (= ${binary:Version})
+Priority: extra
+Description: Debug symbols for mafw-playlist-daemon
+ Makes debugging a pleasure.

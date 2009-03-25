@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+<!ENTITY version SYSTEM "version.xml">
+<!ENTITY preface SYSTEM "xml/preface.sgml">
+<!ENTITY describing_mafw SYSTEM "xml/describing-mafw.sgml">
+<!ENTITY initializing_mafw SYSTEM "xml/initializing-mafw.sgml">
+<!ENTITY playlists SYSTEM "xml/playlists.sgml">
+<!ENTITY sources SYSTEM "xml/sources.sgml">
+<!ENTITY renderers SYSTEM "xml/renderers.sgml">
+<!ENTITY built_in_plugins SYSTEM "xml/built_in_plugins.sgml">
+<!ENTITY creating_plugins SYSTEM "xml/creating_plugins.sgml">
+<!ENTITY examples SYSTEM "xml/examples.sgml">
+<!ENTITY mafw_reference '<link linkend="chapter-mafw-reference">Mafw API reference</link>'>
+<!ENTITY dbus '<ulink url="http://dbus.freedesktop.org/">DBUS</ulink>'>
+<!ENTITY glib '<ulink url="http://library.gnome.org/devel/glib/stable/">GLib</ulink>'>
+<!ENTITY gobject '<ulink url="http://library.gnome.org/devel/gobject/stable/">GObject</ulink>'>
+<!ENTITY gstreamer '<ulink url="http://gstreamer.freedesktop.org/">GStreamer</ulink>'>
+<!ENTITY upnp '<ulink url="http://en.wikipedia.org/wiki/UPnP">UPnP</ulink>'>
+<!ENTITY bluetooth '<ulink url="http://en.wikipedia.org/wiki/Bluetooth">Bluetooth</ulink>'>
+<!ENTITY scratchbox '<ulink url="http://www.scratchbox.org/">Scratchbox</ulink>'>
+<!ENTITY gupnp '<ulink url="http://www.gupnp.org/">gUPnP</ulink>'>
+<!ENTITY maemo '<ulink url="http://www.maemo.org/">Maemo</ulink>'>
+<!ENTITY tracker '<ulink url="http://projects.gnome.org/tracker/">Tracker</ulink>'>
+]>
+<book id="index" xmlns:xi="http://www.w3.org/2003/XInclude">
+  <bookinfo>
+    <title>MAFW Manual</title>
+
+    <releaseinfo>Version &version;</releaseinfo>
+
+    <copyright>
+      <year>2008, 2009</year>
+      <holder>Nokia</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>
+      </para>
+    </legalnotice>
+  </bookinfo>
+
+  &preface;
+  &describing_mafw;
+  &initializing_mafw;
+  &playlists;
+  &sources;
+  &renderers;
+  &built_in_plugins;
+  &creating_plugins;
+  &examples;
+
+  <chapter>
+
+    <title>Mafw Shared reference</title>
+
+    <xi:include href="xml/mafwdbusdiscover.xml"/>
+    <xi:include href="xml/mafwplaylistmanager.xml"/>
+    <xi:include href="xml/mafwproxyplaylist.xml"/>
+
+  </chapter>
+
+</book>

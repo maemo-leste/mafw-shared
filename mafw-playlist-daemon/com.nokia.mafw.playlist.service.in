@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=com.nokia.mafw.playlist
+Exec=@prefix@/bin/mafw-playlist-daemon

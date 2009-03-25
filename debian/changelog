@@ -1,0 +1,337 @@
+mafw-shared (0.1.2009.13-5) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.13-5
+
+ -- Juha Kellokoski <ext-juha.kellokoski@nokia.com>  Wed, 25 Mar 2009 09:16:52 +0200
+
+mafw-shared (0.1.2009.13-4) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.13-4
+  * Removed timer use from renderer get_position
+  * Changed API to return gint instead if guint in the get_position
+    callback
+  * Set Visa as integrator.
+  * Upgrade copyright year.
+  * Add Visa Smolander as contact in debian/copyright files.
+  * Add headers for Makefile.am and configure.ac files.
+  * Set Visa Smolander as the contact person in headers.
+
+ -- Juha Kellokoski <ext-juha.kellokoski@nokia.com>  Wed, 25 Mar 2009 09:16:52 +0200
+
+mafw-shared (0.1.2009.13-3) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.13-3
+
+ -- Juha Kellokoski <ext-juha.kellokoski@nokia.com>  Tue, 24 Mar 2009 09:23:03 +0200
+
+mafw-shared (0.1.2009.13-1) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.13-1
+  * Adding playlist_get_items
+  * Fixed CID 1186
+  * Fixed CID 8194
+  * Fixed CIDs 8195 and 8196
+  * Fixed CIDs 9155 and 9156
+  * Fixed CID 9157
+  * Fixed CID 9158
+  * Fixed CID 9160
+  * Fixed CID 9161
+  * Resolved CID 14315
+  * insert_items and append_items
+
+ -- Juha Kellokoski <ext-juha.kellokoski@nokia.com>  Fri, 20 Mar 2009 09:11:24 +0200
+
+mafw-shared (0.1.2009.12-3) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.12-3
+  * Fixed CIDs 14396, 14397, 14398, 14399, 14400, 14401, 14402, 14403
+
+ -- Juha Kellokoski <ext-juha.kellokoski@nokia.com>  Wed, 18 Mar 2009 09:17:09 +0200
+
+mafw-shared (0.1.2009.12-2) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.12-2
+  * Fixes: NB#104339 - Memory leak when getting items from a playlist
+
+ -- Juha Kellokoski <ext-juha.kellokoski@nokia.com>  Tue, 17 Mar 2009 09:21:57 +0200
+
+mafw-shared (0.1.2009.11-5) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.11-5
+
+ -- Juha Kellokoski <ext-juha.kellokoski@nokia.com>  Thu, 12 Mar 2009 09:13:39 +0200
+
+mafw-shared (0.1.2009.11-4) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.11-4
+  * Fixes: NB#101814 - Upnp:Playback started in background when it is buffering or connecting
+  * Fixes: NB#103638 - User created play list from media player are not deleting with Clear device option from the control panel
+  * DBus-message handling optimization
+
+ -- Juha Kellokoski <ext-juha.kellokoski@nokia.com>  Wed, 11 Mar 2009 09:10:01 +0200
+
+mafw-shared (0.1.2009.11-3) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.11-3
+
+ -- Juha Kellokoski <ext-juha.kellokoski@nokia.com>  Tue, 10 Mar 2009 09:12:44 +0200
+
+mafw-shared (0.1.2009.9-1) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.09-1
+  * Removing helixbin usage
+
+ -- Juha Kellokoski <ext-juha.kellokoski@nokia.com>  Thu, 19 Feb 2009 17:26:07 +0200
+
+mafw-shared (0.1.2009.8-1) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.08-1
+  * Fixes: NB#101344
+  * Fixes: NB#101125
+  * Fixes: NB#100995
+
+ -- Juha Kellokoski <ext-juha.kellokoski@nokia.com>  Thu, 12 Feb 2009 14:22:44 +0200
+
+mafw-shared (0.1.2009.07-2) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.07-2
+
+ -- Juha Kellokoski <ext-juha.kellokoski@nokia.com>  Wed, 11 Feb 2009 14:20:00 +0200
+
+mafw-shared (0.1.2009.07-1) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.07-1
+  * Fixes: NB#99814
+  * Fixed and completed documentation.
+  * Added Preface section.
+  * Added licensing terms to source code examples.
+  * Adding CUD script
+
+ -- Mika Tapojärvi <ext-mika.tapojarvi@nokia.com>  Fri, 06 Feb 2009 08:38:48 +0200
+
+mafw-shared (0.1.2009.06-1) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.06-1
+  * Adapted mafw-shared tests to the new browse API.
+  * Changed proxy source in mafw-shared to use the new browse interface.
+  * Changed the source wrapper to use the new browse interface.
+  * Build fix
+  * Bugfix for the floating-reference modifcation
+
+ -- Mika Tapojärvi <ext-mika.tapojarvi@nokia.com>  Fri, 30 Jan 2009 14:40:40 +0200
+
+mafw-shared (0.1.2009.05-2) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.05-2
+
+ -- Mika Tapojärvi <ext-mika.tapojarvi@nokia.com>  Thu, 29 Jan 2009 15:32:50 +0200
+
+mafw-shared (0.1.2009.05-1) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.05-1
+  * Changing the base class of the extension objects to GInitiallyUnowned
+  * Backup support for the default DB file
+  * Adding missing documentation file.
+  * Added Examples section to the documentation
+    * Removed one sentence from MafwPlaylistManager doc because it
+      was useless now.
+    * Corrected some links.
+    * Added tracker reference to mafw-shared doc.
+    * Used reference in built-in plugins section.
+    * Corrected a small error about renderers in mafw-shared doc.
+    * Changed a sentence to me more accurate in mafw-shared doc
+      about sources.
+    * Fixed some references for playlist.sgml in mafw-shared doc.
+    * Fixed some links in mafw-shared doc about initialization.
+    * Added playlist-daemon-sect id in mafw-shared doc.
+    * Added link to playlist-daemon-sect to refer a later section.
+    * Added more info for --enable-debug option in mafw-shared doc.
+    * Used &bluetooth; and &upnp; entities.
+    * Added &glib; entity.
+    * Used &glib; and &gobject; entities.
+    * Changed &gstreamer; entity at mafw-shared docs to have
+      freedesktop renference.
+    * Replaced its appearances with the entity.
+    * Added &maemo; entity in mafw-shared doc.
+    * Replaced Maemo in its introduction.
+  * Edited the extended description. 
+  * Tests disabled for sending to testing queue.
+  * A typo fixed.
+  * mafw-dbus-daemon supplies its Xsession script without dh_installxsession;
+  * removed dependencies on upstart-dev and system-services
+  * media-changed signal uses gint for the playing-index parameter
+  * Reducing lintian warnings.
+
+ -- Mika Tapojärvi <ext-mika.tapojarvi@nokia.com>  Thu, 22 Jan 2009 14:37:51 +0200
+
+mafw-shared (0.1.2009.04-1) unstable; urgency=low
+
+  * MAFW, pre-release 0.2009.04-1
+  * Reducing lintian warnings.
+  * Added documentation on how to build mafw.
+  * Documentation fixes.
+  * Added documentation on available plugins.
+  * Python fixes.
+  * Fixes build error.
+  * Fixed typos.
+  * Bugfix for dup_playlist.
+  * Changeset 17817 applied.
+  * Fixes: NB#98494
+
+ -- Mika Tapojärvi <ext-mika.tapojarvi@nokia.com>  Fri, 16 Jan 2009 15:08:08 +0200
+
+mafw-shared (0.1.2009.03-1) unstable; urgency=low
+
+  * MAFW, pre-release 0.1.2009.03-1
+  * Fixed some typos and updated copyright year.
+  * Updated documentation
+  * Documentation updates
+  * dup_playlist
+  * Uncommenting dup_playlist prototype.
+
+ -- Mika Tapojärvi <ext-mika.tapojarvi@nokia.com>  Fri, 09 Jan 2009 15:45:26 +0200
+
+mafw-shared (0.1.2008.52-1) unstable; urgency=low
+
+  * Renamed midas to mafw
+
+ -- Zeeshan Ali <zeeshan.ali@nokia.com>  Mon, 22 Dec 2008 15:28:58 +0200
+
+midas-shared (0.1.2008.52) unstable; urgency=low
+
+  * Removing libtotem-pl-parser
+
+ -- Zeeshan Ali <zeeshan.ali@nokia.com>  Fri, 19 Dec 2008 15:28:58 +0200
+
+midas-shared (0.1.2008.51-1) unstable; urgency=low
+
+  *  * Fixes: NB#95862	Setting video pause frame crashes mediaplayer 
+
+ -- Zeeshan Ali <zeeshan.ali@nokia.com>  Fri, 12 Dec 2008 14:57:37 +0200
+midas-shared (0.1.2008.51) unstable; urgency=low
+
+  * In development.
+
+ -- Zeeshan Ali <zeeshan.ali@nokia.com>  Fri, 12 Dec 2008 14:57:37 +0200
+
+midas-shared (0.1.2008.50) unstable; urgency=low
+
+  * Memory leak fixes & Improved code coverage by adding mor testcase.
+
+ -- Zeeshan Ali <zeeshan.ali@nokia.com>  Fri, 05 Dec 2008 13:29:06 +0200
+
+midas-shared (0.1.2008.49) unstable; urgency=low
+
+  * In development.
+
+ -- Zeeshan Ali <zeeshan.ali@nokia.com>  Fri, 28 Nov 2008 14:35:35 +0200
+
+midas-shared (0.1.2008.48) unstable; urgency=low
+
+  * Added mechanism to start/stop wrappers on package install/removal
+  -(ignoring scratchbox support for now).  Uses DSME.
+  -Added an Xsession.post script.
+  -Updated affected components.
+  * Source::browse: removing GError**, and calling the cb in case of error too
+
+ -- Zeeshan Ali <zeeshan.ali@nokia.com>  Fri, 21 Nov 2008 16:59:53 +0200
+
+midas-shared (0.1.2008.47) unstable; urgency=low
+
+  * Simplified the generic part of midas-dbus-wrapper:
+  -- merged some headers
+  -- dropped unneeded `features'
+
+  * Cleaned up unused parts libmidas-shared:
+  -- dbus-interface.h cleanup
+  -- no tries to activate services (what services anyway)
+  -- removed deprecated functions
+  -- plugins are not exported anymore, no refresh/deinit
+
+ -- Zeeshan Ali <zeeshan.ali@nokia.com>  Fri, 14 Nov 2008 12:30:41 +0200
+
+midas-shared (0.1.2008.46) unstable; urgency=low
+
+  * Renamed dbus_discover->shared and adapted affected components
+
+ -- Zeeshan Ali <zeeshan.ali@nokia.com>  Fri, 07 Nov 2008 11:58:32 +0200
+
+midas-shared (0.1.2008.45) unstable; urgency=low
+
+  * In development.
+
+ -- Zeeshan Ali <zeeshan.ali@nokia.com>  Fri, 31 Oct 2008 14:14:16 +0200
+
+midas-shared (0.1.2008.44) unstable; urgency=low
+
+  * In development.
+
+ -- Zeeshan Ali <zeeshan.ali@nokia.com>  Fri, 24 Oct 2008 10:11:52 +0300
+
+midas-shared (0.1.2008.43) unstable; urgency=low
+
+  * Renaming sink->renderer
+
+ -- Zeeshan Ali <zeeshan.ali@nokia.com>  Fri, 17 Oct 2008 15:03:14 +0300
+
+midas-shared (0.1.2008.42) unstable; urgency=low
+
+  * In development.
+
+ -- Zeeshan Ali <zeeshan.ali@nokia.com>  Fri, 10 Oct 2008 15:33:21 +0300
+
+midas-shared (0.1.2008.40) unstable; urgency=low
+
+  * Temporary "hack" lowering the priority of D-Bus dispatching.
+  * Bugfixes.
+
+ -- Zeeshan Ali <zeeshan.ali@nokia.com>  Mon, 29 Sep 2008 07:02:28 +0000
+
+midas-shared (0.1.2008.39) unstable; urgency=low
+
+  * New API: playlist importing (MidasPlaylistManager).
+  * Initscript rewritten to use start-stop-daemon.
+
+ -- Zeeshan Ali <zeeshan.ali@nokia.com>  Sun, 21 Sep 2008 18:35:06 +0300
+
+midas-shared (0.1.2008.38) unstable; urgency=low
+
+  * Test cases improved, `full-disk' state handled more gracefully.
+  * Bugfixes.
+
+ -- Zeeshan Ali <zeeshan.ali@nokia.com>  Mon, 15 Sep 2008 08:11:12 +0300
+
+midas-shared (0.1.2008.37) unstable; urgency=low
+
+  * Playlist daemon becoming more robust.
+  * New playlist API implementation (*use_count).
+  * Documentation improvements.
+
+ -- Zeeshan Ali <zeeshan.ali@nokia.com>  Mon, 08 Sep 2008 08:37:04 +0300
+
+midas-shared (0.1.2008.36) unstable; urgency=low
+
+  * Playlists are kept in-core, sqlite gone.
+
+ -- Zeeshan Ali <zeeshan.ali@nokia.com>  Mon, 01 Sep 2008 08:21:43 +0300
+
+midas-shared (0.1.2008.35) unstable; urgency=low
+
+  * Browse results returned via method calls, not signals.
+
+ -- Zeeshan Ali <zeeshan.ali@nokia.com>  Sun, 24 Aug 2008 19:42:40 +0300
+
+midas-shared (0.1.2008.34) unstable; urgency=low
+
+  * Performance improvements: midas-playlist-daemon uses prepared
+    SQL statements.
+  * Minor documentation corrections.
+  * Packaging fixes.
+
+ -- Zeeshan Ali <zeeshan.ali@nokia.com>  Fri, 15 Aug 2008 09:48:16 +0300
+
+midas-shared (0.1.2008.33) unstable; urgency=low
+
+  * Initial release.
+
+ -- Zeeshan Ali <zeeshan.ali@nokia.com>  Sun, 10 Aug 2008 19:45:36 +0300

@@ -1,0 +1,6 @@
+#include <libmafw-shared/mafw-shared.h>
+#include <libmafw-shared/mafw-playlist-manager.h>
+#include <libmafw-shared/mafw-proxy-playlist.h>
+
+mafw_playlist_manager_get_type
+mafw_proxy_playlist_get_type

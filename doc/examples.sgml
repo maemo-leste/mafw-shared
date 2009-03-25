@@ -1,0 +1,100 @@
+<chapter id="chapter-examples">
+
+This chapter contains a few full examples that illustrate some of the
+concepts explained during this manual. The code is ready to be built
+and executed to allow the reader to experiment.
+
+In order to build these programs one should use the following command:
+
+<para>
+  <programlisting role="shell">
+<![CDATA[
+libtool --mode=link gcc -o <output-file> `pkg-config --cflags --libs mafw mafw-shared` <source-file>
+]]>
+  </programlisting>
+</para>
+
+<para>
+Some of the examples require specific plugins, so be sure you have them
+installed when trying to run them. Also, examples that use plugins allow
+both in-process and out-of-process modes. To use the plugins in out-of-process
+mode, be sure you have the plugins running using mafw-dbus-wrapper. To use 
+the plugins in-process, you can define the environment variable MAFW_INP_PLUGINS
+to a colon separated list of plugin file paths (.so files) with the plugins to
+load in this mode.
+</para>
+
+<para>
+Finally, these programs should be run with appropriate environment settings,
+be sure you have the &maemo; environment properly initialized and run the
+programs using the run-standalone.sh script.
+</para>
+
+  <title>Source code examples</title>
+
+  <section>
+  
+    <title>Source browsing example</title>
+
+    <para>This example illustrates a simple command line program
+    browsing arbitrary object identifiers using the tracker source
+    plugin. To run the program successfully, one needs to have this
+    plugin installed.</para>
+
+    <para>
+      <programlisting role="C"><xi:include  href="examples/mafw-browse-example.c"  parse="text"
+      xmlns:xi="http://www.w3.org/2001/XInclude" /></programlisting>
+    </para>
+
+  </section>
+
+  <section>
+  
+    <title>Source metadata example</title>
+
+    <para>This example illustrates a simple command line program
+    obtaining metadata from arbitrary object identifiers using the 
+    tracker source plugin. To run the program successfully, one needs to
+    have this plugin installed.</para>
+
+    <para>
+      <programlisting role="C"><xi:include  href="examples/mafw-metadata-example.c"  parse="text"
+      xmlns:xi="http://www.w3.org/2001/XInclude" /></programlisting>
+    </para>
+
+  </section>
+
+  <section>
+  
+    <title>Playlist example</title>
+
+    <para>This example illustrates a simple command line program
+    for creating, removing and editing the contents of playlists.
+    To run the program successfully, one needs to ensure the 
+    mafw-playlist-daemon is running.</para>
+
+    <para>
+      <programlisting role="C"><xi:include  href="examples/mafw-playlist-example.c"  parse="text"
+      xmlns:xi="http://www.w3.org/2001/XInclude" /></programlisting>
+    </para>
+
+  </section>
+
+  <section>
+  
+    <title>Renderer example</title>
+
+    <para>This example illustrates a simple command line program
+    for playing playlists in a renderer. To run this program
+    successfully one needs to have the mafw-gst-renderer plugin
+    installed and should be able to play media content using 
+    &gstreamer; (the reader can use gst-launch to verify this).
+    One also needs to have the mafw-playlist-daemon running.</para>
+
+    <para>
+      <programlisting role="C"><xi:include  href="examples/mafw-renderer-example.c"  parse="text"
+      xmlns:xi="http://www.w3.org/2001/XInclude" /></programlisting>
+    </para>
+
+  </section>
+</chapter>

@@ -1,0 +1,10 @@
+Document: mafw-shared
+Title: MAFW reference documentation
+Author: the MAFW community
+Abstract: Media Application framework documentation,
+ containing the generated gtk-doc reference.
+Section: Programming/C
+
+Format: HTML
+Index: /usr/share/gtk-doc/html/mafw-shared/index.html
+Files: /usr/share/gtk-doc/html/mafw-shared/*.html

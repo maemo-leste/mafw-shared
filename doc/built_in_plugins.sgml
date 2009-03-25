@@ -1,0 +1,44 @@
+<chapter id="chapter-built-in-plugins">
+
+  <title>Built-in plugins</title>
+
+  <para>
+    MAFW comes with a set of plugins already available. In order to obtain these plugins one has to
+    install the appropriate MAFW packages. Currently, each plugin is delivered in a separate package.
+    Below is a list of these plugins along with a brief description of each one:
+  </para>
+
+  <itemizedlist>
+  
+  <listitem><emphasis>Tracker Source</emphasis>
+    <para>
+      A source plugin implementing a #MafwSource for accessing multimedia files stored
+      in the local filesystem using &tracker; as underlying engine.
+    </para>
+  </listitem>>
+
+  <listitem><emphasis>UPnP Source</emphasis>
+    <para>
+      A source plugin implementing a #MafwSource for accessing multimedia files stored
+      in &upnp; servers. This plugin instantiates one source extension per &upnp; server
+      discovered. The plugin is implemented using &gupnp;.
+    </para>
+  </listitem>
+
+  <listitem><emphasis>IRadio Source</emphasis>
+    <para>
+      A source plugin implementing a #MafwSource for providing support for
+      multimedia bookmarks.
+    </para>
+  </listitem>
+
+  <listitem><emphasis>GStreamer Renderer</emphasis>
+    <para>
+      A renderer plugin implementing a #MafwRenderer for playback using &gstreamer; as
+      playback engine.
+    </para>
+  </listitem>
+
+  </itemizedlist>
+
+</chapter>

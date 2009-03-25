@@ -1,0 +1,8 @@
+# MAFW GObject marshallers
+#
+# Copyright (C) 2007, 2008, 2009 Nokia
+
+# All MafwRegistry signals, e.g MafwRegistry::renderer_added(renderer)
+VOID: OBJECT
+# MafwProxyPlaylist::property-changed(void)
+VOID: VOID

@@ -1,0 +1,421 @@
+<chapter id="chapter-sources">
+
+<title>Sources</title>
+
+<section>
+
+<title>Introduction</title>
+
+<para>
+Sources are used to get access to multimedia
+repositories.  For example, a source might provide access to &upnp;
+servers, the multimedia files located at the local filesystem, 
+or those housed at &bluetooth; devices, etc. The main target of
+sources is to provide a way to query and retrieve information about
+available media files.
+</para>
+
+<para>
+Sources identify media items by means of <emphasis>object identifiers</emphasis>.
+These identifiers are strings in the form:
+</para>
+
+<para><![CDATA[
+<Source-ID>::<Item-ID>
+]]></para>
+
+<para>
+consisting of the Source ID of the originating source and a unique (within
+the individual scope of the source) Item ID, separated by two colons. Each object 
+ID should be unique, persistent and portable, if possible. Applications may 
+assume that an object ID corresponds to a single content item, and this 
+should be maintained across shutdowns, reboots and reinstalls. A specific
+object ID is meaningful only for the source that has produced it.
+</para>
+
+<para>
+Sources provide a few services to applications, however, the most important are:
+<itemizedlist>
+<listitem>Browsing</listitem>
+<listitem>Metadata retrieval</listitem>
+</itemizedlist>
+</para>
+
+<para><emphasis>Browsing</emphasis> is the operation used to explore, query and
+filter contents from a particular source of media. Developers will use
+the browse interface, for example, to get a list of the songs or videos 
+available, to access the songs of a particular artist, etc. Sources provide
+access to their contents exposing them through the browse interface using
+a container model: there is a root container, which object ID is 
+<emphasis>&lt;Source-ID&gt;::</emphasis>, any container can contain other containers
+or media resources, very much like navigating a file system. The structure
+of containers exposed by the source is decided by the source developer.
+</para>
+
+<para><emphasis>Metadata retrieval</emphasis> is the operation used to obtain
+meta-information from a certain media resource. Developers will use
+this interface to obtain information like the title, artist or album
+of a particular media.
+</para>
+
+<para>
+In addition to getting content information, one can also modify the contents
+with optional methods, intended for creating and removing contents from the
+source, as well as updating metadata for particular media items.
+</para>
+
+<para>
+Sources are represented by the #MafwSource class, which inherits from
+#MafwExtension. Thus, sources have name, uuid and plugin properties and
+support run-time properties too. This class is intended to be an
+abstract base class for any source and it provides the definition of
+various of the interfaces commented above: #mafw_source_browse,
+#mafw_source_get_metadata, #mafw_source_set_metadata, etc.
+</para>
+
+<para>
+Application developers will use sources to browse available media resources
+and select media items to create playlists. Once a playlist has been created
+it can be assigned to a renderer to play its contents.
+</para>
+
+<para>
+Sources can also communicate certain events using signals:
+<itemizedlist>
+<listitem>#MafwSource::metadata-changed, informs about metadata
+changes in a particular media provided by a given source.</listitem>
+<listitem>#MafwSource::container-changed, informs about changes in
+the contents of a certain container provided by a given
+source.</listitem>
+</itemizedlist>
+</para>
+
+</section>
+
+<section>
+
+<title>Browsing the contents of a source</title>
+
+<para>
+The major use case of a source is browsing. Developers can explore the
+contents of a particular container exposed by the source using the
+method #mafw_source_browse and the object identifier of the
+container. Here is an example that browses contents from the root
+container of a certain source:
+</para>
+
+<para>
+<programlisting role="c">
+
+static void
+browse_cb(MafwSource *source, 
+          guint browseid, 
+          gint remaining,
+          guint index, 
+          const gchar *objectid, 
+          GHashTable *metadata,
+          gpointer user_data, 
+          const GError *error)
+{
+        if (error != NULL) {
+                g_print("Browse error %d: %s\n", error->code, error->message);
+        } else if (objectid != NULL) {
+                gchar *title, *artist, *album, *mime;
+
+                if (metadata) {
+                        GValue *v;
+                        v = mafw_metadata_first(metadata, 
+                                                MAFW_METADATA_KEY_TITLE);
+                        title = v ? g_value_get_string(v) : "Unknown";
+                        v = mafw_metadata_first(metadata, 
+                                                MAFW_METADATA_KEY_ARTIST);
+                        artist = v ? g_value_get_string(v) : "Unknown";
+                        v = mafw_metadata_first(metadata, 
+                                                MAFW_METADATA_KEY_ALBUM);
+                        album = v ? g_value_get_string(v) : "Unknown";
+                        v = mafw_metadata_first(metadata, 
+                                                MAFW_METADATA_KEY_MIME);
+                        mime = v ? g_value_get_string(v) : "Unknown";
+                } else {
+                        title = "Unknown";
+                        artist = "Unknown";
+                        album = "Unknown";
+                        mime = "Unknown";
+                }
+
+                g_print("Got object ID: %s\n", objectid);
+                g_print("        Index: %u\n", index);
+                g_print("        Title: %s\n", title);
+                g_print("       Artist: %s\n", artist);
+                g_print("        Album: %s\n", album);
+                g_print("         Mime: %s\n", mime);
+        } else {
+                g_print("The query %d did not return any results\n", browseid);
+        }
+}
+
+static void
+browse_example (MafwSource *source, gchar *objectid)
+{
+        const gchar *const *keys;
+        guint browseid;
+
+        keys = MAFW_SOURCE_LIST(
+                MAFW_METADATA_KEY_MIME,
+                MAFW_METADATA_KEY_ARTIST,
+                MAFW_METADATA_KEY_ALBUM,
+                MAFW_METADATA_KEY_TITLE);
+
+        browseid =
+                mafw_source_browse(
+                   source,            /* The source object */
+                   objectid,          /* The object ID to browse */
+                   FALSE,             /* Do recursive browse? */
+                   NULL,              /* Filter */
+                   NULL,              /* Sort criteria */
+                   keys,              /* Metadata to retrieve */
+                   0, 20,             /* Offset and count */
+                   browse_cb,         /* Callback */
+                   NULL);             /* Callback user data */
+}
+
+</programlisting>
+</para>
+
+<para>
+The example browses the contents of a given object identifier in particular
+source. The meaning of the parameters is:
+<itemizedlist>
+<listitem><code>Source</code>, the #MafwSource instance to be browsed.
+</listitem>
+<listitem><code>ObjectID</code>, the object identifier of the container
+to be browsed.</listitem>
+<listitem><code>Recursive</code>, whether the container should be browsed
+recursively or not.</listitem>
+<listitem><code>Filter</code>, specifies an optional filter string in a 
+syntax similar to that used in LDAP search filters.</listitem>
+<listitem><code>Sort criteria</code>, a string used to specify the criteria
+that should be followed to sort the browse results.</listitem>
+<listitem><code>Keys</code>, metadata keys we are interested in retrieving 
+along with each object identifier returned with the browse operation.</listitem>
+<listitem><code>Offset</code>, the index of the first item to retrieve from
+the list of items that match the browse query.</listitem>
+<listitem><code>Offset</code>, the maximum number of elements to retrieve
+from the list of items that match the browse query, starting at the index
+specified by the <code>Offset</code> parameter.</listitem>
+<listitem><code>Callback</code>, this callback function is called
+whenever a matching result is found.</listitem>
+<listitem><code>Callback user data</code>, user data for the callback.
+</listitem>
+</itemizedlist>
+For more details, please check the &mafw_reference;.
+</para>
+
+<para>
+The #mafw_source_browse function returns a browse identifier that can
+be used to match browse results with the corresponding browse
+operations.
+</para>
+
+<para>
+The results of the browse call are returned using the provided callback. 
+This callback is invoked each time a matching result is found by the source.
+Each time the callback is invoked it informs about:
+<itemizedlist>
+<listitem><code>Source</code>, the #MafwSource that is producing the
+result.
+</listitem>
+<listitem><code>Browse ID</code>, that allows the developer to match a result
+with a particular browse operation.
+</listitem>
+<listitem><code>Remaining</code>, which informs about the remaining items
+that have matched the browse query and are pending to be sent through the 
+callback. When this value reaches 0 it means that all the results have been sent
+and the operations has finished.
+</listitem>
+<listitem><code>Index</code>, the index of the current item in the list of
+matched results.
+</listitem>
+<listitem><code>Object ID</code>, the object ID of the current item.
+</listitem>
+<listitem><code>Metadata</code>, the metadata values associated to the 
+current item.
+</listitem>
+<listitem><code>User Data</code>, user data of the callback.
+</listitem>
+<listitem><code>Error</code>, a #GError that, if set, informs of an
+error in the browse operation.
+</listitem>
+</itemizedlist>
+
+Also, in case that no results match the browse operation, the callback is
+invoked once, with the object ID parameter set to #NULL.
+</para>
+
+</section>
+
+<section>
+<title>Getting metadata</title>
+
+<para>
+Another important use case of a source is to provide metadata about
+particular media. This can be achieved using
+#mafw_source_get_metadata like this:
+
+<programlisting role="c">
+static void
+metadata_cb(MafwSource *source, 
+            const gchar *objectid,
+            GHashTable *metadata,
+            gpointer user_data, 
+            const GError *error)
+{
+        if (error != NULL) {
+                g_print("Error %d: %s\n", error->code, error->message);
+        } else {
+                gchar *title, *artist, *album, *mime;
+
+                if (metadata) {
+                        GValue *v;
+                        v = mafw_metadata_first(metadata, 
+                                                MAFW_METADATA_KEY_TITLE);
+                        title = v ? g_value_get_string(v) : "Unknown";
+                        v = mafw_metadata_first(metadata, 
+                                                MAFW_METADATA_KEY_ARTIST);
+                        artist = v ? g_value_get_string(v) : "Unknown";
+                        v = mafw_metadata_first(metadata, 
+                                                MAFW_METADATA_KEY_ALBUM);
+                        album = v ? g_value_get_string(v) : "Unknown";
+                        v = mafw_metadata_first(metadata, 
+                                                MAFW_METADATA_KEY_MIME);
+                        mime = v ? g_value_get_string(v) : "Unknown";
+                } else {
+                        title = "Unknown";
+                        artist = "Unknown";
+                        album = "Unknown";
+                        mime = "Unknown";
+                }
+
+                g_print(" Title: %s\n", title);
+                g_print("Artist: %s\n", artist);
+                g_print(" Album: %s\n", album);
+                g_print("  Mime: %s\n", mime);
+        }        
+}
+
+static void
+metadata_example (MafwSource *source, gchar *objectid)
+{
+        const gchar *const *keys;
+
+        keys = MAFW_SOURCE_LIST(
+                MAFW_METADATA_KEY_MIME,
+                MAFW_METADATA_KEY_ARTIST,
+                MAFW_METADATA_KEY_ALBUM,
+                MAFW_METADATA_KEY_TITLE);
+
+        mafw_source_get_metadata(
+                source,       /* The source object */
+                objectid,     /* The media resource we want metadata from */
+                keys,         /* The metadata we are interested in */
+                metadata_cb,  /* Callback */
+                NULL);        /* User data for Callback */
+}
+</programlisting>
+</para>
+
+<para>
+The example queries metadata for a particular object ID (which should
+be valid for the source being queried, returned by a previous browse
+operation). The parameters passed to #mafw_source_get_metadata are:
+<itemizedlist>
+<listitem><code>Source</code>, the #MafwSource to be queried.
+</listitem>
+<listitem><code>Object ID</code>, the object ID to get metadata from. 
+</listitem>
+<listitem><code>Keys</code>, metadata information we are interested in.
+</listitem>
+<listitem><code>Callback</code>, the callback used to get the results.
+</listitem>
+<listitem><code>User data</code>, the user data for the callback.
+</listitem>
+</itemizedlist>
+</para>
+
+<para>
+The result of the metadata operation is returned using the callback provided.
+The parameters passed to the callback function are:
+<itemizedlist>
+<listitem><code>Source</code>, the #MafwSource that produced the result.
+</listitem>
+<listitem><code>Object ID</code>, the object ID the metadata comes from.
+</listitem>
+<listitem><code>Metadata</code>, the metadata values.
+</listitem>
+<listitem><code>User data</code>, the user data for the callback.
+</listitem>
+<listitem><code>Error</code>, a #GError that, if set, informs of an
+error in the metadata retrieval operation.
+</listitem>
+</itemizedlist>
+</para>
+
+<para>
+This callback should be called only once.
+</para>
+
+</section>
+
+<section>
+
+<title>Using a source</title>
+
+<para>
+Sources are extensions, therefore, the first step is to obtain a reference to them
+using the framework registry, like this:
+
+<programlisting role="c">
+MafwProxyRegistry *registry = MAFW_REGISTRY(mafw_registry_get_instance());
+if (registry) {
+        GList *sources = mafw_registry_get_sources(MAFW_REGISTRY(registry));
+}
+</programlisting>
+
+The code above allows the application developer to obtain a list of available
+sources. The developer can use this list to show the available sources to the 
+users, allowing them to select the ones they are interested in.
+</para>
+
+<para>
+Once reference to the source we are interested in has been obtained, the developer
+can start to use it. The way sources are used is usually this:
+
+<itemizedlist>
+<listitem>User wants to browse the contents of the source. The
+application should browse the root container of the selected source
+using #mafw_source_browse and show the results to the user. The
+application developer should request the metadata #MAFW_METADATA_KEY_MIME to
+distinguish containers from media items.</listitem>
+<listitem>Once users have obtained the results of the browse operation, 
+they may want to browse one of the containers contained in the
+root container, in this case the application should issue a new browse 
+operation with the <emphasis>Object ID</emphasis> of the selected container,
+repeating the process.</listitem>
+<listitem>Also, users may want to select browse results and include them
+in a playlist to be played later on in a renderer.</listitem>
+<listitem>The user can also request more metadata from a specific item
+obtained in the browse operation, to do so, the developer should use
+#mafw_source_get_metadata passing the <emphasis>Object ID</emphasis> of the
+selected item.
+</listitem>
+</itemizedlist>
+</para>
+
+<para>
+  For more information about the source API, please check
+  the &mafw_reference;.
+</para>
+
+</section>
+
+</chapter>

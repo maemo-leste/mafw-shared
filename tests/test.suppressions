@@ -1,0 +1,135 @@
+{
+   <1>
+   Memcheck:Cond
+   fun:strlen
+   fun:_dl_init_paths
+   fun:dl_main
+   fun:_dl_sysdep_start
+   fun:_dl_start
+}
+{
+   <2>
+   Memcheck:Cond
+   fun:_dl_relocate_object
+   fun:dl_main
+   fun:_dl_sysdep_start
+   fun:_dl_start
+}
+{
+   <3>
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   obj:*
+   obj:*
+   fun:g_type_init_with_debug_flags
+   fun:g_type_init
+}
+{
+   <4>
+   Memcheck:Leak
+   fun:malloc 
+   fun:realloc 
+   fun:g_realloc 
+   fun:g_quark_from_static_string 
+   fun:g_type_init_with_debug_flags 
+   fun:g_type_init  
+}
+{
+   <5>
+   Memcheck:Leak
+   fun:realloc 
+   fun:g_realloc 
+   obj:*
+   obj:*
+   fun:g_type_register_static 
+   fun:g_param_type_register_static 
+   obj:*
+   fun:g_type_init_with_debug_flags 
+   fun:g_type_init
+}
+{
+   <6>
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc 
+   fun:g_hash_table_new_full 
+   fun:g_hash_table_new 
+   fun:g_quark_from_static_string
+   fun:g_type_init_with_debug_flags
+   fun:g_type_init
+}
+{
+   <7>
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   obj:*
+   fun:g_slice_alloc 
+   fun:g_hash_table_new_full 
+   fun:g_hash_table_new 
+   fun:g_quark_from_static_string
+   fun:g_type_init_with_debug_flags
+   fun:g_type_init
+}
+{
+   <8>
+   Memcheck:Leak
+   fun:realloc 
+   fun:g_realloc 
+   fun:g_boxed_type_register_static
+   fun:g_value_array_get_type
+   obj:*
+   fun:g_type_init_with_debug_flags 
+   fun:g_type_init
+}
+{
+  <9>
+   Memcheck:Leak
+   fun:realloc 
+   fun:dbus_realloc 
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun: dbus_message_iter_append_basic 
+}
+{
+  <10>
+   Memcheck:Leak
+   fun:realloc
+   fun:dbus_realloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{  
+   <11>
+   Memcheck:Leak
+   fun:calloc 
+   fun:parse_bracket_exp
+   fun:parse_expression
+   fun:parse_branch
+   fun:parse_reg_exp 
+   fun:parse_expression
+   fun:parse_branch
+   fun:parse_reg_exp
+   fun:parse_expression
+   fun:parse_branch
+   fun:parse_reg_exp
+   fun:re_compile_internal
+}  
+
