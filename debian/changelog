@@ -1,12 +1,12 @@
+mafw-shared (0.1.2009.13-6) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.13-6
+
+ -- Juha Kellokoski <veitikka6@gmail.com>  Thu, 26 Mar 2009 09:53:00 +0200
+
 mafw-shared (0.1.2009.13-5) unstable; urgency=low
 
   * MAFW Shared, pre-release 0.2009.13-5
-
- -- Juha Kellokoski <ext-juha.kellokoski@nokia.com>  Wed, 25 Mar 2009 09:16:52 +0200
-
-mafw-shared (0.1.2009.13-4) unstable; urgency=low
-
-  * MAFW Shared, pre-release 0.2009.13-4
   * Removed timer use from renderer get_position
   * Changed API to return gint instead if guint in the get_position
     callback
@@ -15,6 +15,12 @@ mafw-shared (0.1.2009.13-4) unstable; urgency=low
   * Add Visa Smolander as contact in debian/copyright files.
   * Add headers for Makefile.am and configure.ac files.
   * Set Visa Smolander as the contact person in headers.
+
+ -- Juha Kellokoski <veitikka6@gmail.com>  Thu, 26 Mar 2009 09:53:00 +0200
+
+mafw-shared (0.1.2009.13-4) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.13-4
 
  -- Juha Kellokoski <ext-juha.kellokoski@nokia.com>  Wed, 25 Mar 2009 09:16:52 +0200
 
