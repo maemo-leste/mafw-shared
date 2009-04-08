@@ -42,6 +42,7 @@
 
 #include <checkmore.h>
 #include "mockbus.h"
+#include "mocksource.h"
 
 /* Set to 1 to get extra messages. */
 #if 0
@@ -53,7 +54,7 @@
 #endif
 
 
-#define SOURCE_UUID "sourceuuid"
+#define SOURCE_UUID "mocksource"
 
 /* For mafw_dbus_*() */
 #define MAFW_DBUS_PATH MAFW_SOURCE_OBJECT "/" SOURCE_UUID
@@ -141,23 +142,6 @@ static void browse_result2_invalid(MafwSource * self, guint browse_id,
  * x all the API functions
  */
 
-/* Proxy does a list_properties at _connect().  Expect that. */
-static void mock_empty_props(void)
-{
-	mockbus_expect(mafw_dbus_method_full(
-					MAFW_DBUS_DESTINATION,
-					MAFW_DBUS_PATH,
-					MAFW_EXTENSION_INTERFACE,
-					MAFW_EXTENSION_METHOD_GET_NAME));
-	mockbus_reply(MAFW_DBUS_STRING("TestName"));
-	mockbus_expect(mafw_dbus_method_full(
-			       MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
-			       MAFW_EXTENSION_INTERFACE,
-			       MAFW_EXTENSION_METHOD_LIST_PROPERTIES));
-	mockbus_reply(MAFW_DBUS_STRVZ(NULL),
-		      MAFW_DBUS_C_ARRAY(UINT32, guint));
-}
-
 static void metadata_result(MafwSource *self, const gchar *object_id,
 			    GHashTable *md, gpointer user_data,
 			    const GError *error)
@@ -192,7 +176,7 @@ START_TEST(test_metadata)
 	gboolean called;
 
 	mockbus_reset();
-	mock_empty_props();
+	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
 
 	sp = MAFW_PROXY_SOURCE(mafw_proxy_source_new(SOURCE_UUID, "fake",
 				mafw_registry_get_instance()));
@@ -231,52 +215,6 @@ START_TEST(test_metadata)
 }
 END_TEST
 
-static DBusMessage *append_browse_res(DBusMessage *replmsg,
-				DBusMessageIter *iter_msg,
-				DBusMessageIter *iter_array,
-				guint browse_id,
-				gint remaining_count, guint index,
-				const gchar *object_id,
-				GHashTable *metadata,
-				const gchar *domain_str,
-				guint errcode,
-				const gchar *err_msg)
-{
-	DBusMessageIter istr;
-	GByteArray *ba = NULL;
-
-	if (!replmsg)
-	{
-		replmsg = dbus_message_new_method_call(MAFW_DBUS_DESTINATION,
-			MAFW_DBUS_PATH,
-			MAFW_SOURCE_INTERFACE,
-			MAFW_PROXY_SOURCE_METHOD_BROWSE_RESULT);
-		dbus_message_iter_init_append(replmsg,
-						iter_msg);
-		dbus_message_iter_append_basic(iter_msg,  DBUS_TYPE_UINT32, &browse_id);
-		dbus_message_iter_open_container(iter_msg, DBUS_TYPE_ARRAY,
-						 "(iusaysus)", iter_array);
-	}
-	dbus_message_iter_open_container(iter_array, DBUS_TYPE_STRUCT, NULL,
-					&istr);
-	
-	ba = mafw_metadata_freeze_bary(metadata);
-	
-	
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_INT32,
-						&remaining_count);
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_UINT32, &index);
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING, &object_id);
-	mafw_dbus_message_append_array(&istr, DBUS_TYPE_BYTE, ba->len,
-						ba->data);
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING, &domain_str);
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_UINT32, &errcode);
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING, &err_msg);
-	g_byte_array_free(ba, TRUE);
-	dbus_message_iter_close_container(iter_array, &istr);
-	return replmsg;
-}
-
 START_TEST(test_browse)
 {
 	MafwProxySource *sp = NULL;
@@ -291,7 +229,7 @@ START_TEST(test_browse)
 
 	mockbus_reset();
 	
-	mock_empty_props();
+	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
 	
 	mockbus_expect(
 		mafw_dbus_method(MAFW_SOURCE_METHOD_BROWSE,
@@ -378,7 +316,7 @@ START_TEST(test_cancel_browse)
 	 * proxy should sent the cancel message */
 
 	mockbus_reset();
-	mock_empty_props();
+	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
 	mockbus_expect(
 		mafw_dbus_method(MAFW_SOURCE_METHOD_BROWSE,
 				 MAFW_DBUS_STRING("bigcan"),
@@ -440,7 +378,7 @@ START_TEST(test_cancel_browse_invalid)
 	 * cancel it -> proxy should NOT send anything. */
 
 	mockbus_reset();
-	mock_empty_props();
+	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
 	mockbus_expect(
 		mafw_dbus_method(MAFW_SOURCE_METHOD_BROWSE,
 				 MAFW_DBUS_STRING("bigcan"),
@@ -540,7 +478,7 @@ START_TEST(test_object_creation)
 	MafwSource *src;
 	gpointer comm[2];
 
-	mock_empty_props();
+	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
 	
 	src = MAFW_SOURCE(mafw_proxy_source_new(SOURCE_UUID, "fake",
 					mafw_registry_get_instance()));
@@ -644,7 +582,7 @@ START_TEST(test_set_metadata)
 	MafwSource *src;
 	gint user_data;
 
-	mock_empty_props();
+	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
 	/* Connect */
 	src = MAFW_SOURCE(mafw_proxy_source_new(SOURCE_UUID, "fake",
 				mafw_registry_get_instance()));
@@ -747,7 +685,7 @@ START_TEST(test_object_destruction)
 	MafwSource *src;
 	gpointer comm[2];
 
-	mock_empty_props();
+	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
 	src = MAFW_SOURCE(mafw_proxy_source_new(SOURCE_UUID, "fake",
 					mafw_registry_get_instance()));
 
@@ -817,7 +755,7 @@ START_TEST(test_source_signals)
 	
 	
 	mockbus_reset();
-	mock_empty_props();
+	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
 
 	sp = MAFW_PROXY_SOURCE(mafw_proxy_source_new(SOURCE_UUID, "fake",
 					mafw_registry_get_instance()));

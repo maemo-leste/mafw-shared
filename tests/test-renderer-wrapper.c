@@ -44,17 +44,10 @@
 
 #define MAFW_DBUS_PATH "/com/nokia/mafw/renderer/uuid"
 #define MAFW_DBUS_INTERFACE MAFW_RENDERER_INTERFACE
+#define FAKE_RENDERER_NAME "uuid"
+#define FAKE_RENDERER_SERVICE MAFW_RENDERER_SERVICE ".mockland." FAKE_RENDERER_NAME
 
 static GMainLoop *Loop = NULL;
-
-static void mock_services(const gchar *const *active)
-{
-	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS,
-					     DBUS_PATH_DBUS,
-					     DBUS_INTERFACE_DBUS,
-					     "ListNames"));
-	mockbus_reply(MAFW_DBUS_STRVZ(active));
-}
 
 START_TEST(test_export_unexport)
 {
@@ -63,27 +56,12 @@ START_TEST(test_export_unexport)
 	extension = mocked_renderer_new("name", "uuid", Loop);
 	mockbus_reset();
 	wrapper_init();
-	
-	mockbus_expect(mafw_dbus_method_full(
-		DBUS_SERVICE_DBUS,
-		DBUS_PATH_DBUS,
-		DBUS_INTERFACE_DBUS,
-		"RequestName",
-		MAFW_DBUS_STRING("com.nokia.mafw.renderer.mockland.uuid"),
-		MAFW_DBUS_UINT32(4)
-		));
-	mockbus_reply(MAFW_DBUS_UINT32(4));
+	mock_appearing_extension(FAKE_RENDERER_SERVICE, FALSE);
 	mock_services(NULL);
 	mafw_registry_add_extension(mafw_registry_get_instance(),
 				     extension);
 
-	mockbus_expect(mafw_dbus_method_full(
-		DBUS_SERVICE_DBUS,
-		DBUS_PATH_DBUS,
-		DBUS_INTERFACE_DBUS,
-		"ReleaseName",
-		MAFW_DBUS_STRING("com.nokia.mafw.renderer.mockland.uuid")
-		));
+	mock_disappearing_extension(FAKE_RENDERER_SERVICE, FALSE);
 	mockbus_reply(MAFW_DBUS_UINT32(4));
 	mafw_registry_remove_extension(mafw_registry_get_instance(),
 					extension);
@@ -115,15 +93,7 @@ START_TEST(test_rendererwrapper)
 
 	renderer = mocked_renderer_new("mock-snk", "uuid", Loop);
 
-	mockbus_expect(mafw_dbus_method_full(
-		DBUS_SERVICE_DBUS,
-		DBUS_PATH_DBUS,
-		DBUS_INTERFACE_DBUS,
-		"RequestName",
-		MAFW_DBUS_STRING("com.nokia.mafw.renderer.mockland.uuid"),
-		MAFW_DBUS_UINT32(4)
-		));
-	mockbus_reply(MAFW_DBUS_UINT32(4));
+	mock_appearing_extension(FAKE_RENDERER_SERVICE, FALSE);
 	mock_services(NULL);
 	mafw_registry_add_extension(reg, MAFW_EXTENSION(renderer));
 
@@ -240,15 +210,7 @@ START_TEST(test_renderer_errors)
 
 	renderer = error_renderer_new("error-snk", "uuid", Loop);
 
-	mockbus_expect(mafw_dbus_method_full(
-		DBUS_SERVICE_DBUS,
-		DBUS_PATH_DBUS,
-		DBUS_INTERFACE_DBUS,
-		"RequestName",
-		MAFW_DBUS_STRING("com.nokia.mafw.renderer.mockland.uuid"),
-		MAFW_DBUS_UINT32(4)
-		));
-	mockbus_reply(MAFW_DBUS_UINT32(4));
+	mock_appearing_extension(FAKE_RENDERER_SERVICE, FALSE);
 	mock_services(NULL);
 	mafw_registry_add_extension(MAFW_REGISTRY(reg), MAFW_EXTENSION(renderer));
 
@@ -404,15 +366,7 @@ START_TEST(test_extension)
 	g_signal_connect(renderer, "notify::name", (GCallback)name_changed_cb,
 				NULL);
 	
-	mockbus_expect(mafw_dbus_method_full(
-		DBUS_SERVICE_DBUS,
-		DBUS_PATH_DBUS,
-		DBUS_INTERFACE_DBUS,
-		"RequestName",
-		MAFW_DBUS_STRING("com.nokia.mafw.renderer.mockland.uuid"),
-		MAFW_DBUS_UINT32(4)
-		));
-	mockbus_reply(MAFW_DBUS_UINT32(4));
+	mock_appearing_extension(FAKE_RENDERER_SERVICE, FALSE);
 	mock_services(NULL);
 	mafw_registry_add_extension(reg, MAFW_EXTENSION(renderer));
 	

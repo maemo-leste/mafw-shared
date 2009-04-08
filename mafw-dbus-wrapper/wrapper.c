@@ -144,6 +144,13 @@ static void wrapper_export(gpointer comp)
 			goto err1;
 		}
 	}
+	mafw_dbus_send(Session_bus,
+			mafw_dbus_signal_full(
+					NULL,
+					MAFW_REGISTRY_PATH,
+					MAFW_REGISTRY_INTERFACE,
+					MAFW_REGISTRY_SIGNAL_HELLO,
+					MAFW_DBUS_STRING(service_name)));
 	ecomp = g_new0(ExportedComponent, 1);
 	ecomp->comp = comp;
 	ecomp->connection = Session_bus;

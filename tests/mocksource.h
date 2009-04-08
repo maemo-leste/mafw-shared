@@ -28,6 +28,8 @@
 #include <glib-object.h>
 #include <libmafw/mafw.h>
 #include <libmafw/mafw-source.h>
+#include <dbus/dbus.h>
+
 
 
 typedef struct {
@@ -55,4 +57,15 @@ extern GType mocked_source_get_type(void);
 
 extern gpointer mocked_source_new(const gchar *name, const gchar *uuid,
 				  GMainLoop *mainloop);
+
+DBusMessage *append_browse_res(DBusMessage *replmsg,
+				DBusMessageIter *iter_msg,
+				DBusMessageIter *iter_array,
+				guint browse_id,
+				gint remaining_count, guint index,
+				const gchar *object_id,
+				GHashTable *metadata,
+				const gchar *domain_str,
+				guint errcode,
+				const gchar *err_msg);
 #endif

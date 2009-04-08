@@ -44,6 +44,8 @@
 #define MAFW_DBUS_PROXY_PATH "/com/nokia/mafw/source/mocksource"
 #define MAFW_DBUS_PATH "/com/nokia/mafw/source/mocksource"
 #define MAFW_DBUS_INTERFACE MAFW_SOURCE_INTERFACE
+#define FAKE_SOURCE_NAME "mocksource"
+#define FAKE_SOURCE_SERVICE MAFW_SOURCE_SERVICE ".mockland." FAKE_SOURCE_NAME
 
 static GMainLoop *Loop = NULL;
 
@@ -51,52 +53,6 @@ static gboolean quit_mainloop_on_tout(gpointer user_data)
 {
        g_main_loop_quit(Loop);
        return FALSE;
-}
-
-static DBusMessage *append_browse_res(DBusMessage *replmsg,
-				DBusMessageIter *iter_msg,
-				DBusMessageIter *iter_array,
-				guint browse_id,
-				gint remaining_count, guint index,
-				const gchar *object_id,
-				GHashTable *metadata,
-				const gchar *domain_str,
-				guint errcode,
-				const gchar *err_msg)
-{
-	DBusMessageIter istr;
-	GByteArray *ba = NULL;
-
-	if (!replmsg)
-	{
-		replmsg = dbus_message_new_method_call(MAFW_DBUS_DESTINATION,
-			MAFW_SOURCE_OBJECT "/mocksource",
-			MAFW_SOURCE_INTERFACE,
-			MAFW_PROXY_SOURCE_METHOD_BROWSE_RESULT);
-		dbus_message_iter_init_append(replmsg,
-						iter_msg);
-		dbus_message_iter_append_basic(iter_msg,  DBUS_TYPE_UINT32,
-						&browse_id);
-		dbus_message_iter_open_container(iter_msg, DBUS_TYPE_ARRAY,
-						 "(iusaysus)", iter_array);
-	}
-	dbus_message_iter_open_container(iter_array, DBUS_TYPE_STRUCT, NULL,
-					&istr);
-	
-	ba = mafw_metadata_freeze_bary(metadata);
-	
-	
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_INT32, &remaining_count);
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_UINT32, &index);
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING, &object_id);
-	mafw_dbus_message_append_array(&istr, DBUS_TYPE_BYTE, ba->len,
-						ba->data);
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING, &domain_str);
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_UINT32, &errcode);
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING, &err_msg);
-	g_byte_array_free(ba, TRUE);
-	dbus_message_iter_close_container(iter_array, &istr);
-	return replmsg;
 }
 
 START_TEST(test_export_unexport)
@@ -107,15 +63,7 @@ START_TEST(test_export_unexport)
 	mockbus_reset();
 	wrapper_init();
 
-	mockbus_expect(mafw_dbus_method_full(
-			       DBUS_SERVICE_DBUS,
-			       DBUS_PATH_DBUS,
-			       DBUS_INTERFACE_DBUS,
-			       "RequestName",
-			       MAFW_DBUS_STRING("com.nokia.mafw.source.mockland.mocksource"),
-			       MAFW_DBUS_UINT32(4)
-			       ));
-	mockbus_reply(MAFW_DBUS_UINT32(4));
+	mock_appearing_extension(FAKE_SOURCE_SERVICE, FALSE);
 	mafw_registry_add_extension(mafw_registry_get_instance(),
 				     extension);
 
@@ -152,16 +100,7 @@ START_TEST(test_source_wrapper)
 
 	source = mocked_source_new("mocksource", "mocksource", Loop);
 
-	mockbus_expect(mafw_dbus_method_full(
-			       DBUS_SERVICE_DBUS,
-			       DBUS_PATH_DBUS,
-			       DBUS_INTERFACE_DBUS,
-			       "RequestName",
-			       MAFW_DBUS_STRING("com.nokia.mafw.source.mockland.mocksource"),
-			       MAFW_DBUS_UINT32(4)
-			       ));
-	
-	mockbus_reply(MAFW_DBUS_UINT32(4));
+	mock_appearing_extension(FAKE_SOURCE_SERVICE, FALSE);
 	mafw_registry_add_extension(MAFW_REGISTRY(registry), MAFW_EXTENSION(source));
 
 	/* Browse */
@@ -362,16 +301,7 @@ START_TEST(test_source_errors)
 
 	source = ERROR_SOURCE(error_source_new("mocksource", "mocksource", Loop));
 
-	mockbus_expect(mafw_dbus_method_full(
-					DBUS_SERVICE_DBUS,
-					DBUS_PATH_DBUS,
-					DBUS_INTERFACE_DBUS,
-					"RequestName",
-					MAFW_DBUS_STRING(
-						"com.nokia.mafw.source.mockland.mocksource"),
-					MAFW_DBUS_UINT32(4)
-	       ));
-	mockbus_reply(MAFW_DBUS_UINT32(4));
+	mock_appearing_extension(FAKE_SOURCE_SERVICE, FALSE);
 	mafw_registry_add_extension(MAFW_REGISTRY(registry), MAFW_EXTENSION(source));
 
 	g_set_error(&error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,

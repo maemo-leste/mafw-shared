@@ -69,20 +69,6 @@ static void fsrc_init(Fsrc *y)
 	mafw_extension_add_property(MAFW_EXTENSION(y), "testp", G_TYPE_DOUBLE);
 }
 
-
-/* Proxy does a list_properties at _connect().  Expect that. */
-static void mock_empty_props(void)
-{
-	mockbus_expect(mafw_dbus_method_full(
-					MAFW_DBUS_DESTINATION,
-					MAFW_DBUS_PATH,
-					MAFW_EXTENSION_INTERFACE,
-					MAFW_EXTENSION_METHOD_GET_NAME));
-	mockbus_reply(MAFW_DBUS_STRING("TestName"));
-	mockbus_expect(mafw_dbus_method(MAFW_EXTENSION_METHOD_LIST_PROPERTIES));
-	mockbus_reply(MAFW_DBUS_STRVZ(NULL), MAFW_DBUS_C_ARRAY(UINT32, guint));
-}
-
 START_TEST(test_extension_properties_list)
 {
 	MafwExtension *extension;
@@ -176,7 +162,7 @@ START_TEST(test_gee_properties)
 	
 
 	mockbus_reset();
-	mock_empty_props();
+	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
 	src = mafw_proxy_source_new(UUID, "fake", mafw_registry_get_instance());
 
 	g_value_init(&v, G_TYPE_STRING);
@@ -265,7 +251,7 @@ START_TEST(test_signals)
 	g_value_set_int(&val, 2);
 
 	mockbus_reset();
-	mock_empty_props();
+	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
 	src = mafw_proxy_source_new(UUID, "fake", mafw_registry_get_instance());
 	
 	g_signal_connect(src, "notify::name", (GCallback)name_changed_cb, &cb_called);

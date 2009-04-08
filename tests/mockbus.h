@@ -46,5 +46,10 @@ extern void mockbus_send_stored_reply(void);
 #define mockbus_reply(...)						\
 	mockbus_reply_msg(						\
 		mafw_dbus_reply((void*)0x1, ##__VA_ARGS__, DBUS_TYPE_INVALID))
+#define FAKE_NAME "TESTName"
 
+void mock_disappearing_extension(const gchar *service, gboolean proxy_side);
+void mock_appearing_extension(const gchar *service, gboolean proxy_side);
+void mock_services(const gchar *const *active);
+void mock_empty_props(const gchar *service, const gchar *object);
 #endif

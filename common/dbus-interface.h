@@ -35,6 +35,20 @@
 #define MAFW_OBJECT "/com/nokia/mafw"
 
 /*----------------------------------------------------------------------------
+  Registry
+  ----------------------------------------------------------------------------*/
+#define MAFW_REGISTRY_INTERFACE MAFW_INTERFACE ".registry"
+#define MAFW_REGISTRY_PATH MAFW_OBJECT "/registry"
+
+/**
+ * hello:
+ * @service: the service name of the new extension (%DBUS_TYPE_STRING).
+ *
+ * The HELLO signal, sent when a new extension has been started
+ */
+#define MAFW_REGISTRY_SIGNAL_HELLO "new_extension"
+
+/*----------------------------------------------------------------------------
   Common between renderer and source
   ----------------------------------------------------------------------------*/
 #define MAFW_EXTENSION_INTERFACE MAFW_INTERFACE ".extension"

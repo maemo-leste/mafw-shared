@@ -76,23 +76,6 @@
  */
 
 static GMainLoop *Mainloop;
- 
-/* Proxy does a list_properties at _connect().  Expect that. */
-static void mock_empty_props(void)
-{
-	mockbus_expect(mafw_dbus_method_full(
-					MAFW_DBUS_DESTINATION,
-					MAFW_DBUS_PATH,
-					MAFW_EXTENSION_INTERFACE,
-					MAFW_EXTENSION_METHOD_GET_NAME));
-	mockbus_reply(MAFW_DBUS_STRING("TESTName"));
-	mockbus_expect(mafw_dbus_method_full(
-			       MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
-			       MAFW_EXTENSION_INTERFACE,
-			       MAFW_EXTENSION_METHOD_LIST_PROPERTIES));
-	mockbus_reply(MAFW_DBUS_STRVZ(NULL),
-		      MAFW_DBUS_C_ARRAY(UINT32, guint));
-}
 
 static gboolean play_called;
 
@@ -114,7 +97,7 @@ START_TEST(test_play)
 	MafwProxyRenderer *sp = NULL;
 
 	mockbus_reset();
-	mock_empty_props();
+	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
 	
 	sp = MAFW_PROXY_RENDERER(mafw_proxy_renderer_new(RENDERER_UUID, "fake", mafw_registry_get_instance()));
 	fail_unless(sp != NULL, "Object construction failed");
@@ -210,7 +193,7 @@ START_TEST(test_set_position)
 	guint seconds = 31337;
 
 	mockbus_reset();
-	mock_empty_props();
+	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
 	mockbus_expect(mafw_dbus_method(MAFW_RENDERER_METHOD_SET_POSITION,
 					 MAFW_DBUS_INT32(SeekAbsolute),
 					 MAFW_DBUS_INT32(seconds)));
@@ -234,7 +217,7 @@ START_TEST(test_get_position)
 	MafwProxyRenderer *sp = NULL;
 
 	mockbus_reset();
-	mock_empty_props();
+	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
 	mockbus_expect(mafw_dbus_method(MAFW_RENDERER_METHOD_GET_POSITION));
 	mockbus_reply(MAFW_DBUS_UINT32(31337));
 
@@ -301,7 +284,7 @@ START_TEST(test_get_status)
 	gboolean oid_is_NULL = FALSE;
 
 	mockbus_reset();
-	mock_empty_props();
+	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
 
 	sp = MAFW_PROXY_RENDERER(mafw_proxy_renderer_new(RENDERER_UUID, "fake", mafw_registry_get_instance()));
 	fail_unless(sp != NULL, "Object construction failed");
@@ -364,7 +347,7 @@ START_TEST(test_get_status_invalid)
 	MafwProxyRenderer *sp = NULL;
 
 	mockbus_reset();
-	mock_empty_props();
+	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
 
 	sp = MAFW_PROXY_RENDERER(mafw_proxy_renderer_new(RENDERER_UUID, "fake", mafw_registry_get_instance()));
 	fail_unless(sp != NULL, "Object construction failed");
@@ -453,7 +436,7 @@ START_TEST(test_signals)
 
 	Mainloop = g_main_loop_new(NULL, FALSE);
 	mockbus_reset();
-	mock_empty_props();
+	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
 	sp = MAFW_PROXY_RENDERER(mafw_proxy_renderer_new(RENDERER_UUID, "fake", mafw_registry_get_instance()));
 	fail_unless(sp != NULL, "Object construction failed");
 	g_signal_connect(sp, "state-changed", G_CALLBACK(sp_state_changed),
@@ -533,7 +516,7 @@ START_TEST(test_assign_playlist)
 
 	Mainloop = g_main_loop_new(NULL, FALSE);
 	mockbus_reset();
-	mock_empty_props();
+	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
 	sp = MAFW_PROXY_RENDERER(mafw_proxy_renderer_new(RENDERER_UUID, "fake", mafw_registry_get_instance()));
 	fail_unless(sp != NULL, "Object construction failed");
 	

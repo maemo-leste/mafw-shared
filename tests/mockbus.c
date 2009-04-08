@@ -114,6 +114,8 @@
 #include <libmafw/mafw-metadata-serializer.h>
 
 #include "mockbus.h"
+#include "common/dbus-interface.h"
+#include "common/mafw-dbus.h"
 
 #if 0
 #include <assert.h>
@@ -136,6 +138,9 @@ static void g_queue_clear(GQueue *q)
 	q->length = 0;
 }
 #endif
+
+#define MATCH_STR "type='signal',interface='org.freedesktop.DBus'," \
+			"member='NameOwnerChanged',arg0='%s',arg2=''"
 
 /* Private variables. */
 static GHashTable *object_path_hash;
@@ -529,8 +534,96 @@ static void ckmsg(DBusMessage *m)
 		dbus_message_has_signature(m, dbus_message_get_signature(emsg)),
 		"MOCKBUS: expected different signature");
 	fail_unless(compare_msgs(emsg, m),
-		    "MOCKBUS: message contents are not according to expectations");
+		    "MOCKBUS: message contents are not according to "
+		    "expectations");
 	dbus_message_unref(emsg);
+}
+
+/* When called before instantiating a registry, causes the registry to
+ * `see' the given @active services. */
+void mock_services(const gchar *const *active)
+{
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS,
+					     DBUS_PATH_DBUS,
+					     DBUS_INTERFACE_DBUS,
+					     "ListNames"));
+	mockbus_reply(MAFW_DBUS_STRVZ(active));
+}
+
+void mock_appearing_extension(const gchar *service, gboolean proxy_side)
+{
+	DBusMessage *msg;
+	if (!proxy_side)
+	{
+		mockbus_expect(mafw_dbus_method_full(
+		DBUS_SERVICE_DBUS,
+		DBUS_PATH_DBUS,
+		DBUS_INTERFACE_DBUS,
+		"RequestName",
+		MAFW_DBUS_STRING(service),
+		MAFW_DBUS_UINT32(4)
+		));
+		mockbus_reply(MAFW_DBUS_UINT32(4));
+	}
+	msg = mafw_dbus_signal_full(NULL,
+					MAFW_REGISTRY_PATH,
+					MAFW_REGISTRY_INTERFACE,
+					MAFW_REGISTRY_SIGNAL_HELLO,
+					MAFW_DBUS_STRING(service));
+	if (proxy_side)
+		mockbus_incoming(msg);
+	else
+		mockbus_expect(msg);
+}
+
+void mock_disappearing_extension(const gchar *service, gboolean proxy_side)
+{
+	if (proxy_side)
+	{
+		gchar *matchstr = g_strdup_printf(MATCH_STR, service);
+		mockbus_incoming(
+			mafw_dbus_signal_full(NULL, DBUS_PATH_DBUS,
+					      DBUS_INTERFACE_DBUS,
+					      "NameOwnerChanged",
+					      MAFW_DBUS_STRING(service),
+					      MAFW_DBUS_STRING(service),
+					      MAFW_DBUS_STRING("")));
+		mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS,
+						     DBUS_PATH_DBUS,
+						     DBUS_INTERFACE_DBUS,
+						     "RemoveMatch",
+						     MAFW_DBUS_STRING(matchstr)));
+		g_free(matchstr);
+	}
+	else
+	{
+		mockbus_expect(mafw_dbus_method_full(
+		DBUS_SERVICE_DBUS,
+		DBUS_PATH_DBUS,
+		DBUS_INTERFACE_DBUS,
+		"ReleaseName",
+		MAFW_DBUS_STRING(service)
+		));
+	}
+}
+
+/* Mocks the messages happening at the construction of a extension:
+ * - querying its very very friendly name (and returning FAKE_NAME)
+ * - returning none for the list of runtime properties
+ *
+ * Pass the desired service name and object path as argument.
+ */
+void mock_empty_props(const gchar *service, const gchar *object)
+{
+	mockbus_expect(mafw_dbus_method_full(service, object,
+					     MAFW_EXTENSION_INTERFACE,
+					     MAFW_EXTENSION_METHOD_GET_NAME));
+	mockbus_reply(MAFW_DBUS_STRING(FAKE_NAME));
+	mockbus_expect(mafw_dbus_method_full(service, object,
+					     MAFW_EXTENSION_INTERFACE,
+					     MAFW_EXTENSION_METHOD_LIST_PROPERTIES));
+	mockbus_reply(MAFW_DBUS_STRVZ(NULL),
+		      MAFW_DBUS_C_ARRAY(UINT32, guint));
 }
 
 /* libdbus overrides */

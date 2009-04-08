@@ -44,6 +44,7 @@ LDADD 				= $(CHECKMORE_LIBS) \
 test_util_SOURCES		= test-util.c
 test_plmanager_import_CFLAGS	= $(CFLAGS) $(TOTEMPL_CFLAGS)
 test_plmanager_import_SOURCES	= test-plmngr-import.c \
+				  mocksource.c mocksource.h \
 				  mockbus.c mockbus.h 
 test_plmanager_import_LDADD	= $(top_builddir)/mafw-playlist-daemon/libmafw-playlist-daemon.a \
 				  $(top_builddir)/libmafw-shared/libmafw-shared.la \
@@ -76,7 +77,9 @@ test_proxy_extension_SOURCES 	= mockbus.c mockbus.h test-proxy-extension.c
 test_proxy_extension_LDADD 		= $(top_builddir)/libmafw-shared/libmafw-shared.la \
 				  $(LDADD)
 
-test_proxy_source_SOURCES 	= mockbus.c mockbus.h test-proxy-source.c
+test_proxy_source_SOURCES 	= mockbus.c mockbus.h \
+				  mocksource.c mocksource.h \
+				  test-proxy-source.c
 test_proxy_source_LDADD 	= $(top_builddir)/libmafw-shared/libmafw-shared.la \
 				  $(LDADD)
 

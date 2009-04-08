@@ -33,9 +33,7 @@
 #include <libmafw/mafw-metadata-serializer.h>
 #include <totem-pl-parser.h>
 
-#define FAKE_NAME "TESTName"
-
-#define FAKE_SOURCE_NAME "DEADBEEF"
+#define FAKE_SOURCE_NAME "mocksource"
 
 #define FAKE_SOURCE_SERVICE MAFW_SOURCE_SERVICE ".fake." FAKE_SOURCE_NAME
 #define FAKE_SOURCE_OBJECT MAFW_SOURCE_OBJECT "/" FAKE_SOURCE_NAME
@@ -46,95 +44,6 @@
 
 /* Playlists will be stored in PLS_DIR. */
 #define PLS_DIR			"testplimport"
-
-/* Mocks the messages happening at the construction of a extension:
- * - querying its very very friendly name (and returning FAKE_NAME)
- * - returning none for the list of runtime properties
- *
- * Pass the desired service name and object path as argument.
- */
-static void mock_empty_props(const gchar *service, const gchar *object)
-{
-	mockbus_expect(mafw_dbus_method_full(service, object,
-					     MAFW_EXTENSION_INTERFACE,
-					     MAFW_EXTENSION_METHOD_GET_NAME));
-	mockbus_reply(MAFW_DBUS_STRING(FAKE_NAME));
-	mockbus_expect(mafw_dbus_method_full(service, object,
-					     MAFW_EXTENSION_INTERFACE,
-					     MAFW_EXTENSION_METHOD_LIST_PROPERTIES));
-	mockbus_reply(MAFW_DBUS_STRVZ(NULL),
-		      MAFW_DBUS_C_ARRAY(UINT32, guint));
-}
-
-
-
-/* When called before instantiating a registry, causes the registry to
- * `see' the given @active services. */
-static void mock_services(const gchar *const *active)
-{
-	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS,
-					     DBUS_PATH_DBUS,
-					     DBUS_INTERFACE_DBUS,
-					     "ListNames"));
-	mockbus_reply(MAFW_DBUS_STRVZ(active));
-}
-
-static void mock_appearing_extension(const gchar *service)
-{
-	mockbus_incoming(
-		mafw_dbus_signal_full(NULL, DBUS_PATH_DBUS,
-				      DBUS_INTERFACE_DBUS,
-				      "NameOwnerChanged",
-				      MAFW_DBUS_STRING(service),
-				      MAFW_DBUS_STRING(""),
-				      MAFW_DBUS_STRING(service)));
-}
-
-static DBusMessage *append_browse_res(DBusMessage *replmsg,
-				DBusMessageIter *iter_msg,
-				DBusMessageIter *iter_array,
-				guint browse_id,
-				gint remaining_count, guint index,
-				const gchar *object_id,
-				GHashTable *metadata,
-				const gchar *domain_str,
-				guint errcode,
-				const gchar *err_msg)
-{
-	DBusMessageIter istr;
-	GByteArray *ba = NULL;
-
-	if (!replmsg)
-	{
-		replmsg = dbus_message_new_method_call(MAFW_DBUS_DESTINATION,
-			MAFW_SOURCE_OBJECT "/" FAKE_SOURCE_NAME,
-			MAFW_SOURCE_INTERFACE,
-			MAFW_PROXY_SOURCE_METHOD_BROWSE_RESULT);
-		dbus_message_iter_init_append(replmsg,
-						iter_msg);
-		dbus_message_iter_append_basic(iter_msg,  DBUS_TYPE_UINT32,
-						&browse_id);
-		dbus_message_iter_open_container(iter_msg, DBUS_TYPE_ARRAY,
-						 "(iusaysus)", iter_array);
-	}
-	dbus_message_iter_open_container(iter_array, DBUS_TYPE_STRUCT, NULL,
-					&istr);
-	
-	ba = mafw_metadata_freeze_bary(metadata);
-	
-	
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_INT32, &remaining_count);
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_UINT32, &index);
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING, &object_id);
-	mafw_dbus_message_append_array(&istr, DBUS_TYPE_BYTE, ba->len, ba->data);
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING, &domain_str);
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_UINT32, &errcode);
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING, &err_msg);
-	g_byte_array_free(ba, TRUE);
-	dbus_message_iter_close_container(iter_array, &istr);
-	return replmsg;
-}
-
 
 static gchar *test_uri_list[] = { "file://test1/test1.pls", 
 				  "file://test2/test2.pls",
@@ -208,7 +117,7 @@ START_TEST(test_import_source)
 	mockbus_deliver(NULL);
 
 	/* Lets register a fake-source */
-	mock_appearing_extension(FAKE_SOURCE_SERVICE);
+	mock_appearing_extension(FAKE_SOURCE_SERVICE, TRUE);
 	mock_empty_props(FAKE_SOURCE_SERVICE, FAKE_SOURCE_OBJECT);
 
 	mockbus_incoming(c = mafw_dbus_method_full(MAFW_PLAYLIST_SERVICE,
@@ -504,7 +413,7 @@ START_TEST(test_cancel_import)
 	mockbus_finish();
 
 	/* Lets register a fake-source */
-	mock_appearing_extension(FAKE_SOURCE_SERVICE);
+	mock_appearing_extension(FAKE_SOURCE_SERVICE, TRUE);
 	mock_empty_props(FAKE_SOURCE_SERVICE, FAKE_SOURCE_OBJECT);
 	
 	/* Cancel, before the get-metadata-res returns */

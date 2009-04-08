@@ -53,6 +53,8 @@
 #undef  G_LOG_DOMAIN
 #define G_LOG_DOMAIN "mafw-shared"
 
+#define MATCH_STR "type='signal',interface='org.freedesktop.DBus'," \
+			"member='NameOwnerChanged',arg0='%s',arg2=''"
 /* Private variables */
 static DBusConnection *connection = NULL;
 
@@ -102,6 +104,7 @@ static void create_proxy(MafwRegistry *registry,
 {
 	GType pxtype;
 	gchar *plugin, *uuid;
+	
 
 	/* Extensions are exported using the name:
 	 *   com.nokia.mafw.{renderer,source}.<plugin>.<uuid> */
@@ -110,9 +113,13 @@ static void create_proxy(MafwRegistry *registry,
 		/* It is possible that $svc is not a mafw-thing after all,
 		 * because we just get whatever NameOwnerChanged. */
 		goto out;
+	
 	if (!mafw_registry_get_extension_by_uuid(MAFW_REGISTRY(registry),
 						  uuid))
 	{
+		DBusError err;
+		gchar *matchstr;
+		dbus_error_init(&err);
 		if (pxtype == MAFW_TYPE_PROXY_SOURCE)
 			mafw_proxy_source_new(uuid,
 					      plugin,
@@ -126,6 +133,15 @@ static void create_proxy(MafwRegistry *registry,
 		   added automatically, soon after it collected all the needed
 		   informations about the wrapped object */
 		g_debug("proxy added for '%s'", svc);
+		matchstr = g_strdup_printf(MATCH_STR, svc);
+		dbus_bus_add_match(connection, matchstr, &err);
+		
+		if (dbus_error_is_set(&err))
+		{
+                	g_critical("Unable to add match: %s", matchstr);
+			dbus_error_free(&err);
+		}
+		g_free(matchstr);
 	}
 out:	if (plugin)
 		g_free(plugin);
@@ -139,9 +155,14 @@ static DBusHandlerResult handle_message(DBusConnection *conn,
 					DBusMessage *msg,
 					gpointer registry)
 {
-	/* If you need to handle more session bus signals don't forget
-	 * to update dbus_bus_add_match() in mafw_shared_init(). */
-	if (dbus_message_is_signal(msg, DBUS_INTERFACE_DBUS,
+	if (dbus_message_is_signal(msg, MAFW_REGISTRY_INTERFACE,
+				   MAFW_REGISTRY_SIGNAL_HELLO))
+	{
+		gchar *name;
+		mafw_dbus_parse(msg,
+				 DBUS_TYPE_STRING, &name);
+		create_proxy(registry, name);
+	} else if (dbus_message_is_signal(msg, DBUS_INTERFACE_DBUS,
 				   "NameOwnerChanged"))
 	{
 		gchar *name, *oldname, *newname;
@@ -163,6 +184,7 @@ static DBusHandlerResult handle_message(DBusConnection *conn,
 		} else if (*oldname) {
 			gchar *uuid;
 			gpointer extension;
+			gchar *matchstr;
 
 			uuid = NULL;
 			if (!split_servicename(name, NULL, NULL, &uuid))
@@ -177,6 +199,9 @@ static DBusHandlerResult handle_message(DBusConnection *conn,
 					MAFW_REGISTRY(registry),
 					extension);
 			}
+			matchstr = g_strdup_printf(MATCH_STR, name);
+			dbus_bus_remove_match(connection, matchstr, NULL);
+			g_free(matchstr);
 		}
 	}
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
@@ -233,8 +258,7 @@ gboolean mafw_shared_init(MafwRegistry *reg, GError **error)
 
 	/* A match is required in order to receive session bus signals. */
 	dbus_bus_add_match(connection, "type='signal',"
-			   "interface='org.freedesktop.DBus',"
-			   "member='NameOwnerChanged'", &err);
+			   "interface='" MAFW_REGISTRY_INTERFACE "'", &err);
         if (dbus_error_is_set(&err))
                 goto error_unref_conn;
 

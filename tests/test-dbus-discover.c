@@ -64,64 +64,10 @@
 #define FAKE_PLUGIN_NAME "test_plugin"
 #define FAKE_PLUGIN_SERVICE MAFW_PLUGIN_SERVICE "." FAKE_PLUGIN_NAME
 
-#define FAKE_NAME "TESTName"
-
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "test-dbus-discover"
 
 static GMainLoop *Mainloop;
-
-/* Mocks the messages happening at the construction of a extension:
- * - querying its very very friendly name (and returning FAKE_NAME)
- * - returning none for the list of runtime properties
- *
- * Pass the desired service name and object path as argument.
- */
-static void mock_empty_props(const gchar *service, const gchar *object)
-{
-	mockbus_expect(mafw_dbus_method_full(service, object,
-					     MAFW_EXTENSION_INTERFACE,
-					     MAFW_EXTENSION_METHOD_GET_NAME));
-	mockbus_reply(MAFW_DBUS_STRING(FAKE_NAME));
-	mockbus_expect(mafw_dbus_method_full(service, object,
-					     MAFW_EXTENSION_INTERFACE,
-					     MAFW_EXTENSION_METHOD_LIST_PROPERTIES));
-	mockbus_reply(MAFW_DBUS_STRVZ(NULL),
-		      MAFW_DBUS_C_ARRAY(UINT32, guint));
-}
-
-/* When called before instantiating a registry, causes the registry to
- * `see' the given @active services. */
-static void mock_services(const gchar *const *active)
-{
-	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS,
-					     DBUS_PATH_DBUS,
-					     DBUS_INTERFACE_DBUS,
-					     "ListNames"));
-	mockbus_reply(MAFW_DBUS_STRVZ(active));
-}
-
-static void mock_appearing_extension(const gchar *service)
-{
-	mockbus_incoming(
-		mafw_dbus_signal_full(NULL, DBUS_PATH_DBUS,
-				      DBUS_INTERFACE_DBUS,
-				      "NameOwnerChanged",
-				      MAFW_DBUS_STRING(service),
-				      MAFW_DBUS_STRING(""),
-				      MAFW_DBUS_STRING(service)));
-}
-
-static void mock_disappearing_extension(const gchar *service)
-{
-	mockbus_incoming(
-		mafw_dbus_signal_full(NULL, DBUS_PATH_DBUS,
-				      DBUS_INTERFACE_DBUS,
-				      "NameOwnerChanged",
-				      MAFW_DBUS_STRING(service),
-				      MAFW_DBUS_STRING(service),
-				      MAFW_DBUS_STRING("")));
-}
 
 START_TEST(test_construct_nonempty)
 {
@@ -204,9 +150,9 @@ START_TEST(test_registration)
 	g_signal_connect(reg, "renderer-removed",
 			 G_CALLBACK(renderer_cb), &nremoved);
 
-	mock_appearing_extension(FAKE_RENDERER_SERVICE);
+	mock_appearing_extension(FAKE_RENDERER_SERVICE, TRUE);
 	mock_empty_props(FAKE_RENDERER_SERVICE, FAKE_RENDERER_OBJECT);
-	mock_appearing_extension(FAKE_SOURCE_SERVICE);
+	mock_appearing_extension(FAKE_SOURCE_SERVICE, TRUE);
 	mock_empty_props(FAKE_SOURCE_SERVICE, FAKE_SOURCE_OBJECT);
 	g_main_loop_run(Mainloop);
 
@@ -216,8 +162,8 @@ START_TEST(test_registration)
 
 	/* 2. the previous two extensions go away */
 	nadded = nremoved = 0;
-	mock_disappearing_extension(FAKE_RENDERER_SERVICE);
-	mock_disappearing_extension(FAKE_SOURCE_SERVICE);
+	mock_disappearing_extension(FAKE_RENDERER_SERVICE, TRUE);
+	mock_disappearing_extension(FAKE_SOURCE_SERVICE, TRUE);
 	g_main_loop_run(Mainloop);
 
 	fail_unless(nadded == 0 && nremoved == 2);
@@ -227,12 +173,12 @@ START_TEST(test_registration)
 	/* 3. cope with invalid messages */
 	nadded = nremoved = 0;
 	checkmore_ignore("extension with invalid service name*");
-	mock_appearing_extension(MAFW_RENDERER_SERVICE);
-	mock_appearing_extension(MAFW_RENDERER_SERVICE "..");
-	mock_appearing_extension(MAFW_RENDERER_SERVICE "...");
-	mock_appearing_extension(MAFW_RENDERER_SERVICE "..alpha.beta");
-	mock_appearing_extension(MAFW_RENDERER_SERVICE ".parara");
-	mock_appearing_extension(MAFW_SOURCE_SERVICE ".parara.");
+	mock_appearing_extension(MAFW_RENDERER_SERVICE, TRUE);
+	mock_appearing_extension(MAFW_RENDERER_SERVICE "..", TRUE);
+	mock_appearing_extension(MAFW_RENDERER_SERVICE "...", TRUE);
+	mock_appearing_extension(MAFW_RENDERER_SERVICE "..alpha.beta", TRUE);
+	mock_appearing_extension(MAFW_RENDERER_SERVICE ".parara", TRUE);
+	mock_appearing_extension(MAFW_SOURCE_SERVICE ".parara.", TRUE);
 	g_timeout_add(500, (GSourceFunc)g_main_loop_quit, Mainloop);
 	g_main_loop_run(Mainloop);
 	fail_unless(nadded == 0 && nremoved == 0);
