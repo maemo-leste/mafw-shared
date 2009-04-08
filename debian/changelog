@@ -1,8 +1,9 @@
-mafw-shared (0.1.2009.13-7) unstable; urgency=low
+mafw-shared (0.1.2009.16-1) unstable; urgency=low
 
-  * Version update.
+  * MAFW Shared, pre-release 0.2009.16-1
+  * Unit test disabled by default for system integration purposes.
 
- -- Mika Tapojärvi <ext-mika.tapojarvi@nokia.com>  Tue, 07 Apr 2009 09:18:46 +0300
+ -- Mika Tapojärvi <ext-mika.tapojarvi@nokia.com>  Wed, 08 Apr 2009 12:15:14 +0300
 
 mafw-shared (0.1.2009.13-5) unstable; urgency=low
 
