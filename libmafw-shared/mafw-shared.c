@@ -180,7 +180,7 @@ static DBusHandlerResult handle_message(DBusConnection *conn,
 			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 
 		if (*newname) {
-			create_proxy(registry, name);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		} else if (*oldname) {
 			gchar *uuid;
 			gpointer extension;

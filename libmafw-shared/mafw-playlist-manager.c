@@ -244,7 +244,9 @@ static void mafw_playlist_manager_init(MafwPlaylistManager *self)
 			g_error("dbus_bus_add_match: %s", dbe.name);
 		dbus_bus_add_match(dbus, "type='signal',"
 				   "interface='" DBUS_INTERFACE_DBUS "',"
-				   "member='NameOwnerChanged'",
+				   "member='NameOwnerChanged',"
+				   "arg0='" MAFW_PLAYLIST_SERVICE "',"
+				   "arg1=''",
 				   &dbe);
 		if (dbus_error_is_set(&dbe))
 			g_error("dbus_bus_add_match: %s", dbe.name);
