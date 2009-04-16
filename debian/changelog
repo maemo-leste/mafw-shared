@@ -1,3 +1,17 @@
+mafw-shared (0.1.2009.17-2) unstable; urgency=low
+
+  * Version increased.
+
+ -- Mika Tapojärvi <ext-mika.tapojarvi@nokia.com>  Thu, 16 Apr 2009 11:06:07 +0300
+
+mafw-shared (0.1.2009.17-1) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.17-1
+  * Remove remaining wrong NameOwnerChanged signal handlers
+  * Do not use NameOwnerChanged signal for detecting extension-startup
+
+ -- Mika Tapojärvi <mika.tapojarvi@sse.fi>  Wed, 15 Apr 2009 16:01:39 +0300
+
 mafw-shared (0.1.2009.16-2) unstable; urgency=low
 
   * Version increased.
