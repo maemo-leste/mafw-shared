@@ -254,6 +254,70 @@ static void got_metadata(MafwSource *self, const gchar *object_id,
 	mafw_dbus_oci_free(info);
 }
 
+/* Appends the metadata-results to the reply-msg */
+static void _append_ob_mdata(gchar *key, GHashTable *metadata,
+					DBusMessageIter *iter_array)
+{
+	GByteArray *ba = NULL;
+	DBusMessageIter istr;
+
+	dbus_message_iter_open_container(iter_array,
+					DBUS_TYPE_STRUCT,
+					NULL, &istr);
+
+	ba = mafw_metadata_freeze_bary(metadata);
+	dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING,
+						&key);
+	mafw_dbus_message_append_array(&istr, DBUS_TYPE_BYTE,
+					ba->len,
+					ba->data);
+	dbus_message_iter_close_container(iter_array,
+						&istr);
+	g_byte_array_free(ba, TRUE);
+}
+
+static void got_metadatas(MafwSource *self,
+			 GHashTable *metadatas, gpointer user_data,
+			 const GError *error)
+{
+	MafwDBusOpCompletedInfo *info;
+	
+	DBusMessage *replmsg;
+	const gchar *domain_str = "";
+	guint errcode = 0;
+	const gchar *err_msg = "";
+	DBusMessageIter iter_array, iter_msg;
+
+	info = (MafwDBusOpCompletedInfo *)user_data;
+	g_assert(info != NULL);
+	
+	replmsg = dbus_message_new_method_return(info->msg);
+	dbus_message_iter_init_append(replmsg,
+					&iter_msg);
+	if (metadatas)
+	{
+		dbus_message_iter_open_container(&iter_msg, DBUS_TYPE_ARRAY,
+						 "(say)", &iter_array);
+
+		g_hash_table_foreach(metadatas, (GHFunc)_append_ob_mdata,
+					&iter_array);
+
+		dbus_message_iter_close_container(&iter_msg, &iter_array);
+	}
+	
+	if (error)
+	{
+		domain_str = g_quark_to_string(error->domain);
+		errcode = error->code;
+		err_msg = error->message;
+	}
+	dbus_message_iter_append_basic(&iter_msg, DBUS_TYPE_STRING, &domain_str);
+	dbus_message_iter_append_basic(&iter_msg, DBUS_TYPE_UINT32, &errcode);
+	dbus_message_iter_append_basic(&iter_msg, DBUS_TYPE_STRING, &err_msg);
+
+	mafw_dbus_send(info->con, replmsg);
+	mafw_dbus_oci_free(info);
+}
 
 /* Called when ->create_object() finished. */
 static void object_created(MafwSource *src, const gchar *objectid,
@@ -438,6 +502,22 @@ DBusHandlerResult handle_source_msg(DBusConnection *conn,
 		mafw_source_get_metadata(source, objectid, mkeys,
 					 got_metadata, oci);
 		g_strfreev((gchar **)mkeys);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else if (dbus_message_has_member(msg,
+					   MAFW_SOURCE_METHOD_GET_METADATAS)) {
+		const gchar **objectids;
+		const gchar **mkeys;
+		MafwDBusOpCompletedInfo *oci;
+
+		mafw_dbus_parse(msg,
+				MAFW_DBUS_TYPE_STRVZ, &objectids,
+				MAFW_DBUS_TYPE_STRVZ, &mkeys);
+		oci = mafw_dbus_oci_new(conn, msg);
+		/* TODO: Remove error (NULL) from MafwSource API */
+		mafw_source_get_metadatas(source, objectids, mkeys,
+					 got_metadatas, oci);
+		g_strfreev((gchar **)mkeys);
+		g_strfreev((gchar **)objectids);
 		return DBUS_HANDLER_RESULT_HANDLED;
 	} else if (dbus_message_has_member(msg,
 					   MAFW_SOURCE_METHOD_SET_METADATA)) {

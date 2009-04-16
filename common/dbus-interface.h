@@ -319,6 +319,27 @@
 #define MAFW_SOURCE_METHOD_GET_METADATA "get_metadata"
 
 /**
+ * get_metadatas:
+ * @object_ids: the list of object id:s to query (array of
+ *              %DBUS_TYPE_STRING).
+ * @metadata_keys: list of metadata keys to return (array of
+ *                 %DBUS_TYPE_STRING).
+ * @domain: In case of error, the error domain (%DBUS_TYPE_STRING)
+ * @code: In case of error, the error code (%DBUS_TYPE_INT32)
+ * @message: In case of error, the error message (%DBUS_TYPE_STRING)
+ *
+ * Gets metadataS of given objects.
+ * reply: %DBUS_MESSAGE_TYPE_METHOD_RETURN
+ * @outargs: a %DBUS_TYPE_ARRAY of %DBUS_TYPE_STRUCT of object-ids
+ * (%DBUS_TYPE_STRING) and its metadata (%MAFW_DBUS_TYPE_METADATA).
+ * @domain_str: error domain or empty string if error was NULL(%DBUS_TYPE_STRING)
+ * @error_code: error code(%DBUS_TYPE_INT32)
+ * @error_str: error message or empty string if error was NULL(%DBUS_TYPE_STRING)
+ */
+#define MAFW_SOURCE_METHOD_GET_METADATAS "get_metadatas"
+
+
+/**
  * set_metadata: %DBUS_MESSAGE_TYPE_METHOD
  * @object_id:   objectid of the object whose metadata is edited
  *            (%DBUS_TYPE_STRING)

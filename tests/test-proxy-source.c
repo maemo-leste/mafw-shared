@@ -215,6 +215,172 @@ START_TEST(test_metadata)
 }
 END_TEST
 
+static void _metadatas_cb(MafwSource *self, GHashTable *metadatas,
+				gboolean error_state, const GError *error)
+{
+	GHashTable *cur_md;
+	GValue *val;
+	fail_if(g_hash_table_size(metadatas) != 2);
+	cur_md = g_hash_table_lookup(metadatas, "testobject");
+	fail_if(!cur_md);
+	fail_if(g_hash_table_size(cur_md) != 1);
+	val = mafw_metadata_first(cur_md, "title");
+	fail_if(val == NULL);
+	cur_md = g_hash_table_lookup(metadatas, "testobject1");
+	fail_if(!cur_md);
+	fail_if(g_hash_table_size(cur_md) != 1);
+	val = mafw_metadata_first(cur_md, "title");
+	fail_if(val == NULL);
+	if (!error_state)
+	{
+		fail_if(error != NULL);
+	}
+	else
+	{
+		fail_if(error == NULL);
+		fail_if(error->code != 10);
+		fail_if(strcmp(error->message, METADATAS_ERROR_MSG) != 0);
+	}
+}
+
+static void _metadatas_err_cb(MafwSource *self, GHashTable *metadatas,
+				gpointer udat, const GError *error)
+{
+	fail_if(error == NULL);
+	fail_if(error->code != 10);
+	fail_if(strcmp(error->message, METADATAS_ERROR_MSG) != 0);
+	fail_if(metadatas != NULL);
+}
+
+
+START_TEST(test_metadatas)
+{
+	MafwProxySource *sp = NULL;
+	const gchar *const *metadata_keys = NULL;
+	GHashTable *metadata;
+	DBusMessage *req;
+	const gchar *objlist[] = {"testobject", "testobject1", "testobject2",
+					NULL};
+	
+
+	metadata_keys = MAFW_SOURCE_LIST("title");
+	metadata = mockbus_mkmeta("title", "More than words", NULL);
+
+	mockbus_reset();
+	
+	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
+	
+	mockbus_expect(req =
+		mafw_dbus_method(MAFW_SOURCE_METHOD_GET_METADATAS,
+				 MAFW_DBUS_C_STRVZ("testobject", "testobject1", 
+							"testobject2"),
+				 MAFW_DBUS_C_STRVZ("title")));
+
+	mockbus_reply_msg(mdatas_repl(req, objlist, metadata, FALSE));
+
+
+	sp = MAFW_PROXY_SOURCE(mafw_proxy_source_new(SOURCE_UUID, "fake",
+					mafw_registry_get_instance()));
+	fail_unless(sp != NULL, "Object construction failed");
+
+	mafw_source_get_metadatas(MAFW_SOURCE(sp), objlist,
+				metadata_keys,
+				(MafwSourceMetadataResultsCb)_metadatas_cb,
+				(gpointer)FALSE);
+
+
+	mockbus_expect(req =
+		mafw_dbus_method(MAFW_SOURCE_METHOD_GET_METADATAS,
+				 MAFW_DBUS_C_STRVZ("testobject", "testobject1", 
+							"testobject2"),
+				 MAFW_DBUS_C_STRVZ("title")));
+
+	mockbus_reply_msg(mdatas_repl(req, objlist, metadata, TRUE));
+
+	mafw_source_get_metadatas(MAFW_SOURCE(sp), objlist,
+				metadata_keys,
+				(MafwSourceMetadataResultsCb)_metadatas_cb,
+				(gpointer)TRUE);
+
+
+	mafw_metadata_release(metadata);
+	
+	mockbus_expect(req =
+		mafw_dbus_method(MAFW_SOURCE_METHOD_GET_METADATAS,
+				 MAFW_DBUS_C_STRVZ("testobject", "testobject1", 
+							"testobject2"),
+				 MAFW_DBUS_C_STRVZ("title")));
+
+	mockbus_reply_msg(mdatas_repl(req, objlist, NULL, TRUE));
+	mafw_source_get_metadatas(MAFW_SOURCE(sp), objlist,
+				metadata_keys,
+				(MafwSourceMetadataResultsCb)_metadatas_err_cb,
+				NULL);
+
+	/* Error */
+	mockbus_expect(req =
+		mafw_dbus_method(MAFW_SOURCE_METHOD_GET_METADATAS,
+				 MAFW_DBUS_C_STRVZ("testobject", "testobject1", 
+							"testobject2"),
+				 MAFW_DBUS_C_STRVZ("title")));
+
+	mockbus_error(MAFW_SOURCE_ERROR, 10, METADATAS_ERROR_MSG);
+
+	mafw_source_get_metadatas(MAFW_SOURCE(sp), objlist,
+				metadata_keys,
+				(MafwSourceMetadataResultsCb)_metadatas_err_cb,
+				NULL);
+
+	mockbus_finish();
+}
+END_TEST
+
+static DBusMessage *append_browse_res(DBusMessage *replmsg,
+				DBusMessageIter *iter_msg,
+				DBusMessageIter *iter_array,
+				guint browse_id,
+				gint remaining_count, guint index,
+				const gchar *object_id,
+				GHashTable *metadata,
+				const gchar *domain_str,
+				guint errcode,
+				const gchar *err_msg)
+{
+	DBusMessageIter istr;
+	GByteArray *ba = NULL;
+
+	if (!replmsg)
+	{
+		replmsg = dbus_message_new_method_call(MAFW_DBUS_DESTINATION,
+			MAFW_DBUS_PATH,
+			MAFW_SOURCE_INTERFACE,
+			MAFW_PROXY_SOURCE_METHOD_BROWSE_RESULT);
+		dbus_message_iter_init_append(replmsg,
+						iter_msg);
+		dbus_message_iter_append_basic(iter_msg,  DBUS_TYPE_UINT32, &browse_id);
+		dbus_message_iter_open_container(iter_msg, DBUS_TYPE_ARRAY,
+						 "(iusaysus)", iter_array);
+	}
+	dbus_message_iter_open_container(iter_array, DBUS_TYPE_STRUCT, NULL,
+					&istr);
+	
+	ba = mafw_metadata_freeze_bary(metadata);
+	
+	
+	dbus_message_iter_append_basic(&istr, DBUS_TYPE_INT32,
+						&remaining_count);
+	dbus_message_iter_append_basic(&istr, DBUS_TYPE_UINT32, &index);
+	dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING, &object_id);
+	mafw_dbus_message_append_array(&istr, DBUS_TYPE_BYTE, ba->len,
+						ba->data);
+	dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING, &domain_str);
+	dbus_message_iter_append_basic(&istr, DBUS_TYPE_UINT32, &errcode);
+	dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING, &err_msg);
+	g_byte_array_free(ba, TRUE);
+	dbus_message_iter_close_container(iter_array, &istr);
+	return replmsg;
+}
+
 START_TEST(test_browse)
 {
 	MafwProxySource *sp = NULL;
@@ -794,6 +960,7 @@ static Suite *mafw_proxy_source_suite_new(void)
 					      "Cancel invalid browse session",
 					      test_cancel_browse_invalid), 5);
 	checkmore_add_tcase(suite, "Metadata", test_metadata);
+	checkmore_add_tcase(suite, "Metadatas", test_metadatas);
 	checkmore_add_tcase(suite, "Create object",  test_object_creation);
 	checkmore_add_tcase(suite, "Destroy object", test_object_destruction);
 	checkmore_add_tcase(suite, "Set metadata", test_set_metadata);

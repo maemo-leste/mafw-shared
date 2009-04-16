@@ -111,6 +111,35 @@ static void get_metadata(MafwSource *self,
 
 }
 
+static void get_metadatas(MafwSource *self,
+			     const gchar **object_ids,
+			     const gchar *const *mdkeys,
+			     MafwSourceMetadataResultsCb callback,
+			     gpointer user_data)
+{
+	MockedSource* ms = MOCKED_SOURCE(self);
+
+	g_assert(object_ids && object_ids[0] && object_ids[1] && !object_ids[2]);
+	if (callback != NULL)
+	{
+		GHashTable* md = mafw_metadata_new();
+		GHashTable *mdatas = g_hash_table_new_full(g_str_hash,
+						g_str_equal,
+						NULL,
+						(GDestroyNotify)mafw_metadata_release);
+		mafw_metadata_add_str(md, "title", "Easy");
+		g_hash_table_insert(mdatas, "testobject1", md);
+		g_hash_table_insert(mdatas, "testobject", md);
+		g_hash_table_ref(md);
+		callback(self, mdatas, user_data, NULL);
+		g_hash_table_unref(mdatas);
+	}
+
+	ms->get_metadatas_called++;
+	quit_main_loop(self, G_STRFUNC);
+
+}
+
 static void set_metadata(MafwSource *self, const gchar *object_id,
 			     GHashTable *metadata,
 			     MafwSourceMetadataSetCb callback,
@@ -171,6 +200,7 @@ static void mocked_source_class_init(MockedSourceClass *klass)
 	sclass->cancel_browse = cancel_browse;
 
 	sclass->get_metadata = get_metadata;
+	sclass->get_metadatas = get_metadatas;
 	sclass->set_metadata = set_metadata;
 
 	sclass->create_object = create_object;
@@ -239,5 +269,60 @@ DBusMessage *append_browse_res(DBusMessage *replmsg,
 	dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING, &err_msg);
 	g_byte_array_free(ba, TRUE);
 	dbus_message_iter_close_container(iter_array, &istr);
+	return replmsg;
+}
+
+DBusMessage *mdatas_repl(DBusMessage *req, const gchar **objlist,
+					GHashTable *metadata,
+					gboolean add_error)
+{
+	DBusMessage *replmsg;
+	GByteArray *ba = NULL;
+	const gchar *domain_str = "";
+	guint errcode = 0;
+	const gchar *err_msg = "";
+	DBusMessageIter iter_array, iter_msg, istr;
+	
+	replmsg = dbus_message_new_method_return(req);
+	dbus_message_iter_init_append(replmsg,
+					&iter_msg);
+	if (metadata)
+	{
+
+		dbus_message_iter_open_container(&iter_msg, DBUS_TYPE_ARRAY,
+						 "(say)", &iter_array);
+
+		dbus_message_iter_open_container(&iter_array, DBUS_TYPE_STRUCT,
+					NULL, &istr);
+
+		ba = mafw_metadata_freeze_bary(metadata);
+	
+	
+		dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING,
+						&objlist[0]);
+		mafw_dbus_message_append_array(&istr, DBUS_TYPE_BYTE, ba->len,
+						ba->data);
+		dbus_message_iter_close_container(&iter_array, &istr);
+	
+		dbus_message_iter_open_container(&iter_array, DBUS_TYPE_STRUCT,
+					NULL, &istr);	
+		dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING,
+							&objlist[1]);
+		mafw_dbus_message_append_array(&istr, DBUS_TYPE_BYTE, ba->len,
+						ba->data);
+		dbus_message_iter_close_container(&iter_array, &istr);
+		g_byte_array_free(ba, TRUE);
+		dbus_message_iter_close_container(&iter_msg, &iter_array);
+	}
+	
+	if (add_error)
+	{
+		domain_str = "TESTdomain";
+		errcode = 10;
+		err_msg = METADATAS_ERROR_MSG;
+	}
+	dbus_message_iter_append_basic(&iter_msg, DBUS_TYPE_STRING, &domain_str);
+	dbus_message_iter_append_basic(&iter_msg, DBUS_TYPE_UINT32, &errcode);
+	dbus_message_iter_append_basic(&iter_msg, DBUS_TYPE_STRING, &err_msg);
 	return replmsg;
 }

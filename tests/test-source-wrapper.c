@@ -241,6 +241,16 @@ START_TEST(test_source_wrapper)
 	mockbus_deliver(NULL);
 	fail_unless(source->get_metadata_called == 1);
 
+	/* Get metadatas */
+	mockbus_incoming(c = mafw_dbus_method(MAFW_SOURCE_METHOD_GET_METADATAS,
+					  MAFW_DBUS_C_STRVZ("testobject", "testobject2"),
+					  MAFW_DBUS_C_STRVZ("title", "artist")));
+
+	mockbus_expect(mdatas_repl(c, objlist, metadata, FALSE));
+
+	mockbus_deliver(NULL);
+	fail_unless(source->get_metadata_called == 1);
+
 	/* Set metadata */
 	mockbus_incoming(c = mafw_dbus_method(MAFW_SOURCE_METHOD_SET_METADATA,
 				      MAFW_DBUS_STRING("testobject"),

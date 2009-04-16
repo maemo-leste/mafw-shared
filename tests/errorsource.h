@@ -42,6 +42,7 @@ typedef struct {
 	MafwSource parent;
 
 	int browse_called, cancel_browse_called, get_metadata_called,
+		get_metadatas_called,
 		set_metadata_called, create_object_called,
 		destroy_object_called;
 

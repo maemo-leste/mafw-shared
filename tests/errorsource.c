@@ -102,6 +102,36 @@ static void get_metadata(MafwSource *self,
 	quit_main_loop(self, G_STRFUNC);
 }
 
+static void get_metadatas(MafwSource *self,
+			     const gchar **object_ids,
+			     const gchar *const *metadata,
+			     MafwSourceMetadataResultsCb callback,
+			     gpointer user_data)
+{
+	ErrorSource* es = ERROR_SOURCE(self);
+
+	g_assert(object_ids && object_ids[0] && object_ids[1] && !object_ids[2]);
+	if (callback != NULL)
+	{
+		GError* error = NULL;
+		GHashTable* md = mafw_metadata_new();
+		GHashTable *mdatas = g_hash_table_new_full(g_str_hash,
+						g_str_equal,
+						NULL,
+						(GDestroyNotify)mafw_metadata_release);
+		g_set_error(&error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,
+			    "Error source fails in everything it does.");
+		mafw_metadata_add_str(md, "title", "Easy");
+		g_hash_table_insert(mdatas, "testobject1", md);
+		g_hash_table_insert(mdatas, "testobject", md);
+		g_hash_table_ref(md);
+		callback(self, mdatas, user_data, error);
+		g_hash_table_unref(mdatas);
+	}	
+	es->get_metadatas_called++;
+	quit_main_loop(self, G_STRFUNC);
+}
+
 static void set_metadata(MafwSource *self, const gchar *object_id,
 			     GHashTable *metadata,
 			     MafwSourceMetadataSetCb callback,
@@ -179,6 +209,7 @@ static void error_source_class_init(ErrorSourceClass *klass)
 	sclass->cancel_browse = cancel_browse;
 
 	sclass->get_metadata = get_metadata;
+	sclass->get_metadatas = get_metadatas;
 	sclass->set_metadata = set_metadata;
 
 	sclass->create_object = create_object;

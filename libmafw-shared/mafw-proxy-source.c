@@ -62,6 +62,7 @@ typedef struct {
 	union {
 		gpointer cb;
 		MafwSourceMetadataResultCb got_metadata_cb;
+		MafwSourceMetadataResultsCb got_metadatas_cb;
 		MafwSourceObjectCreatedCb object_created_cb;
 		MafwSourceObjectDestroyedCb object_destroyed_cb;
 		MafwSourceMetadataSetCb metadata_set_cb;
@@ -492,6 +493,111 @@ static void mafw_proxy_source_get_metadata(MafwSource *self,
 				     rri, (gpointer)free_reply_info_and_oid);
 }
 
+/* MafwSource::get_metadatas */
+static void got_metadatas(DBusPendingCall *pendelum, RequestReplyInfo *info)
+{
+	GError *error;
+	DBusMessage *msg;
+
+	msg = dbus_pending_call_steal_reply(pendelum);
+	if (!(error = mafw_dbus_is_error(msg, MAFW_SOURCE_ERROR))) {
+		gchar *object_id;
+		GHashTable *cur_metadata, *metadatas = NULL;
+		DBusMessageIter imsg, iary, istr;
+		GError *error = NULL;
+		gchar *domain_str;
+		gint code;
+		gchar *message;
+		
+		dbus_message_iter_init(msg, &imsg);
+		if (dbus_message_iter_get_arg_type(&imsg) == DBUS_TYPE_ARRAY)
+		{
+			dbus_message_iter_recurse(&imsg, &iary);
+			metadatas = g_hash_table_new_full(g_str_hash,
+						g_str_equal,
+						(GDestroyNotify)g_free,
+						(GDestroyNotify)mafw_metadata_release);
+
+			while (dbus_message_iter_get_arg_type(&iary) !=
+						DBUS_TYPE_INVALID)
+			{
+				dbus_message_iter_recurse(&iary, &istr);
+				dbus_message_iter_get_basic(&istr, &object_id);
+				dbus_message_iter_next(&istr);
+				mafw_dbus_message_parse_metadata(&istr,
+							&cur_metadata);
+				g_hash_table_insert(metadatas, g_strdup(object_id),
+						cur_metadata);
+				dbus_message_iter_next(&iary);
+			}
+			dbus_message_iter_next(&imsg);
+		}
+		dbus_message_iter_get_basic(&imsg, &domain_str);
+		dbus_message_iter_next(&imsg);
+		dbus_message_iter_get_basic(&imsg, &code);
+		dbus_message_iter_next(&imsg);
+		dbus_message_iter_get_basic(&imsg, &message);
+		if (domain_str && domain_str[0])
+				g_set_error(&error, 
+					g_quark_from_string(domain_str),
+					    code, "%s", message);
+
+		info->got_metadatas_cb(info->src,
+				      metadatas,
+				      info->cbdata, error);
+		if (metadatas)
+			g_hash_table_unref(metadatas);
+	} else {
+		info->got_metadatas_cb(info->src,
+				      NULL,
+				      info->cbdata, error);
+		g_error_free(error);
+	}
+	dbus_message_unref(msg);
+	dbus_pending_call_unref(pendelum);
+}
+
+static void mafw_proxy_source_get_metadatas(MafwSource *self,
+					       const gchar **object_ids,
+					       const gchar *const *metadata_keys,
+					       MafwSourceMetadataResultsCb cb,
+					       gpointer cbdata)
+{
+	MafwProxySource *proxy;
+	DBusPendingCall *pendelum = NULL;
+	RequestReplyInfo *rri;
+
+	/* We consider calling this with metadata_keys==NULL an error. */
+	g_assert(metadata_keys);
+	g_return_if_fail(cb);
+
+	proxy = MAFW_PROXY_SOURCE(self);
+
+	mafw_dbus_send_async(connection, &pendelum,
+			     mafw_dbus_method_full(proxy_extension_return_service(proxy),
+					      proxy_extension_return_path(proxy),
+					      MAFW_SOURCE_INTERFACE,
+					      MAFW_SOURCE_METHOD_GET_METADATAS,
+					      MAFW_DBUS_STRVZ(object_ids),
+					      MAFW_DBUS_STRVZ(metadata_keys)));
+	if (!pendelum)
+	{
+		GError *errp = NULL;
+		g_set_error(&errp, MAFW_SOURCE_ERROR,
+			    MAFW_EXTENSION_ERROR_EXTENSION_NOT_AVAILABLE,
+			    "Source disconnected.");
+		cb(self, NULL, cbdata, errp);
+		g_error_free(errp);
+		return;
+	}
+
+	rri = new_request_reply_info(pendelum, self, cb, cbdata);
+	dbus_pending_call_set_notify(pendelum,
+				     (gpointer)got_metadatas,
+				     rri, (gpointer)free_reply_info_and_oid);
+}
+
+
 /* MafwSource::create_object() */
 static void object_created(DBusPendingCall *pendelum, RequestReplyInfo *info)
 {
@@ -746,6 +852,7 @@ static void mafw_proxy_source_class_init(MafwProxySourceClass *klass)
 	source_class->browse = mafw_proxy_source_browse;
 	source_class->cancel_browse = mafw_proxy_source_cancel_browse;
 	source_class->get_metadata = mafw_proxy_source_get_metadata;
+	source_class->get_metadatas = mafw_proxy_source_get_metadatas;
 	source_class->set_metadata = mafw_proxy_source_set_metadata;
 	source_class->create_object = mafw_proxy_source_create_object;
 	source_class->destroy_object = mafw_proxy_source_destroy_object;

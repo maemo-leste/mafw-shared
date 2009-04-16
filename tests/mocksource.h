@@ -31,7 +31,6 @@
 #include <dbus/dbus.h>
 
 
-
 typedef struct {
 	MafwSourceClass parent;
 } MockedSourceClass;
@@ -39,8 +38,8 @@ typedef struct {
 typedef struct {
 	MafwSource parent;
 
-	int browse_called, cancel_browse_called, get_metadata_called,
-		set_metadata_called, create_object_called,
+	int browse_called, cancel_browse_called, get_metadata_called, 
+		get_metadatas_called, set_metadata_called, create_object_called,
 		destroy_object_called;
 
 	GMainLoop *mainloop;
@@ -68,4 +67,10 @@ DBusMessage *append_browse_res(DBusMessage *replmsg,
 				const gchar *domain_str,
 				guint errcode,
 				const gchar *err_msg);
+
+#define METADATAS_ERROR_MSG "TESTmsg"
+
+DBusMessage *mdatas_repl(DBusMessage *req, const gchar **objlist,
+					GHashTable *metadata,
+					gboolean add_error);
 #endif
