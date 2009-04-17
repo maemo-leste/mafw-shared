@@ -1,14 +1,15 @@
 mafw-shared (0.1.2009.17-2) unstable; urgency=low
 
-  * Version increased.
+  * MAFW Shared, pre-release 0.2009.17-2
+  * Merged branch 'get_metadatas_v4' changes r35:133 into the trunk.
+  * Remove remaining wrong NameOwnerChanged signal handlers
+  * Do not use NameOwnerChanged signal for detecting extension-startup
 
- -- Mika Tapojärvi <ext-mika.tapojarvi@nokia.com>  Thu, 16 Apr 2009 11:06:07 +0300
+ -- Juha Kellokoski <veitikka6@gmail.com>  Fri, 17 Apr 2009 09:18:07 +0300
 
 mafw-shared (0.1.2009.17-1) unstable; urgency=low
 
   * MAFW Shared, pre-release 0.2009.17-1
-  * Remove remaining wrong NameOwnerChanged signal handlers
-  * Do not use NameOwnerChanged signal for detecting extension-startup
 
  -- Mika Tapojärvi <mika.tapojarvi@sse.fi>  Wed, 15 Apr 2009 16:01:39 +0300
 
