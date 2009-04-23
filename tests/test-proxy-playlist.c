@@ -876,7 +876,7 @@ START_TEST(test_shuffle)
 	nshuffles_expected++;
 	fail_if(mafw_playlist_is_shuffled(g_playlist));
 	/* Finally collect, and check the number of signals received. */
-	g_timeout_add(5000,(GSourceFunc)g_main_loop_quit,Loop);
+	g_timeout_add_seconds(5,(GSourceFunc)g_main_loop_quit,Loop);
 	dont_quit = TRUE;
 	g_main_loop_run(Loop);
 	fail_if(contents_changed->len -1!= nchanges_expected,"%d %d",contents_changed->len,nchanges_expected);

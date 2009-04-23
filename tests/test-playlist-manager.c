@@ -614,7 +614,9 @@ static gboolean do_destroy(void)
 		} else
 			/* Just run out of playlists, wait
 			 * until the creator creates some. */
-			g_timeout_add(2000, (GSourceFunc)add_destroy, NULL);
+			g_timeout_add_seconds(2,
+                                              (GSourceFunc)add_destroy,
+                                              NULL);
 		return FALSE;
 	}
 

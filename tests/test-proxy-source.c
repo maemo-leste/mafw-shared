@@ -119,7 +119,7 @@ static void browse_result2(MafwSource * self, guint browse_id,
 	g_ptr_array_add(results, g_strdup(object_id));
 	if (!strcmp(object_id, "testobject::item2")) {
 		mafw_source_cancel_browse(self, browse_id, NULL);
-		g_timeout_add(1000, quit_main_gugufoo, NULL);
+		g_timeout_add_seconds(1, quit_main_gugufoo, NULL);
 	}
 }
 
@@ -131,7 +131,7 @@ static void browse_result2_invalid(MafwSource * self, guint browse_id,
 				   const GError *error)
 {
 	if (!strcmp(object_id, "testobject::item0")) {
-		g_timeout_add(1000, quit_main_gugufoo, NULL);
+		g_timeout_add_seconds(1, quit_main_gugufoo, NULL);
 	}
 }
 

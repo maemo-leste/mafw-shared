@@ -115,11 +115,9 @@ static void i_am_dirty(Pls *pls)
 {
 	if (pls->dirty_timer)
 		g_assert(g_source_remove(pls->dirty_timer));
-	/* TODO: if we are glib >= 2.14 only, change this to
-	 * g_timeout_add_seconds(). */
 	pls->dirty = TRUE;
-	pls->dirty_timer = g_timeout_add(Settle_time * 1000,
-					 (GSourceFunc)ops_settled, pls);
+	pls->dirty_timer = g_timeout_add_seconds(Settle_time,
+                                                 (GSourceFunc)ops_settled, pls);
 }
 
 /* Timer callback called when edit operations have settled.  Calls save_me(),

@@ -1589,7 +1589,7 @@ END_TEST
 
 START_TEST(test_ui_renderer_get_metadata)
 {
-	g_timeout_add(2000, stop_mainloop, (gpointer)G_STRFUNC);
+	g_timeout_add_seconds(2, stop_mainloop, (gpointer)G_STRFUNC);
 	g_main_loop_run(Mainloop);
 }
 END_TEST
@@ -1612,7 +1612,9 @@ static gboolean ui_send_prepare_command(gpointer data)
 
 static void ui_wait_for_prepared_state(void)
 {
-	ui_prepare_idle_id = g_timeout_add(1000,ui_send_prepare_command,NULL);
+	ui_prepare_idle_id = g_timeout_add_seconds(1,
+                                                   ui_send_prepare_command,
+                                                   NULL);
 	g_main_loop_run(Mainloop);
 }
 

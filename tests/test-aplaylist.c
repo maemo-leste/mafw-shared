@@ -819,7 +819,7 @@ static void run_edit(int idx, Pls *pls)
 /* Quits the main loop after $time seconds. */
 static void quit_after(guint time)
 {
-	g_timeout_add(time * 1000, (GSourceFunc)g_main_loop_quit, TheLoop);
+	g_timeout_add_seconds(time, (GSourceFunc)g_main_loop_quit, TheLoop);
 }
 
 START_TEST(test_dirty_timer)

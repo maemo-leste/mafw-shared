@@ -231,9 +231,9 @@ renderer_added_cb (MafwRegistry *registry,
 
 			/* When we find the renderer we are interested in,
 			   so use it to play something */
-			g_timeout_add (1000, 
-				       do_assign_playlist_request, 
-				       user_data);
+			g_timeout_add_seconds (1,
+                                               do_assign_playlist_request,
+                                               user_data);
 		} else {
 			g_print ("[INFO]     Not interesting. Skipping...\n");
 		}
