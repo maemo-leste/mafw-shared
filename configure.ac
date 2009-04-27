@@ -91,8 +91,7 @@ AS_IF([test "x$enable_debug" = xyes],
 
 
 dnl Tests.
-enable_tests="no"
-ENABLED_BY_DEFAULT([tests], [disable unit tests])
+DISABLED_BY_DEFAULT([tests], [disable unit tests])
 if test "x$enable_tests" = xyes; then
 	PKG_CHECK_MODULES(CHECKMORE, [checkmore, check >= 0.9.4])
 	if test -z "$CHECKMORE_LIBS"; then

@@ -335,52 +335,6 @@ START_TEST(test_metadatas)
 }
 END_TEST
 
-static DBusMessage *append_browse_res(DBusMessage *replmsg,
-				DBusMessageIter *iter_msg,
-				DBusMessageIter *iter_array,
-				guint browse_id,
-				gint remaining_count, guint index,
-				const gchar *object_id,
-				GHashTable *metadata,
-				const gchar *domain_str,
-				guint errcode,
-				const gchar *err_msg)
-{
-	DBusMessageIter istr;
-	GByteArray *ba = NULL;
-
-	if (!replmsg)
-	{
-		replmsg = dbus_message_new_method_call(MAFW_DBUS_DESTINATION,
-			MAFW_DBUS_PATH,
-			MAFW_SOURCE_INTERFACE,
-			MAFW_PROXY_SOURCE_METHOD_BROWSE_RESULT);
-		dbus_message_iter_init_append(replmsg,
-						iter_msg);
-		dbus_message_iter_append_basic(iter_msg,  DBUS_TYPE_UINT32, &browse_id);
-		dbus_message_iter_open_container(iter_msg, DBUS_TYPE_ARRAY,
-						 "(iusaysus)", iter_array);
-	}
-	dbus_message_iter_open_container(iter_array, DBUS_TYPE_STRUCT, NULL,
-					&istr);
-	
-	ba = mafw_metadata_freeze_bary(metadata);
-	
-	
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_INT32,
-						&remaining_count);
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_UINT32, &index);
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING, &object_id);
-	mafw_dbus_message_append_array(&istr, DBUS_TYPE_BYTE, ba->len,
-						ba->data);
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING, &domain_str);
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_UINT32, &errcode);
-	dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING, &err_msg);
-	g_byte_array_free(ba, TRUE);
-	dbus_message_iter_close_container(iter_array, &istr);
-	return replmsg;
-}
-
 START_TEST(test_browse)
 {
 	MafwProxySource *sp = NULL;

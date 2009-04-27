@@ -214,7 +214,7 @@ START_TEST(test_renderer_errors)
 	mock_services(NULL);
 	mafw_registry_add_extension(MAFW_REGISTRY(reg), MAFW_EXTENSION(renderer));
 
-	g_set_error(&eerr, MAFW_RENDERER_ERROR,
+	g_set_error(&eerr, MAFW_EXTENSION_ERROR,
 		    MAFW_EXTENSION_ERROR_FAILED,
 		    "Error renderer fails in everything it does.");
 	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_PLAY));

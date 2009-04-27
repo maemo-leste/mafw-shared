@@ -40,7 +40,6 @@ configure: debian/stamp-autogen
 debian/stamp-autogen:
 	./autogen.sh \
 		--prefix=/usr \
-		--enable-tests \
 		--disable-dependency-tracking \
 		$(maybe_coverage) \
 		CFLAGS="$(CFLAGS)"

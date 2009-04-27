@@ -383,6 +383,7 @@ void mockbus_reply_msg(DBusMessage *msg)
 	g_queue_push_tail(&Replies, msg);
 }
 
+
 /* Adds a MAFW-DBUS error message (understood by mafw_dbus_error_to_gerror())
  * to the $Replies queue. */
 void mockbus_error(GQuark domain, guint code, const gchar *message)
@@ -390,10 +391,10 @@ void mockbus_error(GQuark domain, guint code, const gchar *message)
 	DBusMessage *msg;
 	gchar *msg_with_code;
 
-	msg_with_code = g_strdup_printf("%u:%s", code, message);
+	msg_with_code = g_strdup_printf("%s:%u:%s", g_quark_to_string(domain), code, message);
 
 	msg = dbus_message_new(DBUS_MESSAGE_TYPE_ERROR);
-	dbus_message_set_error_name(msg, g_quark_to_string(domain));
+	dbus_message_set_error_name(msg, "com.nokia.mafw");
 	dbus_message_append_args(msg,
 				 DBUS_TYPE_STRING, &msg_with_code,
 				 DBUS_TYPE_INVALID);

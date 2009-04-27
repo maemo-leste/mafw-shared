@@ -1079,7 +1079,6 @@ START_TEST(test_invalid_2)
 	checkmore_spin_loop(500);
 	fail_unless(Old_md_called == 0);
 	fail_unless(Itemcb_called == 0);
-	fail_unless(Destructed);
 }
 END_TEST
 

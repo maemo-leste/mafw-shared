@@ -91,6 +91,7 @@ START_TEST(test_source_wrapper)
 	DBusMessage *replmsg;
 	DBusMessageIter iter_array, iter_msg;
 	gint i;
+	const gchar *objlist[] = {"testobject", "testobject1", NULL};
 	
 	metadata = mockbus_mkmeta("title", "Easy", NULL);
 

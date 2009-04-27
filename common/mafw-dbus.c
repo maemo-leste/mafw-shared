@@ -740,8 +740,11 @@ void mafw_dbus_ack_or_error(DBusConnection *conn,
 DBusMessage *mafw_dbus_error(DBusMessage *call, GQuark domain,
 			     gint code, const gchar *message)
 {
-	return dbus_message_new_error_printf(call, g_quark_to_string(domain),
-					     "%u:%s", code, message);
+	DBusMessage *msg;
+	
+	msg = dbus_message_new_error_printf(call, "com.nokia.mafw", "%s:%u:%s",
+				g_quark_to_string(domain),code, message);
+	return msg;
 }
 
 /**
@@ -778,13 +781,23 @@ void mafw_dbus_error_to_gerror(GQuark domain, GError **glep, DBusError *dbe)
 		g_set_error(glep, domain, MAFW_EXTENSION_ERROR_EXTENSION_NOT_AVAILABLE,
 			    "%s", dbe->message ? dbe->message : dbe->name);
 	} else {
-		guint code, pos;
+		guint code;
+		gchar *domain;
+		gchar *msg;
+		gchar *codestr;
+
+		codestr = strchr(dbe->message, ':');
+		codestr[0] = '\0';
+		codestr++;
+		msg = strchr(codestr, ':');
+		msg[0] = '\0';
+		msg++;
 
 		/* $dbe is created by mafw_dbus_error(), parse it. */
-		if (sscanf(dbe->message, "%u:%n", &code, &pos) != 1)
+		if (sscanf(codestr, "%u", &code) != 1)
 			g_assert_not_reached();
-		g_set_error(glep, g_quark_from_string(dbe->name),
-			    code, "%s", &dbe->message[pos]);
+		g_set_error(glep, g_quark_from_string(dbe->message),
+			    code, "%s", msg);
 	}
 
 	dbus_error_free(dbe);
