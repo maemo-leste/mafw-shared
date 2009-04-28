@@ -782,7 +782,6 @@ void mafw_dbus_error_to_gerror(GQuark domain, GError **glep, DBusError *dbe)
 			    "%s", dbe->message ? dbe->message : dbe->name);
 	} else {
 		guint code;
-		gchar *domain;
 		gchar *msg;
 		gchar *codestr;
 

@@ -8,6 +8,8 @@
 noinst_LTLIBRARIES = \
 	libcommon.la
 
+AM_CFLAGS                       = $(_CFLAGS)
+
 AM_CPPFLAGS = \
 	$(GOBJECT_CFLAGS) \
 	$(DBUS_CFLAGS) \
