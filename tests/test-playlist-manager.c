@@ -55,7 +55,7 @@
 
 /* Macros {{{ */
 /*
- * Override the function of `check' so at most one of the processs can
+ * Override the function of `check' so at most one of the processes can
  * execute it.  This is necessary because _fail_unless() communicates
  * with the grandparent test runner through a file descriptor and if
  * more than one process writes something to it messages may be confused,
@@ -328,12 +328,12 @@ START_TEST(test_dup_playlists)
          */
         manager = mafw_playlist_manager_get();
 
-                
+
         /*create playlist with random name*/
         name = g_strdup_printf("%.8X", g_random_int());
         playlist = mafw_playlist_manager_create_playlist(manager, name, NULL);
         fail_if(!playlist);
-                
+
         /*set some random properties of playlist*/
          mafw_playlist_set_repeat(MAFW_PLAYLIST(playlist),TRUE);
          mafw_playlist_is_shuffled(MAFW_PLAYLIST(playlist));

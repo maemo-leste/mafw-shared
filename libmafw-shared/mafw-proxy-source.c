@@ -94,12 +94,12 @@ static DBusHandlerResult handle_container_changed_signal(MafwProxySource *self,
 							 DBusMessage *msg)
 {
 	gchar *obj_id = NULL;
-	
+
 	/* Read the message and signal the values */
 	mafw_dbus_parse(msg,
 			DBUS_TYPE_STRING, &obj_id);
 	g_signal_emit_by_name(self, "container-changed", obj_id);
-	
+
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
@@ -107,12 +107,12 @@ static DBusHandlerResult handle_metadata_changed_signal(MafwProxySource *self,
 							 DBusMessage *msg)
 {
 	gchar *obj_id = NULL;
-	
+
 	/* Read the message and signal the values */
 	mafw_dbus_parse(msg,
 			DBUS_TYPE_STRING, &obj_id);
 	g_signal_emit_by_name(self, "metadata-changed", obj_id);
-	
+
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
@@ -124,9 +124,10 @@ static DBusHandlerResult handle_metadata_changed_signal(MafwProxySource *self,
  * TODO
  */
 
-static DBusHandlerResult mafw_proxy_source_dispatch_message(DBusConnection *conn,
-							    DBusMessage *msg,
-							    MafwProxySource *self)
+static DBusHandlerResult
+mafw_proxy_source_dispatch_message(DBusConnection *conn,
+                                   DBusMessage *msg,
+                                   MafwProxySource *self)
 {
 	MafwProxySourcePrivate *priv;
 	gchar *domain_str;
@@ -136,13 +137,13 @@ static DBusHandlerResult mafw_proxy_source_dispatch_message(DBusConnection *conn
 
 	g_assert(conn != NULL);
 	g_assert(msg != NULL);
-	
+
 	priv = MAFW_PROXY_SOURCE_GET_PRIVATE(self);
-	
+
 	if (dbus_message_has_interface(msg, MAFW_EXTENSION_INTERFACE))
 		return proxy_extension_dispatch(conn, msg, self);
 
-	if (dbus_message_has_member(msg, 
+	if (dbus_message_has_member(msg,
 				    MAFW_PROXY_SOURCE_METHOD_BROWSE_RESULT)) {
 		MafwProxySourceBrowseReq *new_req = NULL;
 		guint browse_id;
@@ -155,14 +156,14 @@ static DBusHandlerResult mafw_proxy_source_dispatch_message(DBusConnection *conn
 		g_return_val_if_fail(
 			priv->browse_requests != NULL,
 			DBUS_HANDLER_RESULT_NOT_YET_HANDLED);
-		
+
 		dbus_message_iter_init(msg, &imsg);
 		dbus_message_iter_get_basic(&imsg, &browse_id);
 		dbus_message_iter_next(&imsg);
 		g_assert(dbus_message_iter_get_arg_type(&imsg) ==
 				DBUS_TYPE_ARRAY);
 		dbus_message_iter_recurse(&imsg, &iary);
-		
+
 		while (dbus_message_iter_get_arg_type(&iary) !=
 						DBUS_TYPE_INVALID)
 		{
@@ -185,25 +186,25 @@ static DBusHandlerResult mafw_proxy_source_dispatch_message(DBusConnection *conn
 			dbus_message_iter_next(&istr);
 			dbus_message_iter_get_basic(&istr, &message);
 			if (domain_str && domain_str[0])
-				g_set_error(&error, 
+				g_set_error(&error,
 					g_quark_from_string(domain_str),
 					    code, "%s", message);
 			dbus_message_iter_next(&iary);
-		
+
 			if (!new_req)
 				new_req = g_hash_table_lookup(
 					priv->browse_requests,
 					GUINT_TO_POINTER(browse_id));
-			
+
 			if (new_req) {
-				new_req->browse_cb(MAFW_SOURCE(self), 
+				new_req->browse_cb(MAFW_SOURCE(self),
 						   browse_id,
 						   remaining_count,
 						   index,
 						   object_id[0] ?
 							object_id :
 							NULL,
-						   metadata, 
+						   metadata,
 						   new_req->user_data,
 						   error);
 				if (remaining_count == 0 )
@@ -217,17 +218,20 @@ static DBusHandlerResult mafw_proxy_source_dispatch_message(DBusConnection *conn
 				mafw_metadata_release(metadata);
 				break;
 			}
-			
+
 			g_clear_error(&error);
 			mafw_metadata_release(metadata);
 		}
 
 		return DBUS_HANDLER_RESULT_HANDLED;
-	} else if (!dbus_message_has_path(msg, proxy_extension_return_path(self))) {
+	} else if (!dbus_message_has_path(msg,
+                                          proxy_extension_return_path(self))) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-	} else if (mafw_dbus_is_signal(msg, MAFW_SOURCE_SIGNAL_METADATA_CHANGED)) {
+	} else if (mafw_dbus_is_signal(msg,
+                                       MAFW_SOURCE_SIGNAL_METADATA_CHANGED)) {
 		return handle_metadata_changed_signal(self, msg);
-	} else if (mafw_dbus_is_signal(msg, MAFW_SOURCE_SIGNAL_CONTAINER_CHANGED)) {
+	} else if (mafw_dbus_is_signal(msg,
+                                       MAFW_SOURCE_SIGNAL_CONTAINER_CHANGED)) {
 		return handle_container_changed_signal(self, msg);
 	}
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
@@ -336,8 +340,9 @@ static guint mafw_proxy_source_browse(MafwSource * self,
 	return browse_id;
 }
 
-static gboolean mafw_proxy_source_cancel_browse(MafwSource * self, guint browse_id,
-					 GError **error)
+static gboolean mafw_proxy_source_cancel_browse(MafwSource * self,
+                                                guint browse_id,
+                                                GError **error)
 {
 	MafwProxySource *proxy;
 	MafwProxySourcePrivate *priv;
@@ -367,13 +372,15 @@ static gboolean mafw_proxy_source_cancel_browse(MafwSource * self, guint browse_
 				    GUINT_TO_POINTER(browse_id));
 
 		/* Tell our mate to cancel. */
-		reply = mafw_dbus_call(connection, mafw_dbus_method_full(
-					       proxy_extension_return_service(proxy),
-					       proxy_extension_return_path(proxy),
-					       MAFW_SOURCE_INTERFACE,
-					       MAFW_SOURCE_METHOD_CANCEL_BROWSE,
-					       MAFW_DBUS_UINT32(browse_id)),
-				       MAFW_SOURCE_ERROR, error);
+		reply = mafw_dbus_call(
+                        connection,
+                        mafw_dbus_method_full(
+                                proxy_extension_return_service(proxy),
+                                proxy_extension_return_path(proxy),
+                                MAFW_SOURCE_INTERFACE,
+                                MAFW_SOURCE_METHOD_CANCEL_BROWSE,
+                                MAFW_DBUS_UINT32(browse_id)),
+                        MAFW_SOURCE_ERROR, error);
 		if (reply) dbus_message_unref(reply);
 		else return FALSE;
 	} else {
@@ -395,8 +402,8 @@ static RequestReplyInfo *new_request_reply_info(DBusPendingCall *pendelum,
 	RequestReplyInfo *rri;
 
 	if (!pendelum) {
-		
-		
+
+
 		return NULL;
 	}
 
@@ -435,7 +442,8 @@ static void got_metadata(DBusPendingCall *pendelum, RequestReplyInfo *info)
 	if (!(error = mafw_dbus_is_error(reply, MAFW_SOURCE_ERROR))) {
 		GHashTable *metadata;
 
-		g_assert(dbus_message_get_type(reply) == DBUS_MESSAGE_TYPE_METHOD_RETURN);
+		g_assert(dbus_message_get_type(reply) ==
+                         DBUS_MESSAGE_TYPE_METHOD_RETURN);
 		mafw_dbus_parse(reply,
 				MAFW_DBUS_TYPE_METADATA, &metadata);
 		info->got_metadata_cb(info->src,
@@ -453,10 +461,10 @@ static void got_metadata(DBusPendingCall *pendelum, RequestReplyInfo *info)
 }
 
 static void mafw_proxy_source_get_metadata(MafwSource *self,
-					       const gchar *object_id,
-					       const gchar *const *metadata_keys,
-					       MafwSourceMetadataResultCb cb,
-					       gpointer cbdata)
+                                           const gchar *object_id,
+                                           const gchar *const *metadata_keys,
+                                           MafwSourceMetadataResultCb cb,
+                                           gpointer cbdata)
 {
 	MafwProxySource *proxy;
 	DBusPendingCall *pendelum = NULL;
@@ -468,13 +476,14 @@ static void mafw_proxy_source_get_metadata(MafwSource *self,
 
 	proxy = MAFW_PROXY_SOURCE(self);
 
-	mafw_dbus_send_async(connection, &pendelum,
-			     mafw_dbus_method_full(proxy_extension_return_service(proxy),
-					      proxy_extension_return_path(proxy),
-					      MAFW_SOURCE_INTERFACE,
-					      MAFW_SOURCE_METHOD_GET_METADATA,
-					      MAFW_DBUS_STRING(object_id),
-					      MAFW_DBUS_STRVZ(metadata_keys)));
+	mafw_dbus_send_async(
+                connection, &pendelum,
+                mafw_dbus_method_full(proxy_extension_return_service(proxy),
+                                      proxy_extension_return_path(proxy),
+                                      MAFW_SOURCE_INTERFACE,
+                                      MAFW_SOURCE_METHOD_GET_METADATA,
+                                      MAFW_DBUS_STRING(object_id),
+                                      MAFW_DBUS_STRVZ(metadata_keys)));
 	if (!pendelum)
 	{
 		GError *errp = NULL;
@@ -508,15 +517,17 @@ static void got_metadatas(DBusPendingCall *pendelum, RequestReplyInfo *info)
 		gchar *domain_str;
 		gint code;
 		gchar *message;
-		
+
 		dbus_message_iter_init(msg, &imsg);
 		if (dbus_message_iter_get_arg_type(&imsg) == DBUS_TYPE_ARRAY)
 		{
 			dbus_message_iter_recurse(&imsg, &iary);
-			metadatas = g_hash_table_new_full(g_str_hash,
-						g_str_equal,
-						(GDestroyNotify)g_free,
-						(GDestroyNotify)mafw_metadata_release);
+			metadatas =
+                                g_hash_table_new_full(
+                                        g_str_hash,
+                                        g_str_equal,
+                                        (GDestroyNotify)g_free,
+                                        (GDestroyNotify)mafw_metadata_release);
 
 			while (dbus_message_iter_get_arg_type(&iary) !=
 						DBUS_TYPE_INVALID)
@@ -526,8 +537,9 @@ static void got_metadatas(DBusPendingCall *pendelum, RequestReplyInfo *info)
 				dbus_message_iter_next(&istr);
 				mafw_dbus_message_parse_metadata(&istr,
 							&cur_metadata);
-				g_hash_table_insert(metadatas, g_strdup(object_id),
-						cur_metadata);
+				g_hash_table_insert(metadatas,
+                                                    g_strdup(object_id),
+                                                    cur_metadata);
 				dbus_message_iter_next(&iary);
 			}
 			dbus_message_iter_next(&imsg);
@@ -538,7 +550,7 @@ static void got_metadatas(DBusPendingCall *pendelum, RequestReplyInfo *info)
 		dbus_message_iter_next(&imsg);
 		dbus_message_iter_get_basic(&imsg, &message);
 		if (domain_str && domain_str[0])
-				g_set_error(&error, 
+				g_set_error(&error,
 					g_quark_from_string(domain_str),
 					    code, "%s", message);
 
@@ -557,11 +569,12 @@ static void got_metadatas(DBusPendingCall *pendelum, RequestReplyInfo *info)
 	dbus_pending_call_unref(pendelum);
 }
 
-static void mafw_proxy_source_get_metadatas(MafwSource *self,
-					       const gchar **object_ids,
-					       const gchar *const *metadata_keys,
-					       MafwSourceMetadataResultsCb cb,
-					       gpointer cbdata)
+static void
+mafw_proxy_source_get_metadatas(MafwSource *self,
+                                const gchar **object_ids,
+                                const gchar *const *metadata_keys,
+                                MafwSourceMetadataResultsCb cb,
+                                gpointer cbdata)
 {
 	MafwProxySource *proxy;
 	DBusPendingCall *pendelum = NULL;
@@ -573,13 +586,14 @@ static void mafw_proxy_source_get_metadatas(MafwSource *self,
 
 	proxy = MAFW_PROXY_SOURCE(self);
 
-	mafw_dbus_send_async(connection, &pendelum,
-			     mafw_dbus_method_full(proxy_extension_return_service(proxy),
-					      proxy_extension_return_path(proxy),
-					      MAFW_SOURCE_INTERFACE,
-					      MAFW_SOURCE_METHOD_GET_METADATAS,
-					      MAFW_DBUS_STRVZ(object_ids),
-					      MAFW_DBUS_STRVZ(metadata_keys)));
+	mafw_dbus_send_async(
+                connection, &pendelum,
+                mafw_dbus_method_full(proxy_extension_return_service(proxy),
+                                      proxy_extension_return_path(proxy),
+                                      MAFW_SOURCE_INTERFACE,
+                                      MAFW_SOURCE_METHOD_GET_METADATAS,
+                                      MAFW_DBUS_STRVZ(object_ids),
+                                      MAFW_DBUS_STRVZ(metadata_keys)));
 	if (!pendelum)
 	{
 		GError *errp = NULL;
@@ -608,14 +622,17 @@ static void object_created(DBusPendingCall *pendelum, RequestReplyInfo *info)
 	if (!(error = mafw_dbus_is_error(reply, MAFW_SOURCE_ERROR))) {
 		const gchar *objectid;
 
-		g_assert(dbus_message_get_type(reply) == DBUS_MESSAGE_TYPE_METHOD_RETURN);
+		g_assert(dbus_message_get_type(reply) ==
+                         DBUS_MESSAGE_TYPE_METHOD_RETURN);
 		mafw_dbus_parse(reply, DBUS_TYPE_STRING, &objectid);
 		if (info->object_created_cb)
-			info->object_created_cb(info->src, objectid, info->cbdata,
-				       	NULL);
+			info->object_created_cb(info->src, objectid,
+                                                info->cbdata,
+                                                NULL);
 	} else {
 		if (info->object_created_cb)
-			info->object_created_cb(info->src, NULL, info->cbdata, error);
+			info->object_created_cb(info->src, NULL, info->cbdata,
+                                                error);
 		g_error_free(error);
 	}
 	dbus_message_unref(reply);
@@ -634,21 +651,23 @@ static void mafw_proxy_source_create_object(MafwSource *self,
 
 	proxy = MAFW_PROXY_SOURCE(self);
 
-	mafw_dbus_send_async(connection, &pendelum,
-			     mafw_dbus_method_full(proxy_extension_return_service(proxy),
-					      proxy_extension_return_path(proxy),
-					      MAFW_SOURCE_INTERFACE,
-					      MAFW_SOURCE_METHOD_CREATE_OBJECT,
-					      MAFW_DBUS_STRING(parent),
-					      MAFW_DBUS_METADATA(metadata)));
+	mafw_dbus_send_async(
+                connection, &pendelum,
+                mafw_dbus_method_full(proxy_extension_return_service(proxy),
+                                      proxy_extension_return_path(proxy),
+                                      MAFW_SOURCE_INTERFACE,
+                                      MAFW_SOURCE_METHOD_CREATE_OBJECT,
+                                      MAFW_DBUS_STRING(parent),
+                                      MAFW_DBUS_METADATA(metadata)));
 	if (!pendelum)
 	{
 		if (cb)
 		{
 			GError *errp = NULL;
-			g_set_error(&errp, MAFW_SOURCE_ERROR,
-				    MAFW_EXTENSION_ERROR_EXTENSION_NOT_AVAILABLE,
-				    "Source disconnected.");
+			g_set_error(
+                                &errp, MAFW_SOURCE_ERROR,
+                                MAFW_EXTENSION_ERROR_EXTENSION_NOT_AVAILABLE,
+                                "Source disconnected.");
 			cb(self, parent, cbdata, errp);
 			g_error_free(errp);
 		}
@@ -674,7 +693,8 @@ static void object_destroyed(DBusPendingCall *pendelum, RequestReplyInfo *info)
 
 	reply = dbus_pending_call_steal_reply(pendelum);
 	if (!(error = mafw_dbus_is_error(reply, MAFW_SOURCE_ERROR))) {
-		g_assert(dbus_message_get_type(reply) == DBUS_MESSAGE_TYPE_METHOD_RETURN);
+		g_assert(dbus_message_get_type(reply) ==
+                         DBUS_MESSAGE_TYPE_METHOD_RETURN);
 		if (info->object_destroyed_cb)
 			info->object_destroyed_cb(info->src,
 					  info->objectid,
@@ -701,20 +721,22 @@ static void mafw_proxy_source_destroy_object(MafwSource *self,
 
 	proxy = MAFW_PROXY_SOURCE(self);
 
-	mafw_dbus_send_async(connection, &pendelum,
-			     mafw_dbus_method_full(proxy_extension_return_service(proxy),
-					      proxy_extension_return_path(proxy),
-					      MAFW_SOURCE_INTERFACE,
-					      MAFW_SOURCE_METHOD_DESTROY_OBJECT,
-					      MAFW_DBUS_STRING(objectid)));
+	mafw_dbus_send_async(
+                connection, &pendelum,
+                mafw_dbus_method_full(proxy_extension_return_service(proxy),
+                                      proxy_extension_return_path(proxy),
+                                      MAFW_SOURCE_INTERFACE,
+                                      MAFW_SOURCE_METHOD_DESTROY_OBJECT,
+                                      MAFW_DBUS_STRING(objectid)));
 	if (!pendelum)
 	{
 		if (cb)
 		{
 			GError *errp = NULL;
-			g_set_error(&errp, MAFW_SOURCE_ERROR,
-				    MAFW_EXTENSION_ERROR_EXTENSION_NOT_AVAILABLE,
-				    "Source disconnected.");
+			g_set_error(
+                                &errp, MAFW_SOURCE_ERROR,
+                                MAFW_EXTENSION_ERROR_EXTENSION_NOT_AVAILABLE,
+                                "Source disconnected.");
 			cb(self, objectid, cbdata, errp);
 			g_error_free(errp);
 		}
@@ -744,15 +766,17 @@ static void metadata_set(DBusPendingCall *pendelum, RequestReplyInfo *info)
 		gchar *message = NULL;
 		GError *error_in_keys = NULL;
 
-		g_assert(dbus_message_get_type(reply) == DBUS_MESSAGE_TYPE_METHOD_RETURN);
+		g_assert(dbus_message_get_type(reply) ==
+                         DBUS_MESSAGE_TYPE_METHOD_RETURN);
 		if (mafw_dbus_count_args(reply) == 2) {
 			/* No errors */
 			mafw_dbus_parse(reply, DBUS_TYPE_STRING, &objectid,
 					DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
 					&failed_keys, &n_elements);
 			if (info->metadata_set_cb)
-				info->metadata_set_cb(info->src, objectid, failed_keys,
-					      info->cbdata, NULL);
+				info->metadata_set_cb(info->src, objectid,
+                                                      failed_keys,
+                                                      info->cbdata, NULL);
 		} else {
 			/* Error included in message */
 			mafw_dbus_parse(reply, DBUS_TYPE_STRING, &objectid,
@@ -765,15 +789,18 @@ static void metadata_set(DBusPendingCall *pendelum, RequestReplyInfo *info)
 				    g_quark_from_string(domain_str),
 				    code, "%s", message);
 			if (info->metadata_set_cb)
-				info->metadata_set_cb(info->src, objectid, failed_keys,
-					      info->cbdata, error_in_keys);
+				info->metadata_set_cb(info->src, objectid,
+                                                      failed_keys,
+                                                      info->cbdata,
+                                                      error_in_keys);
 			g_error_free(error_in_keys);
 		}
 		g_strfreev((gchar **)failed_keys);
 	} else {
 		if (info->metadata_set_cb)
-			info->metadata_set_cb(info->src, NULL, NULL, info->cbdata,
-				      error);
+			info->metadata_set_cb(info->src, NULL, NULL,
+                                              info->cbdata,
+                                              error);
 		g_error_free(error);
 	}
 	dbus_message_unref(reply);
@@ -791,22 +818,24 @@ static void mafw_proxy_source_set_metadata(MafwSource *self,
 	RequestReplyInfo *rri;
 
 	proxy = MAFW_PROXY_SOURCE(self);
-	
-	mafw_dbus_send_async(connection, &pendelum,
-			     mafw_dbus_method_full(proxy_extension_return_service(proxy),
-					      proxy_extension_return_path(proxy),
-					      MAFW_SOURCE_INTERFACE,
-					      MAFW_SOURCE_METHOD_SET_METADATA,
-					      MAFW_DBUS_STRING(object_id),
-					      MAFW_DBUS_METADATA(metadata)));
+
+	mafw_dbus_send_async(
+                connection, &pendelum,
+                mafw_dbus_method_full(proxy_extension_return_service(proxy),
+                                      proxy_extension_return_path(proxy),
+                                      MAFW_SOURCE_INTERFACE,
+                                      MAFW_SOURCE_METHOD_SET_METADATA,
+                                      MAFW_DBUS_STRING(object_id),
+                                      MAFW_DBUS_METADATA(metadata)));
 	if (!pendelum)
 	{
 		if (cb)
 		{
 			GError *errp = NULL;
-			g_set_error(&errp, MAFW_SOURCE_ERROR,
-				    MAFW_EXTENSION_ERROR_EXTENSION_NOT_AVAILABLE,
-				    "Source disconnected.");
+			g_set_error(
+                                &errp, MAFW_SOURCE_ERROR,
+                                MAFW_EXTENSION_ERROR_EXTENSION_NOT_AVAILABLE,
+                                "Source disconnected.");
 			cb(self, object_id, NULL, cbdata, errp);
 			g_error_free(errp);
 		}
@@ -827,12 +856,12 @@ G_DEFINE_TYPE(MafwProxySource, mafw_proxy_source, MAFW_TYPE_SOURCE);
 static void mafw_proxy_source_dispose (GObject *obj)
 {
 	MafwProxySource *source_obj = MAFW_PROXY_SOURCE(obj);
-	
+
 	if (connection)
 	{
 		dbus_connection_unregister_object_path(connection,
 				proxy_extension_return_path(source_obj));
-	
+
 		dbus_connection_unref(connection);
 	}
 	if (source_obj->priv->browse_requests)
@@ -846,9 +875,12 @@ static void mafw_proxy_source_class_init(MafwProxySourceClass *klass)
 	MafwExtensionClass *extension_class = MAFW_EXTENSION_CLASS(klass);
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
-	extension_class->list_extension_properties = (gpointer)proxy_extension_list_properties;
-	extension_class->get_extension_property = (gpointer)proxy_extension_get_extension_property;
-	extension_class->set_extension_property = (gpointer)proxy_extension_set_extension_property;
+	extension_class->list_extension_properties =
+                (gpointer)proxy_extension_list_properties;
+	extension_class->get_extension_property =
+                (gpointer)proxy_extension_get_extension_property;
+	extension_class->set_extension_property =
+                (gpointer)proxy_extension_set_extension_property;
 	source_class->browse = mafw_proxy_source_browse;
 	source_class->cancel_browse = mafw_proxy_source_cancel_browse;
 	source_class->get_metadata = mafw_proxy_source_get_metadata;
@@ -857,7 +889,7 @@ static void mafw_proxy_source_class_init(MafwProxySourceClass *klass)
 	source_class->create_object = mafw_proxy_source_create_object;
 	source_class->destroy_object = mafw_proxy_source_destroy_object;
 	g_type_class_add_private(klass, sizeof(MafwProxySourcePrivate));
-	
+
 	gobject_class->dispose = mafw_proxy_source_dispose;
 }
 
@@ -875,7 +907,8 @@ static void mafw_proxy_source_init(MafwProxySource *self)
  *
  * Returns: a new #MafwProxySource object.
  */
-GObject *mafw_proxy_source_new(const gchar *uuid, const gchar *plugin, MafwRegistry *registry)
+GObject *mafw_proxy_source_new(const gchar *uuid, const gchar *plugin,
+                               MafwRegistry *registry)
 {
 	GObject *new_obj = g_object_new(MAFW_TYPE_PROXY_SOURCE,
 					"uuid", uuid,
@@ -885,25 +918,25 @@ GObject *mafw_proxy_source_new(const gchar *uuid, const gchar *plugin, MafwRegis
 	DBusError err;
 	gchar *match_str = NULL, *path;
 	DBusObjectPathVTable path_vtable;
-	
+
 	memset(&path_vtable, 0, sizeof(DBusObjectPathVTable));
-	path_vtable.message_function = 
+	path_vtable.message_function =
 		(DBusObjectPathMessageFunction)mafw_proxy_source_dispatch_message;
-	
+
 	if (!new_obj)
 		return NULL;
-	
+
 	source_obj = MAFW_PROXY_SOURCE(new_obj);
-	
-	
+
+
 	connection = mafw_dbus_session(NULL);
-	
+
 	if (!connection) goto source_new_error;
-	
+
 	dbus_error_init(&err);
-	
+
 	path = g_strdup_printf(MAFW_SOURCE_OBJECT "/%s", uuid);
-	
+
 	match_str = g_strdup_printf(MAFW_EXTENSION_MATCH, MAFW_SOURCE_INTERFACE,
 					path);
 	dbus_bus_add_match(connection, match_str, &err);
@@ -924,15 +957,15 @@ GObject *mafw_proxy_source_new(const gchar *uuid, const gchar *plugin, MafwRegis
 	dbus_connection_setup_with_g_main(connection, NULL);
 
 	proxy_extension_attach(G_OBJECT(new_obj), connection, plugin, registry);
-	
+
 	return new_obj;
-	
+
 source_new_error:
-	
+
 	g_free(path);
 	if (connection)
 		dbus_connection_unref(connection);
-	
+
 	g_object_unref(new_obj);
 	return NULL;
 }

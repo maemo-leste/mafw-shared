@@ -93,8 +93,8 @@ G_BEGIN_DECLS
  * @error:     Non-%NULL if an error occurred.
  *
  * Callback prototype for playlist import result. If any errors were encountered
- * during playlist importing, @error is set non-%NULL, while @playlist might also
- * be %NULL.
+ * during playlist importing, @error is set non-%NULL, while @playlist might
+ * also be %NULL.
  */
 typedef void (*MafwPlaylistManagerImportCb)(MafwPlaylistManager *self,
 					  guint import_id,
@@ -142,7 +142,7 @@ extern guint mafw_playlist_manager_import(MafwPlaylistManager *self,
 					   gpointer user_data,
 					   GError **error);
 extern gboolean mafw_playlist_manager_cancel_import(MafwPlaylistManager *self,
-					  guint import_id, 
+					  guint import_id,
 					  GError **error);
 G_END_DECLS
 

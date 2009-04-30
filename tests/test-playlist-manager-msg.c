@@ -51,10 +51,11 @@ START_TEST(test_create_playlist)
 	MafwPlaylistManager *manager;
 	MafwProxyPlaylist *playlist1, *playlist2, *playlist3;
 
-	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS, 
-					DBUS_INTERFACE_DBUS, "StartServiceByName",
-					MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
-					MAFW_DBUS_UINT32(0)));
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS,
+                                             DBUS_INTERFACE_DBUS,
+                                             "StartServiceByName",
+                                             MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
+                                             MAFW_DBUS_UINT32(0)));
 	mockbus_reply(MAFW_DBUS_UINT32(DBUS_START_REPLY_SUCCESS));
 	/* Check that mafw_playlist_manager_create_playlist()
 	 * constructs the D-BUS request correctly and returns the
@@ -125,12 +126,13 @@ START_TEST(test_destroy_playlist)
 	MafwPlaylistManager *manager;
 	MafwProxyPlaylist *playlist1, *playlist2;
 
-	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS, 
-					DBUS_INTERFACE_DBUS, "StartServiceByName",
-					MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
-					MAFW_DBUS_UINT32(0)));
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS,
+                                             DBUS_INTERFACE_DBUS,
+                                             "StartServiceByName",
+                                             MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
+                                             MAFW_DBUS_UINT32(0)));
 	mockbus_reply(MAFW_DBUS_UINT32(0));
-	
+
 	/* Check that mafw_scare_playlist_manager_destroy_playlist()
 	 * constructs the D-BUS request and maintains its internal
 	 * store as expected. */
@@ -194,12 +196,13 @@ START_TEST(test_playlist_created)
 	MafwPlaylistManager *manager;
 	MafwProxyPlaylist *playlist1, *playlist2;
 
-	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS, 
-					DBUS_INTERFACE_DBUS, "StartServiceByName",
-					MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
-					MAFW_DBUS_UINT32(0)));
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS,
+                                             DBUS_INTERFACE_DBUS,
+                                             "StartServiceByName",
+                                             MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
+                                             MAFW_DBUS_UINT32(0)));
 	mockbus_reply(MAFW_DBUS_UINT32(0));
-	
+
 	/* Test that MafwPlaylistManager::playlist_created is emitted
 	 * exatly the right time and its parameter is consistent with the
 	 * return values of *_create_playlist() and *_get_playlist(). */
@@ -282,12 +285,13 @@ START_TEST(test_playlist_destroyed)
 	MafwPlaylistManager *manager;
 	MafwProxyPlaylist *playlist1, *playlist2;
 
-	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS, 
-					DBUS_INTERFACE_DBUS, "StartServiceByName",
-					MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
-					MAFW_DBUS_UINT32(0)));
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS,
+                                             DBUS_INTERFACE_DBUS,
+                                             "StartServiceByName",
+                                             MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
+                                             MAFW_DBUS_UINT32(0)));
 	mockbus_reply(MAFW_DBUS_UINT32(0));
-	
+
 	/* Like test_playlist_created(), but for the destroy event. */
 	playlist2 = NULL;
 	manager = mafw_playlist_manager_get();
@@ -316,7 +320,7 @@ START_TEST(test_playlist_destroyed)
 	 * Now confirm the destruction and expect playlist_destroyed()
 	 * to notice it. */
 	fail_unless(G_OBJECT(playlist1)->ref_count == 1);
-	
+
 	playlist2 = g_object_ref(playlist1);
 	mockbus_incoming(mafw_dbus_signal(MAFW_PLAYLIST_SIGNAL_PLAYLIST_DESTRUCTION_FAILED,
 					  MAFW_DBUS_UINT32(101)));
@@ -369,12 +373,13 @@ START_TEST(test_get_playlist)
 	MafwPlaylistManager *manager;
 	MafwProxyPlaylist *playlist1, *playlist2;
 
-	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS, 
-					DBUS_INTERFACE_DBUS, "StartServiceByName",
-					MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
-					MAFW_DBUS_UINT32(0)));
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS,
+                                             DBUS_INTERFACE_DBUS,
+                                             "StartServiceByName",
+                                             MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
+                                             MAFW_DBUS_UINT32(0)));
 	mockbus_reply(MAFW_DBUS_UINT32(0));
-	
+
 	manager = mafw_playlist_manager_get();
 
 	/* Look up an unknown playlist; expect a D-BUS call. */
@@ -391,8 +396,8 @@ START_TEST(test_get_playlist)
 	fail_if(!error);
 	g_error_free(error);
 	error=NULL;
-	
-	
+
+
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_LIST_PLAYLISTS,
 					MAFW_DBUS_C_ARRAY(UINT32,
 							  dbus_uint32_t,
@@ -438,12 +443,13 @@ START_TEST(test_get_playlists)
 	MafwProxyPlaylist *playlist1, *playlist2;
 	GPtrArray *list;
 
-	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS, 
-					DBUS_INTERFACE_DBUS, "StartServiceByName",
-					MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
-					MAFW_DBUS_UINT32(0)));
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS,
+                                             DBUS_INTERFACE_DBUS,
+                                             "StartServiceByName",
+                                             MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
+                                             MAFW_DBUS_UINT32(0)));
 	mockbus_reply(MAFW_DBUS_UINT32(0));
-	
+
 	manager = mafw_playlist_manager_get();
 
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_LIST_PLAYLISTS));
@@ -454,7 +460,7 @@ START_TEST(test_get_playlists)
 	fail_if(list);
 	fail_if(!error);
 	g_error_free(error);
-	
+
 	/* Does manager accept the empty reply? */
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_LIST_PLAYLISTS));
 	mockbus_reply(MAFW_DBUS_AST("us"));
@@ -511,12 +517,13 @@ START_TEST(test_list_playlists)
 	MafwPlaylistManager *manager;
 	GArray *list;
 
-	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS, 
-					DBUS_INTERFACE_DBUS, "StartServiceByName",
-					MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
-					MAFW_DBUS_UINT32(0)));
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS,
+                                             DBUS_INTERFACE_DBUS,
+                                             "StartServiceByName",
+                                             MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
+                                             MAFW_DBUS_UINT32(0)));
 	mockbus_reply(MAFW_DBUS_UINT32(0));
-	
+
 	/* This test is almost the same as test_get_playlists(),
 	 * but simpler. */
 	manager = mafw_playlist_manager_get();
@@ -529,7 +536,7 @@ START_TEST(test_list_playlists)
 	fail_if(list);
 	fail_if(!error);
 	g_error_free(error);
-	
+
 	/* Does manager accept the empty reply? */
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_LIST_PLAYLISTS));
 	mockbus_reply(MAFW_DBUS_AST("us"));
@@ -586,12 +593,13 @@ GError *error;
 	MafwPlaylistManager *manager;
 	MafwProxyPlaylist *playlist1, *playlist2;
 
-	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS, 
-					DBUS_INTERFACE_DBUS, "StartServiceByName",
-					MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
-					MAFW_DBUS_UINT32(0)));
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS,
+                                             DBUS_INTERFACE_DBUS,
+                                             "StartServiceByName",
+                                             MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
+                                             MAFW_DBUS_UINT32(0)));
 	mockbus_reply(MAFW_DBUS_UINT32(0));
-	
+
 	manager = mafw_playlist_manager_get();
 
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_LIST_PLAYLISTS,
@@ -608,23 +616,25 @@ GError *error;
 	fail_if(!playlist1);
 	fail_if(mafw_proxy_playlist_get_id(playlist1) != 101);
 	fail_if(error);
-	
+
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_DUP_PLAYLIST,
 					MAFW_DBUS_UINT32(101),
 					MAFW_DBUS_STRING("newname")));
 	mockbus_reply(MAFW_DBUS_UINT32(202));
-	playlist2 = mafw_playlist_manager_dup_playlist(manager, playlist1, "newname",
-							&error);
+	playlist2 = mafw_playlist_manager_dup_playlist(manager, playlist1,
+                                                       "newname",
+                                                       &error);
 	fail_if(error);
 	fail_if(!playlist2);
-	
+
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_DUP_PLAYLIST,
 					MAFW_DBUS_UINT32(101),
 					MAFW_DBUS_STRING("newname")));
 	mockbus_error(MAFW_PLAYLIST_ERROR,
 		      MAFW_PLAYLIST_ERROR_PLAYLIST_NOT_FOUND, "Hihi");
-	playlist2 = mafw_playlist_manager_dup_playlist(manager, playlist1, "newname",
-							&error);
+	playlist2 = mafw_playlist_manager_dup_playlist(manager, playlist1,
+                                                       "newname",
+                                                       &error);
 	fail_if(!error);
 	fail_if(playlist2);
 	g_error_free(error);
@@ -669,38 +679,39 @@ START_TEST(test_import_playlist)
 	GError *error;
 	MafwPlaylistManager *manager;
 
-	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS, 
-					DBUS_INTERFACE_DBUS, "StartServiceByName",
-					MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
-					MAFW_DBUS_UINT32(0)));
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS,
+                                             DBUS_INTERFACE_DBUS,
+                                             "StartServiceByName",
+                                             MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
+                                             MAFW_DBUS_UINT32(0)));
 	mockbus_reply(MAFW_DBUS_UINT32(0));
-	
+
 	/* This test is almost the same as test_get_playlists(),
 	 * but simpler. */
 	manager = mafw_playlist_manager_get();
 
 	/* No crash tests... */
-	
+
 	expect_ignore(mafw_playlist_manager_import(NULL, NULL, NULL, NULL,
 						NULL, NULL));
 	expect_ignore(mafw_playlist_manager_import(manager, "test", NULL, NULL,
 						NULL, NULL));
 	expect_ignore(mafw_playlist_manager_import(manager, NULL, NULL,
-						pl_import_cb, NULL, NULL));	
-	
+						pl_import_cb, NULL, NULL));
+
 	/* Error returned */
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_IMPORT_PLAYLIST,
 				  MAFW_DBUS_STRING("test"),
 				  MAFW_DBUS_STRING("")));
 	mockbus_error(MAFW_PLAYLIST_ERROR, 1, "testmsg");
-	
+
 	error = NULL;
 	fail_if((n_import_id = mafw_playlist_manager_import(manager, "test",
 					NULL, pl_import_cb, NULL, &error))
 				!= MAFW_PLAYLIST_MANAGER_INVALID_IMPORT_ID);
 	fail_if(error == NULL);
 	g_error_free(error);
-	
+
 	/* Check an error-free import*/
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_IMPORT_PLAYLIST,
 				  MAFW_DBUS_STRING("test"),
@@ -712,17 +723,17 @@ START_TEST(test_import_playlist)
 					NULL, pl_import_cb, NULL, &error))
 				== MAFW_PLAYLIST_MANAGER_INVALID_IMPORT_ID);
 	fail_if(error);
-	
+
 	mockbus_incoming(
 		mafw_dbus_method(
 			MAFW_PLAYLIST_METHOD_PLAYLIST_IMPORTED,
 			MAFW_DBUS_UINT32(11),
 			MAFW_DBUS_UINT32(2)));
-			
+
 	checkmore_spin_loop(-1);
-	
+
 	fail_unless(import_cb_called);
-	
+
 	/* What happens if a wrong cb comes? */
 	import_cb_called = FALSE;
 	mockbus_incoming(
@@ -730,22 +741,22 @@ START_TEST(test_import_playlist)
 			MAFW_PLAYLIST_METHOD_PLAYLIST_IMPORTED,
 			MAFW_DBUS_UINT32(15),
 			MAFW_DBUS_UINT32(6)));
-			
+
 	checkmore_spin_loop(500);
-	
+
 	fail_unless(!import_cb_called);
-	
+
 	/* Good call, not error-free cb */
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_IMPORT_PLAYLIST,
 				  MAFW_DBUS_STRING("test"),
 				  MAFW_DBUS_STRING("")));
 	mockbus_reply(MAFW_DBUS_UINT32(11));
-	
+
 	fail_if((n_import_id = mafw_playlist_manager_import(manager, "test",
 					NULL, pl_import_error_cb, NULL, &error))
 				== MAFW_PLAYLIST_MANAGER_INVALID_IMPORT_ID);
 	fail_if(error);
-	
+
 	mockbus_incoming(
 		mafw_dbus_method(
 			MAFW_PLAYLIST_METHOD_PLAYLIST_IMPORTED,
@@ -753,17 +764,17 @@ START_TEST(test_import_playlist)
 			MAFW_DBUS_STRING("SS"),
 			MAFW_DBUS_INT32(10),
 			MAFW_DBUS_STRING("ERRORMSG")));
-			
+
 	checkmore_spin_loop(-1);
-	
+
 	fail_unless(import_cb_called);
-	
+
 	/* Test cancel */
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_IMPORT_PLAYLIST,
 				  MAFW_DBUS_STRING("test"),
 				  MAFW_DBUS_STRING("")));
 	mockbus_reply(MAFW_DBUS_UINT32(11));
-	
+
 	fail_if((n_import_id = mafw_playlist_manager_import(manager, "test",
 					NULL, pl_import_cb, NULL, &error))
 				!= 11);
@@ -779,7 +790,7 @@ START_TEST(test_import_playlist)
 	fail_if((mafw_playlist_manager_cancel_import(manager, 11, &error))
 				== FALSE);
 	fail_if(error != NULL);
-	
+
 	mockbus_finish();
 }
 END_TEST /* }}} */
@@ -802,12 +813,13 @@ START_TEST(test_crash)
 	MafwPlaylistManager *manager;
 	MafwProxyPlaylist *playlist, *pl2;
 
-	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS, 
-					DBUS_INTERFACE_DBUS, "StartServiceByName",
-					MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
-					MAFW_DBUS_UINT32(0)));
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS,
+                                             DBUS_INTERFACE_DBUS,
+                                             "StartServiceByName",
+                                             MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
+                                             MAFW_DBUS_UINT32(0)));
 	mockbus_reply(MAFW_DBUS_UINT32(0));
-	
+
 	/* This test is almost the same as test_get_playlists(),
 	 * but simpler. */
 	manager = mafw_playlist_manager_get();
@@ -864,7 +876,7 @@ START_TEST(test_crash)
 							      404, NULL);
 	pl2 = mafw_playlist_manager_get_playlist(manager,
 							      101, NULL);
-	
+
 	mockbus_incoming(
 		mafw_dbus_signal_full(NULL, DBUS_PATH_DBUS,
 				      DBUS_INTERFACE_DBUS,

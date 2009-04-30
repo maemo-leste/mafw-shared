@@ -92,7 +92,8 @@ extern void save_me(Pls *pls);
 
 /* From playlist-wrapper.c: */
 extern DBusHandlerResult handle_playlist_request(DBusConnection *con,
-						 DBusMessage *msg, const gchar *path);
+						 DBusMessage *msg,
+                                                 const gchar *path);
 
 /* From playlist-manager-wrapper.c: */
 extern GMainLoop *Loop;

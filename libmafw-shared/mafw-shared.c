@@ -104,7 +104,7 @@ static void create_proxy(MafwRegistry *registry,
 {
 	GType pxtype;
 	gchar *plugin, *uuid;
-	
+
 
 	/* Extensions are exported using the name:
 	 *   com.nokia.mafw.{renderer,source}.<plugin>.<uuid> */
@@ -113,7 +113,7 @@ static void create_proxy(MafwRegistry *registry,
 		/* It is possible that $svc is not a mafw-thing after all,
 		 * because we just get whatever NameOwnerChanged. */
 		goto out;
-	
+
 	if (!mafw_registry_get_extension_by_uuid(MAFW_REGISTRY(registry),
 						  uuid))
 	{
@@ -135,7 +135,7 @@ static void create_proxy(MafwRegistry *registry,
 		g_debug("proxy added for '%s'", svc);
 		matchstr = g_strdup_printf(MATCH_STR, svc);
 		dbus_bus_add_match(connection, matchstr, &err);
-		
+
 		if (dbus_error_is_set(&err))
 		{
                 	g_critical("Unable to add match: %s", matchstr);

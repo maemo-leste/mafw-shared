@@ -121,10 +121,13 @@ static DBusHandlerResult handle_get_name(DBusConnection *conn,
 					 DBusMessage *msg,
 					 ExportedComponent *ecomp)
 {
-	mafw_dbus_send(conn,
-		       mafw_dbus_reply(msg,
-				       MAFW_DBUS_STRING(mafw_extension_get_name(
-						       MAFW_EXTENSION(ecomp->comp)))));
+	mafw_dbus_send(
+                conn,
+                mafw_dbus_reply(
+                        msg,
+                        MAFW_DBUS_STRING(
+                                mafw_extension_get_name(
+                                        MAFW_EXTENSION(ecomp->comp)))));
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
@@ -132,11 +135,15 @@ DBusHandlerResult handle_extension_msg(DBusConnection *conn,
 				       DBusMessage *msg, void *comp)
 {
 	if (mafw_dbus_is_method(msg, MAFW_EXTENSION_METHOD_SET_PROPERTY))
-		return handle_set_property(conn, msg, (ExportedComponent *)comp);
+		return handle_set_property(conn, msg,
+                                           (ExportedComponent *)comp);
 	else if (mafw_dbus_is_method(msg, MAFW_EXTENSION_METHOD_GET_PROPERTY))
-		return handle_get_property(conn, msg, (ExportedComponent *)comp);
-	else if (mafw_dbus_is_method(msg, MAFW_EXTENSION_METHOD_LIST_PROPERTIES))
-		return handle_list_properties(conn, msg, (ExportedComponent *)comp);
+		return handle_get_property(conn, msg,
+                                           (ExportedComponent *)comp);
+	else if (mafw_dbus_is_method(msg,
+                                     MAFW_EXTENSION_METHOD_LIST_PROPERTIES))
+		return handle_list_properties(conn, msg,
+                                              (ExportedComponent *)comp);
 	else if (mafw_dbus_is_method(msg, MAFW_EXTENSION_METHOD_SET_NAME))
 		return handle_set_name(conn, msg, (ExportedComponent *)comp);
 	else if (mafw_dbus_is_method(msg, MAFW_EXTENSION_METHOD_GET_NAME))
@@ -144,7 +151,8 @@ DBusHandlerResult handle_extension_msg(DBusConnection *conn,
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
-static void name_changed(MafwExtension *extension, GParamSpec *pspec, ExportedComponent *ecomp)
+static void name_changed(MafwExtension *extension, GParamSpec *pspec,
+                         ExportedComponent *ecomp)
 {
 	gchar *name;
 

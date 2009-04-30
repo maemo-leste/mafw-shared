@@ -43,36 +43,42 @@ static DBusConnection *conn;
 static gchar *get_extension_path(MafwExtension *self)
 {
 	gchar *path = NULL;
-	
+
 	if (MAFW_IS_PROXY_RENDERER(self))
 	{
-		path = g_strconcat(MAFW_RENDERER_OBJECT "/",
-				mafw_extension_get_uuid(MAFW_EXTENSION(self)), NULL);
+		path = g_strconcat(
+                        MAFW_RENDERER_OBJECT "/",
+                        mafw_extension_get_uuid(MAFW_EXTENSION(self)),
+                        NULL);
 	}
 	else if (MAFW_IS_PROXY_SOURCE(self))
 	{
-		path = g_strconcat(MAFW_SOURCE_OBJECT "/",
-				mafw_extension_get_uuid(MAFW_EXTENSION(self)), NULL);
+		path = g_strconcat(
+                        MAFW_SOURCE_OBJECT "/",
+                        mafw_extension_get_uuid(MAFW_EXTENSION(self)),
+                        NULL);
 	}
-	
+
 	return path;
 }
 
 static gchar *get_extension_service(MafwExtension *self, const gchar *plugin)
 {
 	gchar *service = NULL;
-	
+
 	if (MAFW_IS_PROXY_RENDERER(self))
 	{
-		service = g_strconcat(MAFW_RENDERER_SERVICE ".", plugin, ".",
-				mafw_extension_get_uuid(MAFW_EXTENSION(self)), NULL);
+		service = g_strconcat(
+                        MAFW_RENDERER_SERVICE ".", plugin, ".",
+                        mafw_extension_get_uuid(MAFW_EXTENSION(self)), NULL);
 	}
 	else if (MAFW_IS_PROXY_SOURCE(self))
 	{
-		service = g_strconcat(MAFW_SOURCE_SERVICE ".", plugin, ".",
-				mafw_extension_get_uuid(MAFW_EXTENSION(self)), NULL);
+		service = g_strconcat(
+                        MAFW_SOURCE_SERVICE ".", plugin, ".",
+                        mafw_extension_get_uuid(MAFW_EXTENSION(self)), NULL);
 	}
-	
+
 	return service;
 }
 static void add_properties_to_extension(DBusMessage *msg, MafwExtension *self)
@@ -101,7 +107,7 @@ const GPtrArray *proxy_extension_list_properties(MafwExtension *self)
 	g_assert(conn);
 	gotp = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(self), "got_props"));
 	if (gotp) goto done;
-	
+
 	r = mafw_dbus_call(conn,
 			   mafw_dbus_method_full(
 				proxy_extension_return_service(self),
@@ -111,7 +117,8 @@ const GPtrArray *proxy_extension_list_properties(MafwExtension *self)
 			   MAFW_EXTENSION_ERROR, &error);
 	if (!r)
 	{
-		g_critical("Unable to get the property-list: %s", error->message);
+		g_critical("Unable to get the property-list: %s",
+                           error->message);
 		g_error_free(error);
 		return NULL;
 	}
@@ -124,8 +131,9 @@ done:
 			MAFW_EXTENSION_GET_CLASS(self)))->list_extension_properties(self);
 }
 
-void proxy_extension_set_extension_property(MafwExtension *self, const gchar *name,
-				  const GValue *value)
+void proxy_extension_set_extension_property(MafwExtension *self,
+                                            const gchar *name,
+                                            const GValue *value)
 {
 	g_assert(conn);
 	mafw_dbus_send(conn,
@@ -164,21 +172,23 @@ static void got_extension_property(DBusPendingCall *pending, void *udata)
 	dbus_pending_call_unref(pending);
 }
 
-void proxy_extension_get_extension_property(MafwExtension *self, const gchar *name,
-				   MafwExtensionPropertyCallback cb,
-				   gpointer udata)
+void proxy_extension_get_extension_property(MafwExtension *self,
+                                            const gchar *name,
+                                            MafwExtensionPropertyCallback cb,
+                                            gpointer udata)
 {
 	DBusPendingCall *pending;
 	GetPropInfo *info;
 
 	g_assert(conn);
-	mafw_dbus_send_async(conn, &pending,
-			     mafw_dbus_method_full(
-					      proxy_extension_return_service(self),
-					      proxy_extension_return_path(self),
-					      MAFW_EXTENSION_INTERFACE,
-					      MAFW_EXTENSION_METHOD_GET_PROPERTY,
-					      MAFW_DBUS_STRING(name)));
+	mafw_dbus_send_async(
+                conn, &pending,
+                mafw_dbus_method_full(
+                        proxy_extension_return_service(self),
+                        proxy_extension_return_path(self),
+                        MAFW_EXTENSION_INTERFACE,
+                        MAFW_EXTENSION_METHOD_GET_PROPERTY,
+                        MAFW_DBUS_STRING(name)));
 	info = g_new(GetPropInfo, 1);
 	/* XXX should we ref @self? */
 	info->extension = self;
@@ -190,7 +200,8 @@ void proxy_extension_get_extension_property(MafwExtension *self, const gchar *na
 
 /* GObject::notify handler for proxies.  Sends a D-Bus message when
  * the extension's name changes. */
-static void extension_name_set(GObject *o, GParamSpec *pspec, DBusConnection *conn)
+static void extension_name_set(GObject *o, GParamSpec *pspec,
+                               DBusConnection *conn)
 {
 	gchar *name;
 
@@ -260,11 +271,14 @@ DBusHandlerResult proxy_extension_dispatch(DBusConnection *conn,
 					     gpointer extension)
 {
 	if (mafw_dbus_is_signal(msg, MAFW_EXTENSION_SIGNAL_PROPERTY_CHANGED))
-		return handle_extension_prop_changed(conn, msg, MAFW_EXTENSION(extension));
+		return handle_extension_prop_changed(conn, msg,
+                                                     MAFW_EXTENSION(extension));
 	else if (mafw_dbus_is_signal(msg, MAFW_EXTENSION_SIGNAL_NAME_CHANGED))
-		return handle_extension_name_changed(conn, msg, MAFW_EXTENSION(extension));
+		return handle_extension_name_changed(conn, msg,
+                                                     MAFW_EXTENSION(extension));
 	else if (mafw_dbus_is_signal(msg, MAFW_EXTENSION_SIGNAL_ERROR)) {
-		return handle_extension_error(conn, msg, MAFW_EXTENSION(extension));
+		return handle_extension_error(conn, msg,
+                                              MAFW_EXTENSION(extension));
 	}
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
@@ -275,52 +289,61 @@ static void proxy_extension_detach(gpointer data, GObject *extension)
 	g_free(proxy_extension_return_service(extension));
 }
 
-static void got_prop_lists(DBusPendingCall *pendelum, struct _extension_attach_data *att_data)
+static void got_prop_lists(DBusPendingCall *pendelum,
+                           struct _extension_attach_data *att_data)
 {
 	DBusMessage *reply;
-	
+
 	reply = dbus_pending_call_steal_reply(pendelum);
-	
+
 	if (dbus_message_get_type(reply) == DBUS_MESSAGE_TYPE_METHOD_RETURN)
 	{
-		add_properties_to_extension(reply, MAFW_EXTENSION(att_data->extension));
+		add_properties_to_extension(
+                        reply,
+                        MAFW_EXTENSION(att_data->extension));
 	}
 	else
 	{
 		DBusError dbuserr;
-		
+
 		dbus_error_init(&dbuserr);
-		
+
 		if (dbus_set_error_from_message(&dbuserr, reply))
 		{
-			g_critical("Received error message for list_properties: %s",
-					dbuserr.message);
+			g_critical(
+                                "Received error message for list_properties: %s",
+                                dbuserr.message);
 		}
 		else
 		{
-			g_critical("Unable to get the properties of the extension");
+			g_critical(
+                                "Unable to get the properties of the extension");
 		}
 		dbus_error_free(&dbuserr);
 	}
 	dbus_message_unref(reply);
-	if (!mafw_registry_get_extension_by_uuid(MAFW_REGISTRY(att_data->registry),
-			mafw_extension_get_uuid(MAFW_EXTENSION(att_data->extension))))
-		mafw_registry_add_extension(att_data->registry,
-						MAFW_EXTENSION(att_data->extension));
+	if (!mafw_registry_get_extension_by_uuid(
+                    MAFW_REGISTRY(att_data->registry),
+                    mafw_extension_get_uuid(
+                            MAFW_EXTENSION(att_data->extension))))
+		mafw_registry_add_extension(
+                        att_data->registry,
+                        MAFW_EXTENSION(att_data->extension));
 	else
 		g_object_unref(att_data->extension);
 	g_free(att_data);
 	dbus_pending_call_unref(pendelum);
 }
 
-static void got_name(DBusPendingCall *pendelum, struct _extension_attach_data *att_data)
+static void got_name(DBusPendingCall *pendelum,
+                     struct _extension_attach_data *att_data)
 {
 	DBusMessage *reply;
 	DBusPendingCall *pending_list_prop;
 	gchar *name = NULL;
 
 	reply = dbus_pending_call_steal_reply(pendelum);
-	
+
 	if (dbus_message_get_type(reply) == DBUS_MESSAGE_TYPE_METHOD_RETURN)
 	{
 		mafw_dbus_parse(reply, DBUS_TYPE_STRING, &name);
@@ -329,9 +352,9 @@ static void got_name(DBusPendingCall *pendelum, struct _extension_attach_data *a
 	else
 	{
 		DBusError dbuserr;
-		
+
 		dbus_error_init(&dbuserr);
-		
+
 		if (dbus_set_error_from_message(&dbuserr, reply))
 		{
 			g_critical("Received error message for get_name: %s",
@@ -344,19 +367,21 @@ static void got_name(DBusPendingCall *pendelum, struct _extension_attach_data *a
 		dbus_error_free(&dbuserr);
 	}
 	dbus_message_unref(reply);
-	g_signal_connect(att_data->extension, "notify::name", G_CALLBACK(extension_name_set),
+	g_signal_connect(att_data->extension, "notify::name",
+                         G_CALLBACK(extension_name_set),
 			 conn);
 	/* XXX we do an early list_properties because mafw_extension_*
 	 * functions check registered properties and fail since the
 	 * proxy doesn't have any properties on its own until
-	 * list_properties has been called. */	
-	mafw_dbus_send_async(conn,
-			   &pending_list_prop,
-			   mafw_dbus_method_full(
-				proxy_extension_return_service(att_data->extension),
-				proxy_extension_return_path(att_data->extension),
-				MAFW_EXTENSION_INTERFACE,
-				MAFW_EXTENSION_METHOD_LIST_PROPERTIES));
+	 * list_properties has been called. */
+	mafw_dbus_send_async(
+                conn,
+                &pending_list_prop,
+                mafw_dbus_method_full(
+                        proxy_extension_return_service(att_data->extension),
+                        proxy_extension_return_path(att_data->extension),
+                        MAFW_EXTENSION_INTERFACE,
+                        MAFW_EXTENSION_METHOD_LIST_PROPERTIES));
 	dbus_pending_call_set_notify(pending_list_prop,
 				     (gpointer)got_prop_lists,
 				     (gpointer)att_data, NULL);
@@ -368,24 +393,26 @@ void proxy_extension_attach(GObject *extension, DBusConnection *connection,
 {
 	gchar *path, *service, *match_str;
 	DBusPendingCall *pending_name;
-	struct _extension_attach_data *att_data = g_new0(struct _extension_attach_data, 1);
+	struct _extension_attach_data *att_data =
+                g_new0(struct _extension_attach_data, 1);
 
 	att_data->extension = extension;
 	att_data->registry = registry;
-	
+
 	path = get_extension_path(MAFW_EXTENSION(extension));
 	service = get_extension_service(MAFW_EXTENSION(extension), plugin);
-	
+
 	g_object_set_qdata(G_OBJECT(extension), PATH_NAME, path);
 	g_object_set_qdata(G_OBJECT(extension), SERVICE_NAME, service);
-	
+
 	conn = connection;
-	
-	match_str = g_strdup_printf(MAFW_EXTENSION_MATCH, MAFW_EXTENSION_INTERFACE,
+
+	match_str = g_strdup_printf(MAFW_EXTENSION_MATCH,
+                                    MAFW_EXTENSION_INTERFACE,
 					path);
 	dbus_bus_add_match(connection, match_str, NULL);
 	g_free(match_str);
-	
+
 	mafw_dbus_send_async(conn,
 		       &pending_name,
 		       mafw_dbus_method_full(

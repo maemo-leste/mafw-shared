@@ -36,7 +36,7 @@
  * the rename on saving failed, and do it now.
  *
  * SIGINT and SIGTERM cause termination of the main loop and then falling
- * throught the normal exit procedure.
+ * throughout the normal exit procedure.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
 
 	dbus_connection_setup_with_g_main(dbus, NULL);
 	dbus_connection_unref(dbus);
-	
+
 	g_main_loop_run(Loop = g_main_loop_new(NULL, FALSE));
 	save_all_playlists();
 	return 0;

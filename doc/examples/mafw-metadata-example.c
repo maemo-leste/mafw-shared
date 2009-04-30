@@ -1,4 +1,4 @@
-/* 
+/*
 The code examples copyrighted by Nokia Corporation that are included to
 this material are licensed to you under following MIT-style License:
 
@@ -44,10 +44,10 @@ GMainLoop * main_loop = NULL;
  * This callback is invoked whenever a browse result is available
  */
 static void
-metadata_request_cb (MafwSource *source, 
-		     const gchar *object_id, 
+metadata_request_cb (MafwSource *source,
+		     const gchar *object_id,
 		     GHashTable *metadata,
-		     gpointer user_data, 
+		     gpointer user_data,
 		     const GError *error)
 {
 	const gchar *title, *artist, *album, *genre;
@@ -64,16 +64,16 @@ metadata_request_cb (MafwSource *source,
 		genre = "Unknown";
 	} else {
 		GValue *v;
-		v = mafw_metadata_first (metadata, 
+		v = mafw_metadata_first (metadata,
 					 MAFW_METADATA_KEY_TITLE);
 		title = v ? g_value_get_string (v) : "Unknown";
-		v = mafw_metadata_first (metadata, 
+		v = mafw_metadata_first (metadata,
 					 MAFW_METADATA_KEY_ARTIST);
 		artist = v ? g_value_get_string (v) : "Unknown";
-		v = mafw_metadata_first (metadata, 
+		v = mafw_metadata_first (metadata,
 					 MAFW_METADATA_KEY_ALBUM);
 		album = v ? g_value_get_string (v) : "Unknown";
-		v = mafw_metadata_first (metadata, 
+		v = mafw_metadata_first (metadata,
 					 MAFW_METADATA_KEY_GENRE);
 		genre = v ? g_value_get_string (v) : "Unknown";
 	}
@@ -98,19 +98,19 @@ do_metadata_request (gpointer user_data)
 
 	g_print ("[INFO] Requesting metadata for %s on "
 		 WANTED_SOURCE ".\n", object_id);
-	
+
 	keys = MAFW_SOURCE_LIST(
 	       MAFW_METADATA_KEY_TITLE,
 	       MAFW_METADATA_KEY_ARTIST,
 	       MAFW_METADATA_KEY_ALBUM,
 	       MAFW_METADATA_KEY_GENRE);
 
-	mafw_source_get_metadata (app_source, 
+	mafw_source_get_metadata (app_source,
 				  object_id,
 				  keys,
-				  metadata_request_cb, 
+				  metadata_request_cb,
 				  NULL);
-	
+
 	return FALSE;
 }
 
@@ -120,16 +120,16 @@ do_metadata_request (gpointer user_data)
  */
 
 /*
- * Checks for a particular source to be added and 
+ * Checks for a particular source to be added and
  * saves a reference to it.
  */
-static void 
-source_added_cb (MafwRegistry *registry, 
-		 GObject *source, 
+static void
+source_added_cb (MafwRegistry *registry,
+		 GObject *source,
 		 gpointer user_data)
 {
 	if (MAFW_IS_SOURCE(source)) {
-		const gchar *name = 
+		const gchar *name =
 			mafw_extension_get_name(MAFW_EXTENSION(source));
 
 		g_print("[INFO] Source %s available.\n", name);
@@ -152,13 +152,13 @@ source_added_cb (MafwRegistry *registry,
 /*
  * Checks if the referenced source is removed, and if so, exits.
  */
-static void 
-source_removed_cb (MafwRegistry *registry, 
-		   GObject *source, 
+static void
+source_removed_cb (MafwRegistry *registry,
+		   GObject *source,
 		   gpointer user_data)
 {
 	if (MAFW_IS_SOURCE(source)) {
-		g_print("[INFO] Source %s removed.\n", 
+		g_print("[INFO] Source %s removed.\n",
 			mafw_extension_get_name(MAFW_EXTENSION(source)));
 
 		if (MAFW_SOURCE (source) == app_source) {
@@ -170,24 +170,24 @@ source_removed_cb (MafwRegistry *registry,
 	}
 }
 
-static void 
-renderer_added_cb (MafwRegistry *registry, 
-		   GObject *renderer, 
+static void
+renderer_added_cb (MafwRegistry *registry,
+		   GObject *renderer,
 		   gpointer user_data)
 {
 	if (MAFW_IS_RENDERER(renderer)) {
-		g_print("[INFO] Renderer %s available.\n", 
+		g_print("[INFO] Renderer %s available.\n",
 			mafw_extension_get_name(MAFW_EXTENSION(renderer)));
 	}
 }
 
 static void
-renderer_removed_cb (MafwRegistry * registry, 
-		     GObject *renderer, 
+renderer_removed_cb (MafwRegistry * registry,
+		     GObject *renderer,
 		     gpointer user_data)
 {
 	if (MAFW_IS_RENDERER(renderer)) {
-		g_print("Renderer %s removed.\n", 
+		g_print("Renderer %s removed.\n",
 			mafw_extension_get_name(MAFW_EXTENSION(renderer)));
 	}
 }
@@ -240,44 +240,44 @@ app_init (gchar *object_id)
 			   error->message);
 		g_error_free(error);
 		error = NULL;
-	} 
+	}
 
 	/* Connect to extension discovery signals. These signals will be
 	   emitted when new extensions are started or removed */
 	g_signal_connect (registry,
-			  "renderer_added", 
+			  "renderer_added",
 			  G_CALLBACK(renderer_added_cb), NULL);
 
 	g_signal_connect (registry,
-			  "renderer_removed", 
+			  "renderer_removed",
 			  G_CALLBACK(renderer_removed_cb), NULL);
 
 	g_signal_connect (registry,
-			  "source_added", 
+			  "source_added",
 			  G_CALLBACK(source_added_cb), object_id);
 
 	g_signal_connect (registry,
-			  "source_removed", 
+			  "source_removed",
 			  G_CALLBACK(source_removed_cb), NULL);
 
 	/* Also, check for already started extensions */
 	extension_list = mafw_registry_get_renderers(registry);
 	while (extension_list)
 	{
-		renderer_added_cb (registry, 
+		renderer_added_cb (registry,
 				   G_OBJECT(extension_list->data), NULL);
 		extension_list = g_list_next(extension_list);
 	}
-	
+
 	extension_list = mafw_registry_get_sources(registry);
 	while (extension_list)
 	{
-		source_added_cb (registry, 
+		source_added_cb (registry,
 				 G_OBJECT(extension_list->data), NULL);
 		extension_list = g_list_next(extension_list);
 	}
 
-	
+
 	/* ---- Start in-process plugin loading ---- */
 
 	/* MAFW_INP_PLUGINS shold contain a list of paths
@@ -286,7 +286,7 @@ app_init (gchar *object_id)
 	g_print ("[INFO] Checking for in-process plugins...\n");
 	if (g_getenv("MAFW_INP_PLUGINS") != NULL) {
 		plugins = g_strsplit (g_getenv ("MAFW_INP_PLUGINS"),
-				      G_SEARCHPATH_SEPARATOR_S, 
+				      G_SEARCHPATH_SEPARATOR_S,
 				      0);
 
 		for (; NULL != *plugins; plugins++) {
@@ -294,13 +294,13 @@ app_init (gchar *object_id)
 				 *plugins);
 
 			mafw_registry_load_plugin (MAFW_REGISTRY(registry),
-						   *plugins, 
+						   *plugins,
 						   &error);
 
 			if (error != NULL) {
 				gchar* msg;
 				msg = g_strdup_printf (
-					"Unable to load inp. plugin %s: %s", 
+					"Unable to load inp. plugin %s: %s",
 					*plugins,
 					error->message);
 
@@ -309,7 +309,7 @@ app_init (gchar *object_id)
 				g_free(msg);
 				g_error_free(error);
 				error = NULL;
-			} 
+			}
 		}
 	} else {
 		g_print ("[INFO]     No in-process plugins requested.\n");

@@ -45,7 +45,8 @@
 #define MAFW_DBUS_PATH "/com/nokia/mafw/renderer/uuid"
 #define MAFW_DBUS_INTERFACE MAFW_RENDERER_INTERFACE
 #define FAKE_RENDERER_NAME "uuid"
-#define FAKE_RENDERER_SERVICE MAFW_RENDERER_SERVICE ".mockland." FAKE_RENDERER_NAME
+#define FAKE_RENDERER_SERVICE MAFW_RENDERER_SERVICE ".mockland." \
+        FAKE_RENDERER_NAME
 
 static GMainLoop *Loop = NULL;
 
@@ -79,7 +80,7 @@ START_TEST(test_rendererwrapper)
 	GValueArray *value;
 	GValue v = {0};
 	gpointer pl = mafw_proxy_playlist_new(3);
-	
+
 	value = g_value_array_new(2);
 	g_value_init(&v, G_TYPE_UINT);
 	g_value_set_uint(&v, 2008);
@@ -101,11 +102,11 @@ START_TEST(test_rendererwrapper)
 	mockbus_expect(mafw_dbus_reply(c));
 	g_main_loop_run(Loop);
 	fail_unless(renderer->play_called == 1);
-	
+
 	mockbus_expect(mafw_dbus_signal(MAFW_RENDERER_SIGNAL_STATE_CHANGED,
 				MAFW_DBUS_INT32(2)));
 	g_signal_emit_by_name(G_OBJECT(renderer), "state-changed", 2);
-	
+
 	mockbus_expect(mafw_dbus_signal(MAFW_RENDERER_SIGNAL_ITEM_CHANGED,
 				MAFW_DBUS_INT32(2), MAFW_DBUS_STRING("oid")));
 	g_signal_emit_by_name(G_OBJECT(renderer), "media-changed", 2, "oid");
@@ -117,13 +118,13 @@ START_TEST(test_rendererwrapper)
 	mockbus_expect(mafw_dbus_signal(MAFW_RENDERER_SIGNAL_BUFFERING_INFO,
 				MAFW_DBUS_DOUBLE(2.2f)));
 	g_signal_emit_by_name(G_OBJECT(renderer), "buffering-info", 2.2f);
-	
+
 	mockbus_expect(mafw_dbus_signal(MAFW_RENDERER_SIGNAL_METADATA_CHANGED,
 					  MAFW_DBUS_STRING("date"),
 					  MAFW_DBUS_GVALUEARRAY(value)));
 	g_signal_emit_by_name(G_OBJECT(renderer), "metadata_changed", "date",
 				value);
-	
+
 
 	renderer->get_stat_pl = pl;
 	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_GET_STATUS));
@@ -133,28 +134,34 @@ START_TEST(test_rendererwrapper)
 					       MAFW_DBUS_STRING("bar")));
 	mockbus_deliver(NULL);
 	fail_unless(renderer->get_status_called == 1);
-	
+
 	renderer->get_stat_pl = NULL;
 	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_GET_STATUS));
-	mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_UINT32(MAFW_PROXY_PLAYLIST_INVALID_ID),
-					       MAFW_DBUS_UINT32(42),
-					       MAFW_DBUS_INT32(Paused),
-					       MAFW_DBUS_STRING("bar")));
+	mockbus_expect(mafw_dbus_reply(
+                               c,
+                               MAFW_DBUS_UINT32(MAFW_PROXY_PLAYLIST_INVALID_ID),
+                               MAFW_DBUS_UINT32(42),
+                               MAFW_DBUS_INT32(Paused),
+                               MAFW_DBUS_STRING("bar")));
 	mockbus_deliver(NULL);
 	fail_unless(renderer->get_status_called == 2);
-	
-	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_ASSIGN_PLAYLIST,
-						MAFW_DBUS_UINT32(0)));
+
+	mockbus_incoming(c = mafw_dbus_method(
+                                 MAFW_RENDERER_METHOD_ASSIGN_PLAYLIST,
+                                 MAFW_DBUS_UINT32(0)));
 	mockbus_expect(mafw_dbus_reply(c));
 	mockbus_deliver(NULL);
 	fail_unless(renderer->assign_playlist_called == 1);
-	
-	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_ASSIGN_PLAYLIST,
-						MAFW_DBUS_UINT32(3)));
-	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS, 
-					DBUS_INTERFACE_DBUS, "StartServiceByName",
-					MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
-					MAFW_DBUS_UINT32(0)));
+
+	mockbus_incoming(c = mafw_dbus_method(
+                                 MAFW_RENDERER_METHOD_ASSIGN_PLAYLIST,
+                                 MAFW_DBUS_UINT32(3)));
+	mockbus_expect(mafw_dbus_method_full(
+                               DBUS_SERVICE_DBUS, DBUS_PATH_DBUS,
+                               DBUS_INTERFACE_DBUS,
+                               "StartServiceByName",
+                               MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
+                               MAFW_DBUS_UINT32(0)));
 	mockbus_reply(MAFW_DBUS_UINT32(DBUS_START_REPLY_SUCCESS));
 	mockbus_expect(mafw_dbus_method_full(MAFW_PLAYLIST_SERVICE,
 					MAFW_PLAYLIST_PATH,
@@ -170,9 +177,10 @@ START_TEST(test_rendererwrapper)
 	mockbus_expect(mafw_dbus_reply(c));
 	mockbus_deliver(NULL);
 	fail_unless(renderer->assign_playlist_called == 2);
-	
-	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_ASSIGN_PLAYLIST,
-						MAFW_DBUS_UINT32(4)));
+
+	mockbus_incoming(c =
+                         mafw_dbus_method(MAFW_RENDERER_METHOD_ASSIGN_PLAYLIST,
+                                          MAFW_DBUS_UINT32(4)));
 	mockbus_expect(listpl = mafw_dbus_method_full(MAFW_PLAYLIST_SERVICE,
 					MAFW_PLAYLIST_PATH,
 					MAFW_PLAYLIST_INTERFACE,
@@ -180,7 +188,7 @@ START_TEST(test_rendererwrapper)
 					MAFW_DBUS_C_ARRAY(UINT32,
 							  dbus_uint32_t,
 							  4)));
-	
+
 	mockbus_reply_msg(mafw_dbus_error(listpl, MAFW_PLAYLIST_ERROR,
 					MAFW_PLAYLIST_ERROR_PLAYLIST_NOT_FOUND,
 					"Hihi"));
@@ -212,7 +220,8 @@ START_TEST(test_renderer_errors)
 
 	mock_appearing_extension(FAKE_RENDERER_SERVICE, FALSE);
 	mock_services(NULL);
-	mafw_registry_add_extension(MAFW_REGISTRY(reg), MAFW_EXTENSION(renderer));
+	mafw_registry_add_extension(MAFW_REGISTRY(reg),
+                                    MAFW_EXTENSION(renderer));
 
 	g_set_error(&eerr, MAFW_EXTENSION_ERROR,
 		    MAFW_EXTENSION_ERROR_FAILED,
@@ -221,7 +230,7 @@ START_TEST(test_renderer_errors)
 	mockbus_expect(mafw_dbus_gerror(c, eerr));
 	g_main_loop_run(Loop);
 	fail_unless(renderer->play_called == 1);
-		
+
 	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_PLAY_OBJECT,
 				MAFW_DBUS_STRING("BLA")));
 	mockbus_expect(mafw_dbus_gerror(c, eerr));
@@ -272,23 +281,27 @@ START_TEST(test_renderer_errors)
 	g_main_loop_run(Loop);
 	fail_unless(renderer->set_position_called == 1);
 
-	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_GET_POSITION));
+	mockbus_incoming(c =
+                         mafw_dbus_method(MAFW_RENDERER_METHOD_GET_POSITION));
 	mockbus_expect(mafw_dbus_gerror(c, eerr));
 	g_main_loop_run(Loop);
 	fail_unless(renderer->get_position_called == 1);
-	
+
 	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_GET_STATUS));
 	mockbus_expect(mafw_dbus_gerror(c, eerr));
 	g_main_loop_run(Loop);
 	fail_unless(renderer->get_status_called == 1);
 
 
-	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_ASSIGN_PLAYLIST,
-						MAFW_DBUS_UINT32(3)));
-	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS, 
-					DBUS_INTERFACE_DBUS, "StartServiceByName",
-					MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
-					MAFW_DBUS_UINT32(0)));
+	mockbus_incoming(c =
+                         mafw_dbus_method(MAFW_RENDERER_METHOD_ASSIGN_PLAYLIST,
+                                          MAFW_DBUS_UINT32(3)));
+	mockbus_expect(mafw_dbus_method_full(
+                               DBUS_SERVICE_DBUS, DBUS_PATH_DBUS,
+                               DBUS_INTERFACE_DBUS,
+                               "StartServiceByName",
+                               MAFW_DBUS_STRING(MAFW_PLAYLIST_SERVICE),
+                               MAFW_DBUS_UINT32(0)));
 	mockbus_reply(MAFW_DBUS_UINT32(DBUS_START_REPLY_SUCCESS));
 	mockbus_expect(mafw_dbus_method_full(MAFW_PLAYLIST_SERVICE,
 					MAFW_PLAYLIST_PATH,
@@ -319,16 +332,17 @@ static void dummy_set_ext_prop(MafwExtension *self, const gchar *name,
 
 static gboolean get_ext_called;
 static void dummy_get_ext_prop(MafwExtension *self, const gchar *name,
-				  MafwExtensionPropertyCallback cb, gpointer udata)
+                               MafwExtensionPropertyCallback cb,
+                               gpointer udata)
 {
 	GValue *value = NULL;
-	
+
 	value = g_new0(GValue, 1);
 	g_value_init(value, G_TYPE_INT);
 	g_value_set_int(value, 12345);
 
 	cb(self, name, value, udata, NULL);
-	
+
 	fail_if(get_ext_called);
 	get_ext_called = TRUE;
 }
@@ -354,7 +368,7 @@ START_TEST(test_extension)
 	GValue v = {0};
 	gchar *names[] = {"fakeprop", NULL};
 	GType types[] = {G_TYPE_INT};
-	
+
 	g_value_init(&v, G_TYPE_INT);
 	g_value_set_int(&v, 12345);
 
@@ -365,11 +379,11 @@ START_TEST(test_extension)
 	renderer = mocked_renderer_new("mock-snk", "uuid", Loop);
 	g_signal_connect(renderer, "notify::name", (GCallback)name_changed_cb,
 				NULL);
-	
+
 	mock_appearing_extension(FAKE_RENDERER_SERVICE, FALSE);
 	mock_services(NULL);
 	mafw_registry_add_extension(reg, MAFW_EXTENSION(renderer));
-	
+
 	MAFW_EXTENSION_CLASS(G_OBJECT_GET_CLASS(renderer))->
 				set_extension_property =
 						dummy_set_ext_prop;
@@ -378,7 +392,7 @@ START_TEST(test_extension)
 						dummy_get_ext_prop;
 	mafw_extension_add_property(MAFW_EXTENSION(renderer), "fakeprop",
 					G_TYPE_INT);
-	mockbus_incoming(c = 
+	mockbus_incoming(c =
 		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
 				      MAFW_EXTENSION_INTERFACE,
 				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
@@ -386,18 +400,19 @@ START_TEST(test_extension)
 				      MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
 	fail_if(!set_ext_called);
-	
-	mockbus_incoming(c = 
+
+	mockbus_incoming(c =
 		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
 				      MAFW_EXTENSION_INTERFACE,
 				      MAFW_EXTENSION_METHOD_GET_PROPERTY,
 				      MAFW_DBUS_STRING("fakeprop")));
-	mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_STRING("fakeprop"), MAFW_DBUS_GVALUE(&v)));
+	mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_STRING("fakeprop"),
+                                       MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
 	fail_if(!get_ext_called);
 	get_ext_called = FALSE;
-	
-	mockbus_incoming(c = 
+
+	mockbus_incoming(c =
 		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
 				      MAFW_EXTENSION_INTERFACE,
 				      MAFW_EXTENSION_METHOD_GET_PROPERTY,
@@ -407,8 +422,8 @@ START_TEST(test_extension)
 				  "Unknown property: fakepr"));
 	mockbus_deliver(NULL);
 	fail_if(get_ext_called);
-	
-	mockbus_incoming(c = 
+
+	mockbus_incoming(c =
 		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
 				      MAFW_EXTENSION_INTERFACE,
 				      MAFW_EXTENSION_METHOD_LIST_PROPERTIES));
@@ -416,8 +431,8 @@ START_TEST(test_extension)
 					DBUS_TYPE_ARRAY, DBUS_TYPE_UINT32,
 					types, 1));
 	mockbus_deliver(NULL);
-	
-	mockbus_incoming(c = 
+
+	mockbus_incoming(c =
 		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
 				      MAFW_EXTENSION_INTERFACE,
 				      MAFW_EXTENSION_METHOD_SET_NAME,
@@ -430,25 +445,27 @@ START_TEST(test_extension)
 	mockbus_deliver(NULL);
 	fail_if(!name_chd_called);
 
-	mockbus_incoming(c = 
+	mockbus_incoming(c =
 		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
 				      MAFW_EXTENSION_INTERFACE,
 				      MAFW_EXTENSION_METHOD_GET_NAME));
 	mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_STRING("fakename")));
 	mockbus_deliver(NULL);
-	
-	mockbus_expect(mafw_dbus_signal_full(NULL,
-				MAFW_DBUS_PATH,
-				MAFW_EXTENSION_INTERFACE,
-				MAFW_EXTENSION_SIGNAL_ERROR,
-				MAFW_DBUS_STRING("com.nokia.mafw.error.extension"),
-				MAFW_DBUS_INT32(3),
-				MAFW_DBUS_STRING("message")));
+
+	mockbus_expect(
+                mafw_dbus_signal_full(
+                        NULL,
+                        MAFW_DBUS_PATH,
+                        MAFW_EXTENSION_INTERFACE,
+                        MAFW_EXTENSION_SIGNAL_ERROR,
+                        MAFW_DBUS_STRING("com.nokia.mafw.error.extension"),
+                        MAFW_DBUS_INT32(3),
+                        MAFW_DBUS_STRING("message")));
 	g_signal_emit_by_name((gpointer)renderer, "error",
 				MAFW_EXTENSION_ERROR,
 				3,
 				"message");
-	
+
 	mockbus_expect(mafw_dbus_signal_full(NULL,
 				MAFW_DBUS_PATH,
 				MAFW_EXTENSION_INTERFACE,
@@ -458,7 +475,7 @@ START_TEST(test_extension)
 	mafw_extension_emit_property_changed(MAFW_EXTENSION(renderer),
 				"fakeprop",
 				&v);
-	
+
 	mockbus_finish();
 }
 END_TEST
@@ -471,8 +488,9 @@ static Suite *rendererwrapper_suite(void)
 
 	suite = suite_create("Renderer wrapper");
 if (1) {
-	tc_export_unexport = checkmore_add_tcase(suite, "Exporting & unexporting",
-			    test_export_unexport);
+	tc_export_unexport = checkmore_add_tcase(suite,
+                                                 "Exporting & unexporting",
+                                                 test_export_unexport);
 	tcase_set_timeout(tc_export_unexport, 60);
 }
 if (1) {

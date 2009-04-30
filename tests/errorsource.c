@@ -52,7 +52,8 @@ static guint browse(MafwSource* self,
 	{
 		GError* error = NULL;
 		GHashTable *md = mockbus_mkmeta(NULL);
-		g_set_error(&error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,
+		g_set_error(&error, MAFW_EXTENSION_ERROR,
+                            MAFW_EXTENSION_ERROR_FAILED,
 			    "Error source fails in everything it does.");
 		callback(self, MAFW_SOURCE_INVALID_BROWSE_ID, 0, 0,
 			 "testobject", md, user_data, error);
@@ -75,7 +76,7 @@ static gboolean cancel_browse(MafwSource *self, guint browse_id, GError **error)
 
 	es->cancel_browse_called++;
 	quit_main_loop(self, G_STRFUNC);
-	
+
 	return FALSE;
 }
 
@@ -91,7 +92,8 @@ static void get_metadata(MafwSource *self,
 	{
 		GError* error = NULL;
 		GHashTable *md = mockbus_mkmeta(NULL);
-		g_set_error(&error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,
+		g_set_error(&error, MAFW_EXTENSION_ERROR,
+                            MAFW_EXTENSION_ERROR_FAILED,
 			    "Error source fails in everything it does.");
 		callback(self, "testobject", md, user_data, error);
 		mafw_metadata_release(md);
@@ -110,16 +112,19 @@ static void get_metadatas(MafwSource *self,
 {
 	ErrorSource* es = ERROR_SOURCE(self);
 
-	g_assert(object_ids && object_ids[0] && object_ids[1] && !object_ids[2]);
+	g_assert(object_ids && object_ids[0] && object_ids[1] &&
+                 !object_ids[2]);
 	if (callback != NULL)
 	{
 		GError* error = NULL;
 		GHashTable* md = mafw_metadata_new();
-		GHashTable *mdatas = g_hash_table_new_full(g_str_hash,
-						g_str_equal,
-						NULL,
-						(GDestroyNotify)mafw_metadata_release);
-		g_set_error(&error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,
+		GHashTable *mdatas = g_hash_table_new_full(
+                        g_str_hash,
+                        g_str_equal,
+                        NULL,
+                        (GDestroyNotify)mafw_metadata_release);
+		g_set_error(&error, MAFW_EXTENSION_ERROR,
+                            MAFW_EXTENSION_ERROR_FAILED,
 			    "Error source fails in everything it does.");
 		mafw_metadata_add_str(md, "title", "Easy");
 		g_hash_table_insert(mdatas, "testobject1", md);
@@ -127,7 +132,7 @@ static void get_metadatas(MafwSource *self,
 		g_hash_table_ref(md);
 		callback(self, mdatas, user_data, error);
 		g_hash_table_unref(mdatas);
-	}	
+	}
 	es->get_metadatas_called++;
 	quit_main_loop(self, G_STRFUNC);
 }
@@ -141,11 +146,12 @@ static void set_metadata(MafwSource *self, const gchar *object_id,
 
 	if (callback != NULL)
 	{
-		const gchar** failed_keys = (const gchar**) 
+		const gchar** failed_keys = (const gchar**)
 			MAFW_SOURCE_LIST("pertti", "pasanen");
 		GError* error = NULL;
 
-		g_set_error(&error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,
+		g_set_error(&error, MAFW_EXTENSION_ERROR,
+                            MAFW_EXTENSION_ERROR_FAILED,
 			    "Error source fails in everything it does.");
 		callback(self, object_id, failed_keys, user_data, error);
 		g_error_free(error);
@@ -166,7 +172,8 @@ static void create_object(MafwSource *self, const gchar *parent,
 	if (callback != NULL)
 	{
 		GError* error = NULL;
-		g_set_error(&error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,
+		g_set_error(&error, MAFW_EXTENSION_ERROR,
+                            MAFW_EXTENSION_ERROR_FAILED,
 			    "Error source fails in everything it does.");
 		callback(self, "testobject", user_data, error);
 		g_error_free(error);
@@ -185,7 +192,8 @@ static void destroy_object(MafwSource *self, const gchar *object_id,
 	if (callback != NULL)
 	{
 		GError* error = NULL;
-		g_set_error(&error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,
+		g_set_error(&error, MAFW_EXTENSION_ERROR,
+                            MAFW_EXTENSION_ERROR_FAILED,
 			    "Error source fails in everything it does.");
 		callback(self, object_id, user_data, error);
 		g_error_free(error);

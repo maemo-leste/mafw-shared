@@ -7,12 +7,12 @@
     <para>
       MAFW playlists are shared, this means they are stored and exposed by the
       <link linkend="section-daemon-playlists">mafw-playlist-daemon</link>,
-      which makes them available for all MAFW based applications, that can access
-      and manipulate them concurrently through its API.
+      which makes them available for all MAFW based applications, that can
+      access and manipulate them concurrently through its API.
     </para>
 
     <para>Because the playlists are always remote objects stored and handled
-    by a separate process, whenever the application needs to deal with a 
+    by a separate process, whenever the application needs to deal with a
     playlist there is a need for inter-process communications. However
     these communications are hidden to developers by using a proxy
     object. These proxy objects allow developers to interact with the
@@ -21,11 +21,11 @@
     developer.</para>
 
     <para>
-      Operations like creating or removing a playlist or obtaining the list
-      of available playlists, are done through the #MafwPlaylistManager object.
-      This object acts as a proxy of the playlist daemon, for playlist related 
-      operations that do not deal with a particular playlist. A reference to this
-      object can be obtained like this:
+      Operations like creating or removing a playlist or obtaining the list of
+      available playlists, are done through the #MafwPlaylistManager object.
+      This object acts as a proxy of the playlist daemon, for playlist related
+      operations that do not deal with a particular playlist. A reference to
+      this object can be obtained like this:
     </para>
 
     <programlisting role="c">
@@ -45,11 +45,11 @@ gchar* name = "myplaylist";
 MafwPlaylistManager *manager;
 MafwProxyPlaylist *playlist;
 GError *error = NULL;
-		
+
 manager = mafw_playlist_manager_get ();
 playlist = mafw_playlist_manager_create_playlist (manager,
 						  name,
-						  &amp;error);		
+						  &amp;error);
 if (error != NULL)
 {
   /* Error management */
@@ -66,21 +66,20 @@ else
 
     <para>
       The method #mafw_playlist_manager_create_playlist is responsible for
-      requesting the creation of a new playlist to the playlist daemon. 
-      If the operation was successful, this operations returns a reference
-      to a #MafwProxyPlaylist that will act as a local representation of the
-      remote playlist created in the playlist daemon. If the requested
-      playlist name has already been used (this is, another playlist with that
-      name already exists), no playlist is created and a reference to the already
-      existing playlist is returned. In order to check if a certain playlist already
-      exists, the developer can use
-      #mafw_playlist_manager_get_playlists or
-      #mafw_playlist_manager_list_playlists to list the
-      playlist names that have been registered already.
+      requesting the creation of a new playlist to the playlist daemon.  If the
+      operation was successful, this operations returns a reference to a
+      #MafwProxyPlaylist that will act as a local representation of the remote
+      playlist created in the playlist daemon. If the requested playlist name
+      has already been used (this is, another playlist with that name already
+      exists), no playlist is created and a reference to the already existing
+      playlist is returned. In order to check if a certain playlist already
+      exists, the developer can use #mafw_playlist_manager_get_playlists or
+      #mafw_playlist_manager_list_playlists to list the playlist names that have
+      been registered already.
     </para>
 
     <para>
-     It is important to consider the shared nature of the MAFW playlists. From 
+     It is important to consider the shared nature of the MAFW playlists. From
      the developer point of view, this means it should never be assumed that
      a certain MAFW based application is the only one interacting with a
      playlist.
@@ -113,35 +112,35 @@ on_mafw_playlist_created (MafwPlaylistManager* manager,
       work also for playlists created by other MAFW based
       applications.
     </para>
-      
+
     <para>
-      It is possible to import an existing playlist file or the contents of a 
+      It is possible to import an existing playlist file or the contents of a
       particular container of a source extension as a MAFW playlist with the
       help of #mafw_playlist_manager_import. If this method is passed a URI as
-      parameter, it will try to parse the file pointed by that URI and populate a
-      playlist with the entries of the playlist file. Likewise, if a source object
-      identifier is used instead of a URI, and it points to a valid source container, 
-      the container will be browsed, and the contents will be used
-      to populate the playlist. If the object identifier points to a single
+      parameter, it will try to parse the file pointed by that URI and populate
+      a playlist with the entries of the playlist file. Likewise, if a source
+      object identifier is used instead of a URI, and it points to a valid
+      source container, the container will be browsed, and the contents will be
+      used to populate the playlist. If the object identifier points to a single
       media item instead of a container, the associated media will be treated as
-      as a playlist file, parsing the file it points to adding its entries
-      to the playlist. 
+      as a playlist file, parsing the file it points to adding its entries to
+      the playlist.
     </para>
 
     <para>
       After a playlist has been imported, the framework will invoke the callback
-      passed as parameter to #mafw_playlist_manager_import, with a reference
-      to the imported playlist proxy object. The name of the playlist will be the
+      passed as parameter to #mafw_playlist_manager_import, with a reference to
+      the imported playlist proxy object. The name of the playlist will be the
       URI pointing to the file, or the source container title. If a playlist
-      with this name existed already, then a number will be added after
-      the name as a suffix to ensure a unique name is assigned. After this, the
+      with this name existed already, then a number will be added after the name
+      as a suffix to ensure a unique name is assigned. After this, the
       #MafwPlaylistManager::playlist-created signal will be emitted.
     </para>
 
     <para>
       This is an example of importing a playlist file to the framework:
     </para>
-    
+
     <programlisting role="c">
 
 static void
@@ -159,9 +158,9 @@ static void import_test_file(void)
   gchar* uri = "file:///home/test/test.pls";
   MafwPlaylistManager *manager;
   GError *error = NULL;
-		
+
   manager = mafw_playlist_manager_get ();
-		
+
   if (!mafw_playlist_manager_import (manager,
 					  uri,
 					  NULL,
@@ -201,10 +200,10 @@ if (error != NULL) {
   /* Playlist could not be deleted, error management */
 }
 </programlisting>
-    
+
     <para>
       The first step is to obtain a reference to the playlist that has to be
-      removed. After a reference has been obtained, 
+      removed. After a reference has been obtained,
       #mafw_playlist_manager_destroy_playlist is ready to remove it.
     </para>
 
@@ -217,11 +216,12 @@ if (error != NULL) {
     </para>
 
     <para>
-      When an application wants to mark a playlist as being in use, it should call
-      mafw_playlist_increment_use_count. When an application tries to remove
-      a playlist which reference count is greater than zero, the operation will fail.
-      Renderers should always increment the reference count of a playlist when it is
-      assigned and decrement when it is unassigned.
+      When an application wants to mark a playlist as being in use, it should
+      call mafw_playlist_increment_use_count. When an application tries to
+      remove a playlist which reference count is greater than zero, the
+      operation will fail.  Renderers should always increment the reference
+      count of a playlist when it is assigned and decrement when it is
+      unassigned.
     </para>
 
     <para>
@@ -231,7 +231,7 @@ if (error != NULL) {
       deal with this situation properly. For example, another MAFW
       based application may attempt to destroy a playlist that your
       application is showing as available to the user in a playlist
-      selection widget. Here is a code example that shows how to 
+      selection widget. Here is a code example that shows how to
       connect to this signal:
     </para>
 
@@ -258,8 +258,8 @@ on_mafw_playlist_destroyed (MafwPlaylistManager* manager,
       <title>Inserting items</title>
 
       <para>
-        Adding elements to the playlist is done by using 
-        #mafw_playlist_insert_item and specifying the index 
+        Adding elements to the playlist is done by using
+        #mafw_playlist_insert_item and specifying the index
         where the item should be inserted.
       </para>
 
@@ -268,7 +268,7 @@ on_mafw_playlist_destroyed (MafwPlaylistManager* manager,
         gchar *object_id = get_object_id();
 	mafw_playlist_insert_item(playlist, index, object_id, &amp;error);
 	g_free(oid);
-	
+
 	if (error != NULL)
 	{
           /* Error handling */
@@ -279,10 +279,10 @@ on_mafw_playlist_destroyed (MafwPlaylistManager* manager,
 	}
 }
 </programlisting>
-      
+
       <para>
         A signal will be emitted whenever a playlist is modified. Notice
-        that other MAFW based applications may be modifying the playlists 
+        that other MAFW based applications may be modifying the playlists
         in use by your application at any moment. By connecting to these
         signals, your application should be able to handle this situation
         properly:
@@ -303,13 +303,13 @@ on_mafw_playlist_contents_changed(MafwPlaylist *playlist, guint from,
 </programlisting>
 
       <para>
-        This #MafwPlaylist::contents-changed signal is used to signal
-        changes of any kind. The <code>from</code> parameter is the index of the
-	first element affected by the change, <code>nremoved</code> is the number 
-	of removed elements and <code>nreplaced</code> represents the number of
-        elements replaced. For example, in case of insertion, the signal will
-	be emitted with the insertion index as <code>from</code>, 0 as 
-        <code>nremoved</code> and 1 as <code>nreplaced</code>. More information 
+        This #MafwPlaylist::contents-changed signal is used to signal changes of
+        any kind. The <code>from</code> parameter is the index of the first
+        element affected by the change, <code>nremoved</code> is the number of
+        removed elements and <code>nreplaced</code> represents the number of
+        elements replaced. For example, in case of insertion, the signal will be
+        emitted with the insertion index as <code>from</code>, 0 as
+        <code>nremoved</code> and 1 as <code>nreplaced</code>. More information
         is available in the &mafw_reference;.
       </para>
 
@@ -341,7 +341,7 @@ on_mafw_playlist_contents_changed(MafwPlaylist *playlist, guint from,
 
       <para>
         The signal received when modifying the playlist is the same as
-        when removing elements. In this case 
+        when removing elements. In this case
         <code>nremoved</code> would be 1 and
         <code>nreplaced</code> would be the difference between the
         number of elements in the playlist and the index of the removed
@@ -372,7 +372,7 @@ on_mafw_playlist_contents_changed(MafwPlaylist *playlist, guint from,
 
       <para>
         The example moves the element at position 3 to
-        position 1, moving elements in positions 1 and 2 
+        position 1, moving elements in positions 1 and 2
         forward to positions 2 and 3. When invoking this method,
         the signal item-moved is emitted:
       </para>
@@ -476,19 +476,19 @@ playlist_get_items_md_cb(MafwPlaylist *playlist, guint index,
         /* Probably show this title string in the UI */
 }
 </programlisting>
-      
+
       <para>
-        The callback is invoked once per entry and is passed a hash table 
-        with metadata associated to media resource associated to the object 
+        The callback is invoked once per entry and is passed a hash table with
+        metadata associated to media resource associated to the object
         identifier specified by <code>object_id</code>. This hash table may
-        contain metadata with multiple values for each metadata key and this
-        is why MAFW provides #mafw_metadata_first to access the first (or only)
-        value in the hash table for a particular metadata key. In order to obtain 
-	all the values for a particular metadata key, the developer can use 
-	the normal hash table API. In this case, if there is only one value for
-        that metadata key, the hash table will return a #GValue holding the value.
-	If it is multi-valued, it will return a #GValueArray. Take a look at
-        the &mafw_reference; for more info.
+        contain metadata with multiple values for each metadata key and this is
+        why MAFW provides #mafw_metadata_first to access the first (or only)
+        value in the hash table for a particular metadata key. In order to
+        obtain all the values for a particular metadata key, the developer can
+        use the normal hash table API. In this case, if there is only one value
+        for that metadata key, the hash table will return a #GValue holding the
+        value.  If it is multi-valued, it will return a #GValueArray. Take a
+        look at the &mafw_reference; for more info.
       </para>
 
     </section>
@@ -500,8 +500,8 @@ playlist_get_items_md_cb(MafwPlaylist *playlist, guint index,
     <title>Shuffle and unshuffle</title>
 
     <para>
-      When a playlist is created, it is unshuffled, which means that playing 
-      its contents in a renderer would play the items in the playlist in the 
+      When a playlist is created, it is unshuffled, which means that playing
+      its contents in a renderer would play the items in the playlist in the
       same order they were inserted.
     </para>
 
@@ -511,11 +511,11 @@ playlist_get_items_md_cb(MafwPlaylist *playlist, guint index,
     </para>
 
     <para>
-      The method #mafw_playlist_get_starting_index can be called to obtain
-      the index and object identifier of the first item of the playlist according
-      to the playing order. The methods #mafw_playlist_get_next and
-      #mafw_playlist_get_prev can be used to move to the next and previous elements
-      respectively.
+      The method #mafw_playlist_get_starting_index can be called to obtain the
+      index and object identifier of the first item of the playlist according to
+      the playing order. The methods #mafw_playlist_get_next and
+      #mafw_playlist_get_prev can be used to move to the next and previous
+      elements respectively.
     </para>
 
     <para>
@@ -529,9 +529,9 @@ playlist_get_items_md_cb(MafwPlaylist *playlist, guint index,
     </para>
 
 <programlisting role="c">
-static void 
-media_changed_cb(MafwRenderer *renderer, 
-		 gint index, 
+static void
+media_changed_cb(MafwRenderer *renderer,
+		 gint index,
 		 gchar *object_id,
 		 gpointer user_data)
 {
@@ -540,9 +540,9 @@ media_changed_cb(MafwRenderer *renderer,
 </programlisting>
 
     <para>
-      The application developer can also query the currently selected entry in the
-      playlist assigned to a renderer using the method #mafw_renderer_get_status
-      (see the &mafw_reference; for details).
+      The application developer can also query the currently selected entry in
+      the playlist assigned to a renderer using the method
+      #mafw_renderer_get_status (see the &mafw_reference; for details).
     </para>
 
   </section>

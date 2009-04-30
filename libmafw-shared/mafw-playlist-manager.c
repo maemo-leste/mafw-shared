@@ -182,9 +182,9 @@ static void mafw_playlist_manager_class_init(
  * @playlist: the playlist object of #MafwPlaylist which destruction is not
  * allowed.
  *
- * This signal informs the application that the destruction of the playlist is 
+ * This signal informs the application that the destruction of the playlist is
  * not allowed. This signal is only sent about playlists the application has a
- * reference to, ie. it was obtained via mafw_playlist_manager_get_playlist() 
+ * reference to, ie. it was obtained via mafw_playlist_manager_get_playlist()
  * or mafw_playlist_manager_list_playlists().
  */
 	Signal_list_destruction_failed.id = g_signal_new(
@@ -266,7 +266,7 @@ static void mafw_playlist_manager_finalize(
 	g_ptr_array_foreach(self->priv->playlists,
 			    (GFunc)g_object_unref, NULL);
 	g_ptr_array_free(self->priv->playlists, TRUE);
-	
+
 	if (import_requests)
 		g_hash_table_destroy(import_requests);
 
@@ -426,7 +426,7 @@ static DBusHandlerResult dbus_handler(DBusConnection *con, DBusMessage *msg,
 		mafw_dbus_parse(msg, DBUS_TYPE_UINT32, &id);
 
 		/* Do we have an object for this playlist? */
-		
+
 		playlist = NULL;
 		playlists = self->priv->playlists;
 		for (i = 0; i < playlists->len; i++)
@@ -443,7 +443,9 @@ static DBusHandlerResult dbus_handler(DBusConnection *con, DBusMessage *msg,
 		 */
 		if (playlist) {
 			if (G_OBJECT(playlist)->ref_count > 1)
-				g_signal_emit(self, Signal_list_destruction_failed.id, 0,
+				g_signal_emit(self,
+                                              Signal_list_destruction_failed.id,
+                                              0,
 					      playlist);
 			g_object_unref(playlist);
 		}
@@ -470,7 +472,7 @@ static DBusHandlerResult dbus_handler(DBusConnection *con, DBusMessage *msg,
 			g_set_error(&error,g_quark_from_string(domain_str),
 				    code, "%s", message);
 		}
-		
+
 		req = g_hash_table_lookup(import_requests,
 				  GUINT_TO_POINTER(import_id));
 		if (!req)
@@ -570,7 +572,7 @@ MafwProxyPlaylist *mafw_playlist_manager_create_playlist(
  * destroyed.
  */
 gboolean mafw_playlist_manager_destroy_playlist(
-					   MafwPlaylistManager *self, 
+					   MafwPlaylistManager *self,
 					   MafwProxyPlaylist *playlist,
 					   GError **errp)
 {
@@ -814,7 +816,8 @@ void mafw_playlist_manager_free_list_of_playlists(
  * mafw_playlist_manager_import:
  * @self: a #MafwPlaylistManager instance.
  * @playlist: Uri to playlist, playlist object id or container objectid.
- * @cb: callback to be called, when it finished with the import, or error occured
+ * @cb: callback to be called, when it finished with the import, or error
+ * occured
  * @base_uri: If not %NULL, used as prefix to resolve relative paths found from
  * playlist.
  * @user_data:     Optional user data pointer passed along with @browse_cb.
@@ -835,12 +838,14 @@ guint mafw_playlist_manager_import(MafwPlaylistManager *self,
 	DBusConnection *dbus;
 	DBusMessage *reply;
 	guint import_id;
-	
-	g_return_val_if_fail(self != NULL, MAFW_PLAYLIST_MANAGER_INVALID_IMPORT_ID);
+
+	g_return_val_if_fail(self != NULL,
+                             MAFW_PLAYLIST_MANAGER_INVALID_IMPORT_ID);
 	g_return_val_if_fail(playlist != NULL && playlist[0] != '\0',
 				MAFW_PLAYLIST_MANAGER_INVALID_IMPORT_ID);
-	g_return_val_if_fail(cb != NULL, MAFW_PLAYLIST_MANAGER_INVALID_IMPORT_ID);
-	
+	g_return_val_if_fail(cb != NULL,
+                             MAFW_PLAYLIST_MANAGER_INVALID_IMPORT_ID);
+
 	if (!(dbus = mafw_dbus_session(error)))
 		return MAFW_PLAYLIST_MANAGER_INVALID_IMPORT_ID;
 
@@ -856,27 +861,27 @@ guint mafw_playlist_manager_import(MafwPlaylistManager *self,
 		mafw_dbus_parse(reply, DBUS_TYPE_UINT32, &import_id);
 		/* Remember this new request. */
 		dbus_message_unref(reply);
-		
+
 		if (!import_requests) {
 			import_requests = g_hash_table_new_full(NULL,
 							      	NULL,
 							      	NULL,
 							      	g_free);
 		}
-		
+
 		new_req = g_new0(struct _import_req, 1);
 		new_req->cb = cb;
 		new_req->udata = user_data;
 		g_hash_table_replace(import_requests,
 				     GUINT_TO_POINTER(import_id),
 				     new_req);
-		
+
 	}
 	else
 		import_id = MAFW_PLAYLIST_MANAGER_INVALID_IMPORT_ID;
-	
+
 	dbus_connection_unref(dbus);
-	
+
 	return import_id;
 }
 
@@ -891,7 +896,7 @@ guint mafw_playlist_manager_import(MafwPlaylistManager *self,
  * Returns: %FALSE if the operation failed (in which case @error is also set).
  */
 gboolean mafw_playlist_manager_cancel_import(MafwPlaylistManager *self,
-					  guint import_id, 
+					  guint import_id,
 					  GError **error)
 {
 	struct _import_req *req;
@@ -911,7 +916,7 @@ gboolean mafw_playlist_manager_cancel_import(MafwPlaylistManager *self,
 		DBusConnection *dbus;
 		DBusMessage *reply;
 		/* The request is still in progress. */
-		
+
 		dbus = mafw_dbus_session(NULL);
 
 		/* $req doesn't contain dynamically allocated data
@@ -920,10 +925,12 @@ gboolean mafw_playlist_manager_cancel_import(MafwPlaylistManager *self,
 				    GUINT_TO_POINTER(import_id));
 
 		/* Tell our mate to cancel. */
-		reply = mafw_dbus_call(dbus, mafw_dbus_method(
-					       MAFW_PLAYLIST_METHOD_CANCEL_IMPORT,
-					       MAFW_DBUS_UINT32(import_id)),
-				       MAFW_PLAYLIST_ERROR, error);
+		reply = mafw_dbus_call(
+                        dbus,
+                        mafw_dbus_method(
+                                MAFW_PLAYLIST_METHOD_CANCEL_IMPORT,
+                                MAFW_DBUS_UINT32(import_id)),
+                        MAFW_PLAYLIST_ERROR, error);
 		if (reply)
 		{
 			dbus_message_unref(reply);
@@ -973,7 +980,8 @@ MafwProxyPlaylist *mafw_playlist_manager_dup_playlist(
 
         reply = mafw_dbus_call(dbus, mafw_dbus_method(
                                       MAFW_PLAYLIST_METHOD_DUP_PLAYLIST,
-                                      MAFW_DBUS_UINT32(id), MAFW_DBUS_STRING(new_name)),
+                                      MAFW_DBUS_UINT32(id),
+                                      MAFW_DBUS_STRING(new_name)),
                                MAFW_PLAYLIST_ERROR, errp);
         dbus_connection_unref(dbus);
         if (!reply)

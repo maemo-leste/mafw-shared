@@ -9,15 +9,15 @@
 <para>
 Sources are used to get access to multimedia
 repositories.  For example, a source might provide access to &upnp;
-servers, the multimedia files located at the local filesystem, 
+servers, the multimedia files located at the local filesystem,
 or those housed at &bluetooth; devices, etc. The main target of
 sources is to provide a way to query and retrieve information about
 available media files.
 </para>
 
 <para>
-Sources identify media items by means of <emphasis>object identifiers</emphasis>.
-These identifiers are strings in the form:
+Sources identify media items by means of <emphasis>object
+identifiers</emphasis>. These identifiers are strings in the form:
 </para>
 
 <para><![CDATA[
@@ -25,12 +25,12 @@ These identifiers are strings in the form:
 ]]></para>
 
 <para>
-consisting of the Source ID of the originating source and a unique (within
-the individual scope of the source) Item ID, separated by two colons. Each object 
-ID should be unique, persistent and portable, if possible. Applications may 
-assume that an object ID corresponds to a single content item, and this 
-should be maintained across shutdowns, reboots and reinstalls. A specific
-object ID is meaningful only for the source that has produced it.
+consisting of the Source ID of the originating source and a unique (within the
+individual scope of the source) Item ID, separated by two colons. Each object ID
+should be unique, persistent and portable, if possible. Applications may assume
+that an object ID corresponds to a single content item, and this should be
+maintained across shutdowns, reboots and reinstalls. A specific object ID is
+meaningful only for the source that has produced it.
 </para>
 
 <para>
@@ -43,13 +43,14 @@ Sources provide a few services to applications, however, the most important are:
 
 <para><emphasis>Browsing</emphasis> is the operation used to explore, query and
 filter contents from a particular source of media. Developers will use
-the browse interface, for example, to get a list of the songs or videos 
+the browse interface, for example, to get a list of the songs or videos
 available, to access the songs of a particular artist, etc. Sources provide
 access to their contents exposing them through the browse interface using
-a container model: there is a root container, which object ID is 
-<emphasis>&lt;Source-ID&gt;::</emphasis>, any container can contain other containers
-or media resources, very much like navigating a file system. The structure
-of containers exposed by the source is decided by the source developer.
+a container model: there is a root container, which object ID is
+<emphasis>&lt;Source-ID&gt;::</emphasis>, any container can contain other
+containers or media resources, very much like navigating a file system. The
+structure of containers exposed by the source is decided by the source
+developer.
 </para>
 
 <para><emphasis>Metadata retrieval</emphasis> is the operation used to obtain
@@ -108,13 +109,13 @@ container of a certain source:
 <programlisting role="c">
 
 static void
-browse_cb(MafwSource *source, 
-          guint browseid, 
+browse_cb(MafwSource *source,
+          guint browseid,
           gint remaining,
-          guint index, 
-          const gchar *objectid, 
+          guint index,
+          const gchar *objectid,
           GHashTable *metadata,
-          gpointer user_data, 
+          gpointer user_data,
           const GError *error)
 {
         if (error != NULL) {
@@ -124,16 +125,16 @@ browse_cb(MafwSource *source,
 
                 if (metadata) {
                         GValue *v;
-                        v = mafw_metadata_first(metadata, 
+                        v = mafw_metadata_first(metadata,
                                                 MAFW_METADATA_KEY_TITLE);
                         title = v ? g_value_get_string(v) : "Unknown";
-                        v = mafw_metadata_first(metadata, 
+                        v = mafw_metadata_first(metadata,
                                                 MAFW_METADATA_KEY_ARTIST);
                         artist = v ? g_value_get_string(v) : "Unknown";
-                        v = mafw_metadata_first(metadata, 
+                        v = mafw_metadata_first(metadata,
                                                 MAFW_METADATA_KEY_ALBUM);
                         album = v ? g_value_get_string(v) : "Unknown";
-                        v = mafw_metadata_first(metadata, 
+                        v = mafw_metadata_first(metadata,
                                                 MAFW_METADATA_KEY_MIME);
                         mime = v ? g_value_get_string(v) : "Unknown";
                 } else {
@@ -192,11 +193,11 @@ source. The meaning of the parameters is:
 to be browsed.</listitem>
 <listitem><code>Recursive</code>, whether the container should be browsed
 recursively or not.</listitem>
-<listitem><code>Filter</code>, specifies an optional filter string in a 
+<listitem><code>Filter</code>, specifies an optional filter string in a
 syntax similar to that used in LDAP search filters.</listitem>
 <listitem><code>Sort criteria</code>, a string used to specify the criteria
 that should be followed to sort the browse results.</listitem>
-<listitem><code>Keys</code>, metadata keys we are interested in retrieving 
+<listitem><code>Keys</code>, metadata keys we are interested in retrieving
 along with each object identifier returned with the browse operation.</listitem>
 <listitem><code>Offset</code>, the index of the first item to retrieve from
 the list of items that match the browse query.</listitem>
@@ -218,7 +219,7 @@ operations.
 </para>
 
 <para>
-The results of the browse call are returned using the provided callback. 
+The results of the browse call are returned using the provided callback.
 This callback is invoked each time a matching result is found by the source.
 Each time the callback is invoked it informs about:
 <itemizedlist>
@@ -229,7 +230,7 @@ result.
 with a particular browse operation.
 </listitem>
 <listitem><code>Remaining</code>, which informs about the remaining items
-that have matched the browse query and are pending to be sent through the 
+that have matched the browse query and are pending to be sent through the
 callback. When this value reaches 0 it means that all the results have been sent
 and the operations has finished.
 </listitem>
@@ -238,7 +239,7 @@ matched results.
 </listitem>
 <listitem><code>Object ID</code>, the object ID of the current item.
 </listitem>
-<listitem><code>Metadata</code>, the metadata values associated to the 
+<listitem><code>Metadata</code>, the metadata values associated to the
 current item.
 </listitem>
 <listitem><code>User Data</code>, user data of the callback.
@@ -264,10 +265,10 @@ particular media. This can be achieved using
 
 <programlisting role="c">
 static void
-metadata_cb(MafwSource *source, 
+metadata_cb(MafwSource *source,
             const gchar *objectid,
             GHashTable *metadata,
-            gpointer user_data, 
+            gpointer user_data,
             const GError *error)
 {
         if (error != NULL) {
@@ -277,16 +278,16 @@ metadata_cb(MafwSource *source,
 
                 if (metadata) {
                         GValue *v;
-                        v = mafw_metadata_first(metadata, 
+                        v = mafw_metadata_first(metadata,
                                                 MAFW_METADATA_KEY_TITLE);
                         title = v ? g_value_get_string(v) : "Unknown";
-                        v = mafw_metadata_first(metadata, 
+                        v = mafw_metadata_first(metadata,
                                                 MAFW_METADATA_KEY_ARTIST);
                         artist = v ? g_value_get_string(v) : "Unknown";
-                        v = mafw_metadata_first(metadata, 
+                        v = mafw_metadata_first(metadata,
                                                 MAFW_METADATA_KEY_ALBUM);
                         album = v ? g_value_get_string(v) : "Unknown";
-                        v = mafw_metadata_first(metadata, 
+                        v = mafw_metadata_first(metadata,
                                                 MAFW_METADATA_KEY_MIME);
                         mime = v ? g_value_get_string(v) : "Unknown";
                 } else {
@@ -300,7 +301,7 @@ metadata_cb(MafwSource *source,
                 g_print("Artist: %s\n", artist);
                 g_print(" Album: %s\n", album);
                 g_print("  Mime: %s\n", mime);
-        }        
+        }
 }
 
 static void
@@ -331,7 +332,7 @@ operation). The parameters passed to #mafw_source_get_metadata are:
 <itemizedlist>
 <listitem><code>Source</code>, the #MafwSource to be queried.
 </listitem>
-<listitem><code>Object ID</code>, the object ID to get metadata from. 
+<listitem><code>Object ID</code>, the object ID to get metadata from.
 </listitem>
 <listitem><code>Keys</code>, metadata information we are interested in.
 </listitem>
@@ -371,8 +372,8 @@ This callback should be called only once.
 <title>Using a source</title>
 
 <para>
-Sources are extensions, therefore, the first step is to obtain a reference to them
-using the framework registry, like this:
+Sources are extensions, therefore, the first step is to obtain a reference to
+them using the framework registry, like this:
 
 <programlisting role="c">
 MafwProxyRegistry *registry = MAFW_REGISTRY(mafw_registry_get_instance());
@@ -382,13 +383,13 @@ if (registry) {
 </programlisting>
 
 The code above allows the application developer to obtain a list of available
-sources. The developer can use this list to show the available sources to the 
+sources. The developer can use this list to show the available sources to the
 users, allowing them to select the ones they are interested in.
 </para>
 
 <para>
-Once reference to the source we are interested in has been obtained, the developer
-can start to use it. The way sources are used is usually this:
+Once reference to the source we are interested in has been obtained, the
+developer can start to use it. The way sources are used is usually this:
 
 <itemizedlist>
 <listitem>User wants to browse the contents of the source. The
@@ -396,9 +397,9 @@ application should browse the root container of the selected source
 using #mafw_source_browse and show the results to the user. The
 application developer should request the metadata #MAFW_METADATA_KEY_MIME to
 distinguish containers from media items.</listitem>
-<listitem>Once users have obtained the results of the browse operation, 
+<listitem>Once users have obtained the results of the browse operation,
 they may want to browse one of the containers contained in the
-root container, in this case the application should issue a new browse 
+root container, in this case the application should issue a new browse
 operation with the <emphasis>Object ID</emphasis> of the selected container,
 repeating the process.</listitem>
 <listitem>Also, users may want to select browse results and include them

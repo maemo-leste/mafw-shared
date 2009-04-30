@@ -75,7 +75,8 @@ START_TEST(test_basic_persistence)
 {
 	gpointer plm, pls, pls2;
 
-	/* Start MPD, create a playlist, stop, restart and see that it's saved. */
+	/* Start MPD, create a playlist, stop, restart and see that it's
+         * saved. */
 	system("test -d '" PLS_DIR "' && rm -rf '" PLS_DIR "'");
 	start_daemon();
 	plm = mafw_playlist_manager_get();
@@ -92,7 +93,7 @@ START_TEST(test_basic_persistence)
 	mafw_playlist_insert_item(pls, 3, "delta", NULL);
 	mafw_playlist_insert_item(pls, 4, "echo", NULL);
 	checkmore_stop();
-	
+
 
 	start_daemon();
 	pls2 = mafw_playlist_manager_create_playlist(plm, "lofasz", NULL);
@@ -123,12 +124,12 @@ START_TEST(test_diskfull)
 	gpointer plm, pls;
 	guint id;
 	mode_t oldmask;
-	
+
 	pl_dest_called = FALSE;
 
 	system("test -d '" PLS_DIR "' && rm -rf '" PLS_DIR "'");
 	/* Full disk is simulated by a read-only playlist directory.
-	 * This may break under fakeroot (as everyhing is writable for root), 
+	 * This may break under fakeroot (as everyhing is writable for root),
 	 * but why would one run tests under fakeroot? */
 	oldmask = umask(0222);
 	mkdir(PLS_DIR, 0555);

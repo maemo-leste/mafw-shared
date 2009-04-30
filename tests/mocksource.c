@@ -65,7 +65,8 @@ static guint browse(MafwSource* self,
 		mafw_metadata_add_str(md, "title", "Easy");
 		do
 		{
-			callback(self, 1408, -1, 0, "testobject", md, user_data, NULL);
+			callback(self, 1408, -1, 0, "testobject", md, user_data,
+                                 NULL);
 			if (ms->repeat_browse)
 				ms->repeat_browse--;
 		} while (ms->repeat_browse);
@@ -119,14 +120,16 @@ static void get_metadatas(MafwSource *self,
 {
 	MockedSource* ms = MOCKED_SOURCE(self);
 
-	g_assert(object_ids && object_ids[0] && object_ids[1] && !object_ids[2]);
+	g_assert(object_ids && object_ids[0] && object_ids[1] &&
+                 !object_ids[2]);
 	if (callback != NULL)
 	{
 		GHashTable* md = mafw_metadata_new();
-		GHashTable *mdatas = g_hash_table_new_full(g_str_hash,
-						g_str_equal,
-						NULL,
-						(GDestroyNotify)mafw_metadata_release);
+		GHashTable *mdatas = g_hash_table_new_full(
+                        g_str_hash,
+                        g_str_equal,
+                        NULL,
+                        (GDestroyNotify)mafw_metadata_release);
 		mafw_metadata_add_str(md, "title", "Easy");
 		g_hash_table_insert(mdatas, "testobject1", md);
 		g_hash_table_insert(mdatas, "testobject", md);
@@ -149,7 +152,7 @@ static void set_metadata(MafwSource *self, const gchar *object_id,
 
 	if (callback != NULL)
 	{
-		const gchar** failed_keys = (const gchar**) 
+		const gchar** failed_keys = (const gchar**)
 			MAFW_SOURCE_LIST("pertti", "pasanen");
 		callback(self, object_id, failed_keys, user_data, NULL);
 	}
@@ -216,7 +219,7 @@ gpointer mocked_source_new(const gchar *name, const gchar *uuid,
 			   GMainLoop *mainloop)
 {
 	MockedSource *ms;
-	
+
 	ms = g_object_new(mocked_source_get_type(),
 			  "plugin", "mockland",
 			  "uuid", uuid,
@@ -248,16 +251,17 @@ DBusMessage *append_browse_res(DBusMessage *replmsg,
 			MAFW_PROXY_SOURCE_METHOD_BROWSE_RESULT);
 		dbus_message_iter_init_append(replmsg,
 						iter_msg);
-		dbus_message_iter_append_basic(iter_msg,  DBUS_TYPE_UINT32, &browse_id);
+		dbus_message_iter_append_basic(iter_msg,  DBUS_TYPE_UINT32,
+                                               &browse_id);
 		dbus_message_iter_open_container(iter_msg, DBUS_TYPE_ARRAY,
 						 "(iusaysus)", iter_array);
 	}
 	dbus_message_iter_open_container(iter_array, DBUS_TYPE_STRUCT, NULL,
 					&istr);
-	
+
 	ba = mafw_metadata_freeze_bary(metadata);
-	
-	
+
+
 	dbus_message_iter_append_basic(&istr, DBUS_TYPE_INT32,
 						&remaining_count);
 	dbus_message_iter_append_basic(&istr, DBUS_TYPE_UINT32, &index);
@@ -282,7 +286,7 @@ DBusMessage *mdatas_repl(DBusMessage *req, const gchar **objlist,
 	guint errcode = 0;
 	const gchar *err_msg = "";
 	DBusMessageIter iter_array, iter_msg, istr;
-	
+
 	replmsg = dbus_message_new_method_return(req);
 	dbus_message_iter_init_append(replmsg,
 					&iter_msg);
@@ -296,16 +300,16 @@ DBusMessage *mdatas_repl(DBusMessage *req, const gchar **objlist,
 					NULL, &istr);
 
 		ba = mafw_metadata_freeze_bary(metadata);
-	
-	
+
+
 		dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING,
 						&objlist[0]);
 		mafw_dbus_message_append_array(&istr, DBUS_TYPE_BYTE, ba->len,
 						ba->data);
 		dbus_message_iter_close_container(&iter_array, &istr);
-	
+
 		dbus_message_iter_open_container(&iter_array, DBUS_TYPE_STRUCT,
-					NULL, &istr);	
+					NULL, &istr);
 		dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING,
 							&objlist[1]);
 		mafw_dbus_message_append_array(&istr, DBUS_TYPE_BYTE, ba->len,
@@ -314,14 +318,15 @@ DBusMessage *mdatas_repl(DBusMessage *req, const gchar **objlist,
 		g_byte_array_free(ba, TRUE);
 		dbus_message_iter_close_container(&iter_msg, &iter_array);
 	}
-	
+
 	if (add_error)
 	{
 		domain_str = "TESTdomain";
 		errcode = 10;
 		err_msg = METADATAS_ERROR_MSG;
 	}
-	dbus_message_iter_append_basic(&iter_msg, DBUS_TYPE_STRING, &domain_str);
+	dbus_message_iter_append_basic(&iter_msg, DBUS_TYPE_STRING,
+                                       &domain_str);
 	dbus_message_iter_append_basic(&iter_msg, DBUS_TYPE_UINT32, &errcode);
 	dbus_message_iter_append_basic(&iter_msg, DBUS_TYPE_STRING, &err_msg);
 	return replmsg;

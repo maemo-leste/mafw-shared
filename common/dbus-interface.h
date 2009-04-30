@@ -131,7 +131,7 @@
 #define MAFW_EXTENSION_SIGNAL_ERROR "error"
 
 /*----------------------------------------------------------------------------
-  Renderer 
+  Renderer
   ----------------------------------------------------------------------------*/
 
 #define MAFW_RENDERER_INTERFACE MAFW_INTERFACE ".renderer"
@@ -263,7 +263,7 @@
 #define MAFW_RENDERER_SIGNAL_METADATA_CHANGED "metadata_changed"
 
 /*----------------------------------------------------------------------------
-  Source 
+  Source
   ----------------------------------------------------------------------------*/
 
 #define MAFW_SOURCE_INTERFACE MAFW_INTERFACE ".source"
@@ -285,7 +285,7 @@
  * @message: In case of error, the error message (%DBUS_TYPE_STRING)
  *
  * Starts a browse session.  Results will arrive in browse_result()
- * methods via the source proxy interface. Note, in case of error 
+ * methods via the source proxy interface. Note, in case of error
  * the domain, code and message arguments are added to the message.
  *
  * Returns: the session id (%DBUS_TYPE_UINT32).
@@ -328,13 +328,16 @@
  * @code: In case of error, the error code (%DBUS_TYPE_INT32)
  * @message: In case of error, the error message (%DBUS_TYPE_STRING)
  *
- * Gets metadataS of given objects.
+ * Gets metadatas of given objects.
  * reply: %DBUS_MESSAGE_TYPE_METHOD_RETURN
  * @outargs: a %DBUS_TYPE_ARRAY of %DBUS_TYPE_STRUCT of object-ids
  * (%DBUS_TYPE_STRING) and its metadata (%MAFW_DBUS_TYPE_METADATA).
- * @domain_str: error domain or empty string if error was NULL(%DBUS_TYPE_STRING)
+
+ * @domain_str: error domain or empty string if error was
+ * NULL(%DBUS_TYPE_STRING)
  * @error_code: error code(%DBUS_TYPE_INT32)
- * @error_str: error message or empty string if error was NULL(%DBUS_TYPE_STRING)
+ * @error_str: error message or empty string if error was
+ * NULL(%DBUS_TYPE_STRING)
  */
 #define MAFW_SOURCE_METHOD_GET_METADATAS "get_metadatas"
 
@@ -348,7 +351,7 @@
  *
  * reply: %DBUS_MESSAGE_TYPE_METHOD_RETURN or %DBUS_MESSAGE_TYPE_ERROR
  * @objectid: of the modified object (%DBUS_TYPE_STRING)
- * @failed_keys: array of metadata keys which failed (array 
+ * @failed_keys: array of metadata keys which failed (array
  *               of %DBUS_TYPE_STRING) or an empty array.
  * @domain:  In case of error, the error domain (%DBUS_TYPE_STRING)
  * @code: In case of error, the error code   (%DBUS_TYPE_INT32)
@@ -513,10 +516,11 @@
  * @id: the ID of the playlist which destruction is not allowed
  * (%DBUS_TYPE_UINT32).
  *
- * Informs about the destruction of a playlist is not allowed because the 
+ * Informs about the destruction of a playlist is not allowed because the
  * playlist is being used.
  */
-#define MAFW_PLAYLIST_SIGNAL_PLAYLIST_DESTRUCTION_FAILED   "playlist_destruction_failed"
+#define MAFW_PLAYLIST_SIGNAL_PLAYLIST_DESTRUCTION_FAILED \
+        "playlist_destruction_failed"
 
 /**
  * list_playlists: %DBUS_MESSAGE_TYPE_METHOD
@@ -530,7 +534,7 @@
  * reply: %DBUS_MESSAGE_TYPE_METHOD_RETURN or %DBUS_MESSAGE_TYPE_ERROR
  * @outargs: a %DBUS_TYPE_ARRAY of %DBUS_TYPE_STRUCT of playlist ID
  * (%DBUS_TYPE_UINT32) and name (%DBUS_TYPE_STRING).  Information is
- * returned about all but nonexisting playlists.
+ * returned about all but non-existing playlists.
  */
 #define MAFW_PLAYLIST_METHOD_LIST_PLAYLISTS	"list_playlists"
 

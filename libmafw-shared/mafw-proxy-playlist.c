@@ -128,7 +128,7 @@ static gboolean mafw_proxy_playlist_remove_item(MafwPlaylist *playlist,
 static gchar *mafw_proxy_playlist_get_item(MafwPlaylist *playlist,
 					       	guint index, GError **error);
 static gchar **mafw_proxy_playlist_get_items(MafwPlaylist *playlist,
-					       	guint first_index, 
+					       	guint first_index,
 						guint last_index,
 						GError **error);
 
@@ -158,7 +158,7 @@ static guint mafw_proxy_playlist_get_size(MafwPlaylist *playlist,
 static gboolean mafw_proxy_playlist_clear(MafwPlaylist *playlist,
 					       GError **error);
 
-					
+
 
 /*---------------------------------------------------------------------------
   Object/class initialization
@@ -229,11 +229,12 @@ static void mafw_proxy_playlist_finalize(GObject *object)
 {
 	MafwProxyPlaylist* playlist = MAFW_PROXY_PLAYLIST(object);
 	MafwProxyPlaylistPrivate *priv;
-	
+
 	priv = MAFW_PROXY_PLAYLIST_GET_PRIVATE(playlist);
-	
-	dbus_connection_unregister_object_path(priv->connection, priv->obj_path);
-	
+
+	dbus_connection_unregister_object_path(priv->connection,
+                                               priv->obj_path);
+
 	dbus_connection_unref(priv->connection);
 	g_free(priv->obj_path);
 }
@@ -293,25 +294,25 @@ GObject *mafw_proxy_playlist_new(guint id)
 	DBusObjectPathVTable path_vtable;
 
 	memset(&path_vtable, 0, sizeof(DBusObjectPathVTable));
-	path_vtable.message_function = 
+	path_vtable.message_function =
 		(DBusObjectPathMessageFunction)dispatch_message;
 
 	self = g_object_new(MAFW_TYPE_PROXY_PLAYLIST, NULL);
 	self->priv->id = id;
 	self->priv->connection = mafw_dbus_session(&err);
-	
+
 	if (err)
 	{
 		g_error_free(err);
 		return NULL;
 	}
-	
+
 	self->priv->obj_path = g_strdup_printf("%s/%u",MAFW_PLAYLIST_PATH,id);
 	dbus_connection_register_object_path(self->priv->connection,
 			self->priv->obj_path,
 			&path_vtable,
 			self);
-	
+
 	return G_OBJECT(self);
 }
 
@@ -321,7 +322,7 @@ GObject *mafw_proxy_playlist_new(guint id)
 /**
  * mafw_proxy_playlist_get_id:
  * @self: a #MafwProxyPlaylist
- * 
+ *
  * Gets the proxy playlist id.
  *
  * Returns: a #guint with the given id.
@@ -340,9 +341,9 @@ static void mafw_proxy_playlist_set_name(MafwProxyPlaylist *self,
 {
 	MafwProxyPlaylist* playlist = MAFW_PROXY_PLAYLIST(self);
 	MafwProxyPlaylistPrivate *priv;
-		
+
 	priv = MAFW_PROXY_PLAYLIST_GET_PRIVATE(playlist);
-	
+
 	g_return_if_fail(priv->connection != NULL);
 	g_return_if_fail(name != NULL);
 
@@ -365,7 +366,7 @@ static gchar *mafw_proxy_playlist_get_name(MafwProxyPlaylist *self,
 	MafwProxyPlaylistPrivate *priv;
 	DBusMessage *reply;
 	gchar *retval = NULL;
-	
+
 	priv = MAFW_PROXY_PLAYLIST_GET_PRIVATE(playlist);
 	g_return_val_if_fail(priv->connection != NULL, NULL);
 
@@ -375,13 +376,13 @@ static gchar *mafw_proxy_playlist_get_name(MafwProxyPlaylist *self,
 					MAFW_DBUS_INTERFACE,
 				       MAFW_PLAYLIST_METHOD_GET_NAME),
 			       MAFW_PLAYLIST_ERROR, error);
-	
+
 	if (reply) {
 		mafw_dbus_parse(reply, DBUS_TYPE_STRING, &retval);
 		dbus_message_unref(reply);
 		retval = g_strdup(retval);
 	}
-	
+
 
 	return retval;
 }
@@ -395,7 +396,7 @@ static void mafw_proxy_playlist_set_repeat(MafwProxyPlaylist *self,
 {
 	MafwProxyPlaylist* playlist = MAFW_PROXY_PLAYLIST(self);
 	MafwProxyPlaylistPrivate *priv;
-	
+
 	priv = MAFW_PROXY_PLAYLIST_GET_PRIVATE(playlist);
 	g_return_if_fail(priv->connection != NULL);
 
@@ -405,7 +406,7 @@ static void mafw_proxy_playlist_set_repeat(MafwProxyPlaylist *self,
 					MAFW_DBUS_INTERFACE,
 					MAFW_PLAYLIST_METHOD_SET_REPEAT,
 					DBUS_TYPE_BOOLEAN, repeat));
-	
+
 }
 
 /*---------------------------------------------------------------------------
@@ -419,7 +420,7 @@ gboolean mafw_proxy_playlist_get_repeat(MafwProxyPlaylist *self,
 	MafwProxyPlaylistPrivate *priv;
 	DBusMessage *reply;
 	gboolean retval = FALSE;
-	
+
 	priv = MAFW_PROXY_PLAYLIST_GET_PRIVATE(playlist);
 	g_return_val_if_fail(priv->connection != NULL, FALSE);
 
@@ -429,12 +430,12 @@ gboolean mafw_proxy_playlist_get_repeat(MafwProxyPlaylist *self,
 					MAFW_DBUS_INTERFACE,
 					MAFW_PLAYLIST_METHOD_GET_REPEAT),
 				MAFW_PLAYLIST_ERROR, error);
-	
+
 	if (reply) {
 		mafw_dbus_parse(reply, DBUS_TYPE_BOOLEAN, &retval);
 		dbus_message_unref(reply);
 	}
-	
+
 
 	return retval;
 }
@@ -453,7 +454,7 @@ gboolean mafw_proxy_playlist_shuffle(MafwPlaylist *self, GError **error)
 	MafwProxyPlaylist* playlist = MAFW_PROXY_PLAYLIST(self);
 	MafwProxyPlaylistPrivate *priv;
 	DBusMessage *reply;
-	
+
 	priv = MAFW_PROXY_PLAYLIST_GET_PRIVATE(playlist);
 	g_return_val_if_fail(priv->connection != NULL, FALSE);
 
@@ -467,7 +468,7 @@ gboolean mafw_proxy_playlist_shuffle(MafwPlaylist *self, GError **error)
 		dbus_message_unref(reply);
 		return TRUE;
 	}
-	
+
 	return FALSE;
 }
 
@@ -478,13 +479,14 @@ gboolean mafw_proxy_playlist_shuffle(MafwPlaylist *self, GError **error)
 /**
  * Returns whether any item in the playlist has a different playing index
  * than a visual one. */
-static gboolean mafw_proxy_playlist_is_shuffled(MafwProxyPlaylist *self, GError **error)
+static gboolean mafw_proxy_playlist_is_shuffled(MafwProxyPlaylist *self,
+                                                GError **error)
 {
 	MafwProxyPlaylist* playlist = MAFW_PROXY_PLAYLIST(self);
 	MafwProxyPlaylistPrivate *priv;
 	DBusMessage *reply;
 	gboolean retval = FALSE;
-	
+
 	priv = MAFW_PROXY_PLAYLIST_GET_PRIVATE(playlist);
 	g_return_val_if_fail(priv->connection != NULL, FALSE);
 
@@ -494,12 +496,12 @@ static gboolean mafw_proxy_playlist_is_shuffled(MafwProxyPlaylist *self, GError 
 					MAFW_DBUS_INTERFACE,
 				       MAFW_PLAYLIST_METHOD_IS_SHUFFLED),
 			       MAFW_PLAYLIST_ERROR, error);
-	
+
 	if (reply) {
 		mafw_dbus_parse(reply, DBUS_TYPE_BOOLEAN, &retval);
 		dbus_message_unref(reply);
 	}
-	
+
 	return retval;
 }
 
@@ -515,7 +517,7 @@ gboolean mafw_proxy_playlist_unshuffle(MafwPlaylist *self, GError **error)
 	MafwProxyPlaylist* playlist = MAFW_PROXY_PLAYLIST(self);
 	MafwProxyPlaylistPrivate *priv;
 	DBusMessage *reply;
-	
+
 	priv = MAFW_PROXY_PLAYLIST_GET_PRIVATE(playlist);
 	g_return_val_if_fail(priv->connection != NULL, FALSE);
 
@@ -525,12 +527,12 @@ gboolean mafw_proxy_playlist_unshuffle(MafwPlaylist *self, GError **error)
 					MAFW_DBUS_INTERFACE,
 				       MAFW_PLAYLIST_METHOD_UNSHUFFLE),
 			       MAFW_PLAYLIST_ERROR, error);
-	
+
 	if (reply) {
 		dbus_message_unref(reply);
 		return TRUE;
 	}
-	
+
 	return FALSE;
 }
 
@@ -559,12 +561,12 @@ static gboolean mafw_proxy_playlist_increment_use_count(MafwPlaylist *self,
 			MAFW_DBUS_INTERFACE,
 			MAFW_PLAYLIST_METHOD_INCREMENT_USE_COUNT),
 		MAFW_PLAYLIST_ERROR, error);
-	
+
 	if (reply) {
 		dbus_message_unref(reply);
 		return TRUE;
 	}
-	
+
 	return FALSE;
 }
 
@@ -578,10 +580,10 @@ static gboolean mafw_proxy_playlist_decrement_use_count(MafwPlaylist *self,
 	MafwProxyPlaylist* playlist = MAFW_PROXY_PLAYLIST(self);
 	MafwProxyPlaylistPrivate *priv;
 	DBusMessage *reply;
-	
+
 	priv = MAFW_PROXY_PLAYLIST_GET_PRIVATE(playlist);
 	g_return_val_if_fail(priv->connection != NULL, FALSE);
-	
+
 	reply = mafw_dbus_call(
 		priv->connection,
 		mafw_dbus_method_full(
@@ -590,12 +592,12 @@ static gboolean mafw_proxy_playlist_decrement_use_count(MafwPlaylist *self,
 			MAFW_DBUS_INTERFACE,
 			MAFW_PLAYLIST_METHOD_DECREMENT_USE_COUNT),
 		MAFW_PLAYLIST_ERROR, error);
-	
+
 	if (reply) {
 		dbus_message_unref(reply);
 		return TRUE;
 	}
-	
+
 	return FALSE;
 }
 
@@ -611,7 +613,7 @@ gboolean mafw_proxy_playlist_insert_item(MafwPlaylist *self, guint index,
 	MafwProxyPlaylistPrivate *priv;
 	DBusMessage *reply;
 	const gchar *oids[2] = {objectid, NULL};
-		
+
 	priv = MAFW_PROXY_PLAYLIST_GET_PRIVATE(playlist);
 	g_return_val_if_fail(priv->connection != NULL, FALSE);
 
@@ -623,7 +625,7 @@ gboolean mafw_proxy_playlist_insert_item(MafwPlaylist *self, guint index,
 				       MAFW_DBUS_UINT32(index),
 				       MAFW_DBUS_STRVZ(oids)),
 			       MAFW_PLAYLIST_ERROR, error);
-	
+
 	if (reply) {
 		dbus_message_unref(reply);
 		return TRUE;
@@ -638,7 +640,7 @@ gboolean mafw_proxy_playlist_insert_items(MafwPlaylist *self, guint index,
 	MafwProxyPlaylist* playlist = MAFW_PROXY_PLAYLIST(self);
 	MafwProxyPlaylistPrivate *priv;
 	DBusMessage *reply;
-		
+
 	priv = MAFW_PROXY_PLAYLIST_GET_PRIVATE(playlist);
 	g_return_val_if_fail(priv->connection != NULL, FALSE);
 
@@ -650,7 +652,7 @@ gboolean mafw_proxy_playlist_insert_items(MafwPlaylist *self, guint index,
 				       MAFW_DBUS_UINT32(index),
 				       MAFW_DBUS_STRVZ(objectids)),
 			       MAFW_PLAYLIST_ERROR, error);
-	
+
 	if (reply) {
 		dbus_message_unref(reply);
 		return TRUE;
@@ -733,13 +735,13 @@ gboolean mafw_proxy_playlist_remove_item(MafwPlaylist *self, guint index,
 				       MAFW_PLAYLIST_METHOD_REMOVE_ITEM,
 				       DBUS_TYPE_UINT32, index),
 			       MAFW_PLAYLIST_ERROR, error);
-	
+
 	if (reply) {
 		mafw_dbus_parse(reply,DBUS_TYPE_BOOLEAN, &retval);
 		dbus_message_unref(reply);
 		return retval;
 	}
-	
+
 	return FALSE;
 }
 
@@ -769,12 +771,12 @@ gchar *mafw_proxy_playlist_get_item(MafwPlaylist *self, guint index,
 	dbus_message_unref(reply);
 	if (strlen(retval) == 0) return NULL;
 	retval = g_strdup(retval);
-	
+
 	return retval;
 }
 
 gchar **mafw_proxy_playlist_get_items(MafwPlaylist *self,
-					       	guint first_index, 
+					       	guint first_index,
 						guint last_index,
 						GError **error)
 {
@@ -796,13 +798,13 @@ gchar **mafw_proxy_playlist_get_items(MafwPlaylist *self,
 	g_return_val_if_fail(reply, NULL);
 	mafw_dbus_parse(reply, MAFW_DBUS_TYPE_STRVZ, &retval);
 	dbus_message_unref(reply);
-	
+
 	if (!retval[0])
 	{
 		g_free(retval);
 		retval = NULL;
 	}
-	
+
 	return retval;
 }
 
@@ -816,7 +818,7 @@ static gboolean send_method_get_uint_str_params(gboolean send_param,
 	DBusMessage *reply;
 	gchar *retoid = NULL;
 	guint retidx;
-	
+
 	priv = MAFW_PROXY_PLAYLIST_GET_PRIVATE(playlist);
 	g_return_val_if_fail(priv->connection != NULL, FALSE);
 	if (send_param)
@@ -846,7 +848,7 @@ static gboolean send_method_get_uint_str_params(gboolean send_param,
 		*oid = g_strdup(retoid);
 	if (index)
 		*index = retidx;
-	
+
 	dbus_message_unref(reply);
 
 	return TRUE;
@@ -857,7 +859,7 @@ void mafw_proxy_playlist_get_starting_index(MafwPlaylist *playlist,
 						GError **error)
 {
 	g_return_if_fail(index || oid);
-	send_method_get_uint_str_params(FALSE, playlist, 
+	send_method_get_uint_str_params(FALSE, playlist,
 			MAFW_PLAYLIST_METHOD_GET_STARTING_INDEX,
 			index, oid, error);
 }
@@ -867,7 +869,7 @@ void mafw_proxy_playlist_get_last_index(MafwPlaylist *playlist,
 						GError **error)
 {
 	g_return_if_fail(index || oid);
-	send_method_get_uint_str_params(FALSE, playlist, 
+	send_method_get_uint_str_params(FALSE, playlist,
 			MAFW_PLAYLIST_METHOD_GET_LAST_INDEX,
 			index, oid, error);
 }
@@ -917,13 +919,13 @@ gboolean mafw_proxy_playlist_move_item(MafwPlaylist *self, guint from,
 				       DBUS_TYPE_UINT32, from,
 				       DBUS_TYPE_UINT32, to),
 			       MAFW_PLAYLIST_ERROR, error);
-	
+
 	if (reply) {
 		mafw_dbus_parse(reply,DBUS_TYPE_BOOLEAN, &retval);
 		dbus_message_unref(reply);
 		return retval;
 	}
-	
+
 	return FALSE;
 
 }
@@ -948,12 +950,12 @@ guint mafw_proxy_playlist_get_size(MafwPlaylist *self, GError **error)
 					MAFW_DBUS_INTERFACE,
 				       MAFW_PLAYLIST_METHOD_GET_SIZE),
 			       MAFW_PLAYLIST_ERROR, error);
-	
+
 	if (reply) {
 		mafw_dbus_parse(reply, DBUS_TYPE_UINT32, &retval);
 		dbus_message_unref(reply);
 	}
-	
+
 
 	return retval;
 }
@@ -983,7 +985,7 @@ gboolean mafw_proxy_playlist_clear(MafwPlaylist *self, GError **error)
 		dbus_message_unref(reply);
 		return TRUE;
 	}
-	
+
 	return FALSE;
 }
 
@@ -1074,9 +1076,9 @@ static DBusHandlerResult dispatch_message(DBusConnection *conn,
 
 	g_assert(conn != NULL);
 	g_assert(msg != NULL);
-	
+
 	priv = MAFW_PROXY_PLAYLIST_GET_PRIVATE(self);
-	
+
 	if (mafw_dbus_is_signal(msg, MAFW_PLAYLIST_CONTENTS_CHANGED)) {
 		mafw_proxy_playlist_handle_signal_contents_changed(self, msg);
 	} else if (mafw_dbus_is_signal(msg, MAFW_PLAYLIST_PROPERTY_CHANGED)) {
@@ -1084,7 +1086,7 @@ static DBusHandlerResult dispatch_message(DBusConnection *conn,
 	} else if (mafw_dbus_is_signal(msg, MAFW_PLAYLIST_ITEM_MOVED)) {
 		handle_signal_item_moved(self, msg);
 	}
-	
+
 	//Let the other apps receive the signal
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }

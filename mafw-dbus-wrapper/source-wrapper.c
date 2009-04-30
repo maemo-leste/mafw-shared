@@ -43,8 +43,8 @@
 #define MAFW_DBUS_INTERFACE MAFW_SOURCE_INTERFACE
 
 #define INITIAL_BROWSE_TIMEOUT 100 /* The initial time value in ms, until the
-				   wrapper collects the first browse-resuls */
-#define INITIAL_MAX_RESULTS 25	/* The number of the maximal amount of 
+				   wrapper collects the first browse-results */
+#define INITIAL_MAX_RESULTS 25	/* The number of the maximal amount of
 				   browse-results, what the first browse-results
 				   message can contain */
 #define TIMEOUT_INCREMENT 500	/* Increments the timeout value (in ms), if the
@@ -58,7 +58,8 @@
 struct browse_data {
 	MafwDBusOpCompletedInfo *oci;
 	guint timeout_id;	/* timeout GSource ID */
-	guint timeout_time;	/* The timeout value of the current message-array */
+	guint timeout_time;	/* The timeout value of the current
+                                 * message-array */
 	guint results;		/* The number of messages already added */
 	guint maxresults;	/* The maximal number of messages */
 	DBusMessage *message_to_send;
@@ -111,7 +112,7 @@ static void emit_browse_result(MafwSource *self, guint browse_id,
 
 	info = (MafwDBusOpCompletedInfo *)bdata->oci;
 	g_assert(info != NULL);
-	
+
 	if (browse_id == MAFW_SOURCE_INVALID_BROWSE_ID)
 	{
 		mafw_dbus_send(info->con, mafw_dbus_gerror(info->msg,
@@ -141,9 +142,9 @@ static void emit_browse_result(MafwSource *self, guint browse_id,
 						"(iusaysus)",
 						&bdata->iter_array);
 	}
-	
+
 	ba = mafw_metadata_freeze_bary(metadata);
-	
+
 	dbus_message_iter_open_container(&bdata->iter_array,
 						DBUS_TYPE_STRUCT,
 						NULL, &istr);
@@ -174,9 +175,9 @@ static void emit_browse_result(MafwSource *self, guint browse_id,
 						&fakestr);
 	}
 	dbus_message_iter_close_container(&bdata->iter_array, &istr);
-	
+
 	bdata->results++;
-	/* Note: This assumes that source must always call 
+	/* Note: This assumes that source must always call
 	   the callback in the end with remaining_count == 0.
 	   In case an error happened, no more browse-result
 	   should come.*/
@@ -196,7 +197,7 @@ static void emit_browse_result(MafwSource *self, guint browse_id,
 			free_browse_req(bdata);
 		return;
 	}
-	
+
 	/* In case, the source is very "fast", to keep the UI as responsible
 	   as possible, it is better if the wrapper sends huge amount of
 	   results in one message. If the browse-results reaches the current
@@ -233,7 +234,7 @@ static void emit_browse_result(MafwSource *self, guint browse_id,
 				bdata->timeout_time = MAX_TIMEOUT;
 			}
 		}
-		
+
 		bdata->timeout_id = g_timeout_add(bdata->timeout_time,
 					(GSourceFunc)send_browse_res, bdata);
 	}
@@ -281,7 +282,7 @@ static void got_metadatas(MafwSource *self,
 			 const GError *error)
 {
 	MafwDBusOpCompletedInfo *info;
-	
+
 	DBusMessage *replmsg;
 	const gchar *domain_str = "";
 	guint errcode = 0;
@@ -290,7 +291,7 @@ static void got_metadatas(MafwSource *self,
 
 	info = (MafwDBusOpCompletedInfo *)user_data;
 	g_assert(info != NULL);
-	
+
 	replmsg = dbus_message_new_method_return(info->msg);
 	dbus_message_iter_init_append(replmsg,
 					&iter_msg);
@@ -304,14 +305,15 @@ static void got_metadatas(MafwSource *self,
 
 		dbus_message_iter_close_container(&iter_msg, &iter_array);
 	}
-	
+
 	if (error)
 	{
 		domain_str = g_quark_to_string(error->domain);
 		errcode = error->code;
 		err_msg = error->message;
 	}
-	dbus_message_iter_append_basic(&iter_msg, DBUS_TYPE_STRING, &domain_str);
+	dbus_message_iter_append_basic(&iter_msg, DBUS_TYPE_STRING,
+                                       &domain_str);
 	dbus_message_iter_append_basic(&iter_msg, DBUS_TYPE_UINT32, &errcode);
 	dbus_message_iter_append_basic(&iter_msg, DBUS_TYPE_STRING, &err_msg);
 
@@ -327,7 +329,7 @@ static void object_created(MafwSource *src, const gchar *objectid,
 
 	info = (MafwDBusOpCompletedInfo*) user_data;
 	g_assert(info != NULL);
-	
+
 	mafw_dbus_send(info->con, error
 		? mafw_dbus_gerror(info->msg, error)
 		: mafw_dbus_reply (info->msg, MAFW_DBUS_STRING(objectid)));
@@ -437,7 +439,7 @@ DBusHandlerResult handle_source_msg(DBusConnection *conn,
 			sort_criteria = NULL;
 
 		/* Store the message and pass as user data to browse().
-		   This is used to route the results to correct 
+		   This is used to route the results to correct
 		   destination. */
 		bdata->oci = mafw_dbus_oci_new(conn, msg);
 		bdata->maxresults = INITIAL_MAX_RESULTS;
@@ -457,10 +459,12 @@ DBusHandlerResult handle_source_msg(DBusConnection *conn,
 					       emit_browse_result, bdata);
 		mafw_filter_free(filter);
 		if (!browse_requests)
-			browse_requests = g_hash_table_new_full(NULL,
-							      NULL,
-							      NULL,
-							      (GDestroyNotify)free_browse_req);
+			browse_requests =
+                                g_hash_table_new_full(
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        (GDestroyNotify)free_browse_req);
 		if (browse_id != MAFW_SOURCE_INVALID_BROWSE_ID)
 		{
 			g_hash_table_replace(browse_requests,
@@ -471,7 +475,7 @@ DBusHandlerResult handle_source_msg(DBusConnection *conn,
 			mafw_dbus_send(conn, mafw_dbus_reply(msg,
 					     MAFW_DBUS_UINT32(browse_id)));
 		}
-		
+
 		/* Clean up. */
 		g_strfreev((gchar **)metadata_keys);
 		return DBUS_HANDLER_RESULT_HANDLED;
@@ -574,7 +578,7 @@ static void container_changed(MafwSource *source, const gchar *object_id,
 				gpointer userdata)
 {
 	ExportedComponent *ecomp;
-	
+
 	ecomp = (ExportedComponent *) userdata;
 	mafw_dbus_send(ecomp->connection,
 			mafw_dbus_signal_full(
@@ -589,7 +593,7 @@ static void metadata_changed(MafwSource *source, const gchar *object_id,
 				gpointer userdata)
 {
 	ExportedComponent *ecomp;
-	
+
 	ecomp = (ExportedComponent *) userdata;
 	mafw_dbus_send(ecomp->connection,
 			mafw_dbus_signal_full(

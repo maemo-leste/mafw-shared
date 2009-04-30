@@ -52,7 +52,7 @@ static void send_item_moved(guint plid, guint from, guint to)
 
 	conn = dbus_bus_get(DBUS_BUS_SESSION, NULL);
 	g_assert(conn != NULL);
-	
+
 	path = g_strdup_printf("%s/%u",MAFW_PLAYLIST_PATH, plid);
 
 	/* Create the message. */
@@ -80,7 +80,7 @@ static void send_contents_changed(guint plid, guint from,
 
 	conn = dbus_bus_get(DBUS_BUS_SESSION, NULL);
 	g_assert(conn != NULL);
-	
+
 	path = g_strdup_printf("%s/%u",MAFW_PLAYLIST_PATH, plid);
 
 	/* Create the message. */
@@ -111,7 +111,7 @@ static void send_property_changed(guint32 plid, const gchar *property)
 	g_assert(conn != NULL);
 
 	path = g_strdup_printf("%s/%u",MAFW_PLAYLIST_PATH, plid);
-	
+
 	/* Create the message. */
 	msg = dbus_message_new(DBUS_MESSAGE_TYPE_SIGNAL);
 	dbus_message_set_path(msg, path);
@@ -127,8 +127,9 @@ static void send_property_changed(guint32 plid, const gchar *property)
 	g_free(path);
 }
 
-DBusHandlerResult handle_playlist_request(DBusConnection *conn, DBusMessage *msg,
-						const gchar *path)
+DBusHandlerResult handle_playlist_request(DBusConnection *conn,
+                                          DBusMessage *msg,
+                                          const gchar *path)
 {
 	const gchar *member;
 	guint plid;
@@ -185,7 +186,8 @@ DBusHandlerResult handle_playlist_request(DBusConnection *conn, DBusMessage *msg
 	} else if (!strcmp(member, MAFW_PLAYLIST_METHOD_GET_REPEAT)) {
 		gboolean repeat;
 		repeat = pls->repeat;
-		mafw_dbus_send(conn, mafw_dbus_reply(msg,MAFW_DBUS_BOOLEAN(repeat)));
+		mafw_dbus_send(conn,
+                               mafw_dbus_reply(msg,MAFW_DBUS_BOOLEAN(repeat)));
 		return DBUS_HANDLER_RESULT_HANDLED;
 	} else if (!strcmp(member, MAFW_PLAYLIST_METHOD_SHUFFLE)) {
 		pls_shuffle(pls);
@@ -195,7 +197,9 @@ DBusHandlerResult handle_playlist_request(DBusConnection *conn, DBusMessage *msg
 	} else if (!strcmp(member, MAFW_PLAYLIST_METHOD_IS_SHUFFLED)) {
 		gboolean shuffled;
 		shuffled = pls_is_shuffled(pls);
-		mafw_dbus_send(conn, mafw_dbus_reply(msg,MAFW_DBUS_BOOLEAN(shuffled)));
+		mafw_dbus_send(conn,
+                               mafw_dbus_reply(msg,
+                                               MAFW_DBUS_BOOLEAN(shuffled)));
 		return DBUS_HANDLER_RESULT_HANDLED;
 	} else if (!strcmp(member, MAFW_PLAYLIST_METHOD_UNSHUFFLE)) {
 		pls_unshuffle(pls);
@@ -306,7 +310,7 @@ DBusHandlerResult handle_playlist_request(DBusConnection *conn, DBusMessage *msg
 			mafw_dbus_send(conn, mafw_dbus_gerror(msg, error));
 			g_error_free(error);
 		}
-		
+
 		return DBUS_HANDLER_RESULT_HANDLED;
 	} else if (!strcmp(member, MAFW_PLAYLIST_METHOD_GET_STARTING_INDEX)) {
 		gchar *oid = NULL;

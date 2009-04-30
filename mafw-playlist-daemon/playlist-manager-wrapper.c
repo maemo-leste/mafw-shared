@@ -221,8 +221,8 @@ static void load_playlists(void)
 static void signal_playlist_created(DBusConnection *con, guint new_id)
 {
 	mafw_dbus_send(con, mafw_dbus_signal(
-						MAFW_PLAYLIST_SIGNAL_PLAYLIST_CREATED,
-						MAFW_DBUS_UINT32(new_id)));
+                               MAFW_PLAYLIST_SIGNAL_PLAYLIST_CREATED,
+                               MAFW_DBUS_UINT32(new_id)));
 }
 
 static GHashTable *import_requests;
@@ -271,15 +271,15 @@ static void import_done(struct plparse_data *pl_dat, const GError *err)
 	if (err)
 	{
 		const gchar *domain_str;
-		
+
 		domain_str = g_quark_to_string(err->domain);
-		
+
 		mafw_dbus_send(pl_dat->oci->con, mafw_dbus_method_full(
 				dbus_message_get_sender(pl_dat->oci->msg),
 				MAFW_PLAYLIST_PATH,
 				MAFW_PLAYLIST_INTERFACE,
 				MAFW_PLAYLIST_METHOD_PLAYLIST_IMPORTED,
-				MAFW_DBUS_UINT32(pl_dat->import_id), 
+				MAFW_DBUS_UINT32(pl_dat->import_id),
 				MAFW_DBUS_STRING(domain_str),
 				MAFW_DBUS_INT32(err->code),
 				MAFW_DBUS_STRING(err->message)));
@@ -293,15 +293,15 @@ static void import_done(struct plparse_data *pl_dat, const GError *err)
 	{
 		count++;
 		g_free(temp);
-		
+
 		temp = g_strdup_printf("%s (%d)", pl_dat->pl_uri, count);
 	}
-	
+
 	new_pl = pls_new(Last_id++, temp);
 	g_free(temp);
 	g_tree_insert(Playlists, GUINT_TO_POINTER(new_pl->id), new_pl);
 	g_tree_insert(Playlists_by_name, g_strdup(new_pl->name), new_pl);
-	
+
 	while (cur_uri)
 	{
 		gchar *new_oid;
@@ -327,7 +327,7 @@ static void import_done(struct plparse_data *pl_dat, const GError *err)
 				MAFW_PLAYLIST_METHOD_PLAYLIST_IMPORTED,
 				MAFW_DBUS_UINT32(pl_dat->import_id),
 				MAFW_DBUS_UINT32(new_pl->id)));
-	
+
 	/* signal pl-created */
 	signal_playlist_created(pl_dat->oci->con, new_pl->id);
 	g_hash_table_remove(import_requests,
@@ -347,13 +347,13 @@ static gboolean import_from_file(struct plparse_data *pl_dat, GError **err)
 {
 	TotemPlParser *parser = totem_pl_parser_new ();
 	gboolean retval = TRUE;
-	
+
 	g_object_set (parser, "recurse", FALSE, "disable-unsafe", TRUE, NULL);
 
 	g_signal_connect(parser, "entry-parsed",
 				(GCallback)plparser_entry_parsed_cb,
 				pl_dat);
-	
+
 	if (totem_pl_parser_parse_with_base (parser, pl_dat->pl_uri,
 						pl_dat->base, FALSE)
 			!= TOTEM_PL_PARSER_RESULT_SUCCESS)
@@ -387,7 +387,7 @@ static void browse_res_cb(MafwSource *self, guint browse_id,
 			return;
 		}
 	}
-	
+
 	import_done(pl_data, error);
 	g_object_unref(self);
 }
@@ -402,7 +402,7 @@ static void mdata_res_cb(MafwSource *self,
 	GError *err = NULL;
 	const gchar *mime_type = NULL;
 	gboolean got_uri = FALSE;
-	
+
 	if (plp_data->cancel)
 	{
 		g_hash_table_remove(import_requests,
@@ -411,16 +411,16 @@ static void mdata_res_cb(MafwSource *self,
 		free_plparse_data(plp_data);
 		return;
 	}
-	
+
 	if (error)
 	{/* error during get-metadata */
 		import_done(plp_data, error);
 		g_object_unref(self);
 		return;
 	}
-	
+
 	cur_value = mafw_metadata_first(metadata, MAFW_METADATA_KEY_URI);
-	if (!cur_value || 
+	if (!cur_value ||
 		!(G_IS_VALUE(cur_value) && G_VALUE_HOLDS_STRING(cur_value)))
 	{/* No URI?? */
 	}
@@ -430,7 +430,7 @@ static void mdata_res_cb(MafwSource *self,
 		g_free(plp_data->pl_uri);
 		plp_data->pl_uri = g_value_dup_string(cur_value);
 	}
-	
+
 	cur_value = mafw_metadata_first(metadata, MAFW_METADATA_KEY_MIME);
 	if (cur_value &&
 		(G_IS_VALUE(cur_value) && G_VALUE_HOLDS_STRING(cur_value)))
@@ -477,7 +477,7 @@ static guint import_playlist(const gchar *pl, const gchar *base,
 	{
 		pl_dat->base = g_strdup(base);
 	}
-	
+
 	/* Check whether pl is an object-id */
 	if (mafw_source_split_objectid(pl, &src_uuid, NULL))
 	{
@@ -485,19 +485,20 @@ static guint import_playlist(const gchar *pl, const gchar *base,
 			mafw_registry_get_extension_by_uuid(Reg, src_uuid))))
 		{
 			g_object_ref(src);
-			
+
 			if (!import_requests) {
 				import_requests = g_hash_table_new_full(NULL,
 							      		NULL,
 							      		NULL,
 							      		NULL);
 			}
-			
+
 			g_hash_table_replace(import_requests,
 						GUINT_TO_POINTER(import_id),
 						pl_dat);
-			/* if it was an object-id, check if it is a container or not */
-			mafw_source_get_metadata(src, pl, 
+			/* if it was an object-id, check if it is a container or
+                         * not */
+			mafw_source_get_metadata(src, pl,
 				MAFW_SOURCE_LIST(MAFW_METADATA_KEY_URI,
 					MAFW_METADATA_KEY_MIME),
 				(MafwSourceMetadataResultCb)mdata_res_cb,
@@ -518,7 +519,7 @@ static guint import_playlist(const gchar *pl, const gchar *base,
 		if (import_from_file(pl_dat, err))
 			return import_id;
 	}
-	
+
 	free_plparse_data(pl_dat);
 	return ~0;
 }
@@ -531,8 +532,9 @@ static DBusHandlerResult request(DBusConnection *con, DBusMessage *req,
 	const gchar *iface, *member, *path;
 
 	/* Are we the addressee? */
-        if (dbus_message_get_sender(req) && !strcmp(dbus_bus_get_unique_name(con),
-                            dbus_message_get_sender(req)))
+        if (dbus_message_get_sender(req) &&
+            !strcmp(dbus_bus_get_unique_name(con),
+                    dbus_message_get_sender(req)))
 		/* It's our own signal echoed back by dbusd. */
                 return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	if (!(iface = dbus_message_get_interface(req))
@@ -566,17 +568,20 @@ static DBusHandlerResult request(DBusConnection *con, DBusMessage *req,
 		mafw_dbus_parse(req, DBUS_TYPE_STRING, &name);
 		g_assert(name);
 		if (*name == '\0') {
-			reply = mafw_dbus_error(req,
-						 MAFW_PLAYLIST_ERROR,
-						 MAFW_PLAYLIST_ERROR_INVALID_NAME,
-						 "name cannot be empty");
+			reply = mafw_dbus_error(
+                                req,
+                                MAFW_PLAYLIST_ERROR,
+                                MAFW_PLAYLIST_ERROR_INVALID_NAME,
+                                "name cannot be empty");
 			goto out;
 		}
 		pls = g_tree_lookup(Playlists_by_name, name);
 		if (!pls) {
 			pls = pls_new(Last_id++, name);
-			g_tree_insert(Playlists, GUINT_TO_POINTER(pls->id), pls);
-			g_tree_insert(Playlists_by_name, g_strdup(pls->name), pls);
+			g_tree_insert(Playlists, GUINT_TO_POINTER(pls->id),
+                                      pls);
+			g_tree_insert(Playlists_by_name, g_strdup(pls->name),
+                                      pls);
 			/*
 			 * Sending the playlist_created signal here is quite all
 			 * right because the receiver will queue up everything
@@ -598,29 +603,35 @@ static DBusHandlerResult request(DBusConnection *con, DBusMessage *req,
 			if (pls->use_count != 0)
 			{
 				/* Destroy playlists that are being used is not
-				 * allowed, so send a signal to inform about that */
+				 * allowed, so send a signal to inform about
+				 * that */
 				mafw_dbus_send(
 					con,
 					mafw_dbus_signal(
 						MAFW_PLAYLIST_SIGNAL_PLAYLIST_DESTRUCTION_FAILED,
 						MAFW_DBUS_UINT32(id)));
 			} else {
-				/* Unlink the playlist, (it's not an error if it hasn't
-				 * been saved yet).  Then remove $pls from our data
-				 * structures.  NOTE: that removing from $Playlists
-				 * causes the playlist to be free()d. */
+				/* Unlink the playlist, (it's not an error if it
+				 * hasn't been saved yet).  Then remove $pls
+				 * from our data structures.  NOTE: that
+				 * removing from $Playlists causes the playlist
+				 * to be free()d. */
 
 				gchar *fn;
 
-				fn = g_strdup_printf("%s" G_DIR_SEPARATOR_S "%u",
+				fn = g_strdup_printf("%s"
+                                                     G_DIR_SEPARATOR_S "%u",
 						     playlist_dir(), pls->id);
 				if (g_unlink(fn) == -1 && errno != ENOENT)
-					g_warning("error while deleting '%s': %s",
-						  fn, g_strerror(errno));
+					g_warning(
+                                                "error while deleting '%s': %s",
+                                                fn, g_strerror(errno));
 				g_free(fn);
-				g_assert(g_tree_remove(Playlists_by_name, pls->name));
-				g_assert(g_tree_remove(Playlists,
-						       GUINT_TO_POINTER(pls->id)));
+				g_assert(g_tree_remove(Playlists_by_name,
+                                                       pls->name));
+				g_assert(g_tree_remove(
+                                                 Playlists,
+                                                 GUINT_TO_POINTER(pls->id)));
 				mafw_dbus_send(
 					con,
 					mafw_dbus_signal(
@@ -638,19 +649,21 @@ static DBusHandlerResult request(DBusConnection *con, DBusMessage *req,
 					DBUS_TYPE_STRING, &new_name);
                 g_assert(new_name);
                 if (*new_name == '\0') {
-                        reply = mafw_dbus_error(req,
-                                                 MAFW_PLAYLIST_ERROR,
-                                                 MAFW_PLAYLIST_ERROR_INVALID_NAME,
-                                                 "name cannot be empty");
+                        reply = mafw_dbus_error(
+                                req,
+                                MAFW_PLAYLIST_ERROR,
+                                MAFW_PLAYLIST_ERROR_INVALID_NAME,
+                                "name cannot be empty");
                         goto out;
                 }
                 /*Check if playlist with new name already exits*/
                 new_pls = g_tree_lookup(Playlists_by_name, new_name);
                 if(new_pls) {
-                        reply = mafw_dbus_error(req,
-                                                 MAFW_PLAYLIST_ERROR,
-                                                 MAFW_PLAYLIST_ERROR_INVALID_NAME,
-                                                 "Playlist already exists");
+                        reply = mafw_dbus_error(
+                                req,
+                                MAFW_PLAYLIST_ERROR,
+                                MAFW_PLAYLIST_ERROR_INVALID_NAME,
+                                "Playlist already exists");
                         goto out;
                 }
                 pls = g_tree_lookup(Playlists, GUINT_TO_POINTER(src_id));
@@ -725,9 +738,9 @@ static DBusHandlerResult request(DBusConnection *con, DBusMessage *req,
 		guint import_id;
 		GError *err = NULL;
 		MafwDBusOpCompletedInfo *oci;
-		
+
 		/* Store the message and pass as user data to browse().
-		   This is used to route the results to correct 
+		   This is used to route the results to correct
 		   destination. */
 		oci = mafw_dbus_oci_new(con, req);
 		mafw_dbus_parse(req, DBUS_TYPE_STRING, &pl,
@@ -747,7 +760,7 @@ static DBusHandlerResult request(DBusConnection *con, DBusMessage *req,
 		guint import_id;
 		struct plparse_data *pl_dat = NULL;
 		GError *err = NULL;
-		
+
 		mafw_dbus_parse(req, DBUS_TYPE_UINT32, &import_id);
 		if (import_requests)
 			pl_dat = g_hash_table_lookup(import_requests,
@@ -781,8 +794,9 @@ out:
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
-static void 
-renderer_added_cb(MafwRegistry * registry, GObject *renderer, gpointer user_data)
+static void
+renderer_added_cb(MafwRegistry * registry, GObject *renderer,
+                  gpointer user_data)
 {
 	/* We are not interested about the renderers */
 	mafw_registry_remove_extension(registry, MAFW_EXTENSION(renderer));
@@ -795,12 +809,12 @@ void init_playlist_wrapper(DBusConnection *dbus, gboolean opt_stayalive,
 	GError *gerr = NULL;
 	DBusError dbe;
 	DBusObjectPathVTable path_vtable;
-	
+
 	memset(&path_vtable, 0, sizeof(DBusObjectPathVTable));
 	path_vtable.message_function = request;
-	
+
 	dbus_error_init(&dbe);
-	
+
 	/* Demand our name. */
 	name_acquired = FALSE;
 	do {
@@ -855,12 +869,14 @@ void init_playlist_wrapper(DBusConnection *dbus, gboolean opt_stayalive,
        if (dbus_error_is_set(&dbe))
                g_error("dbus_bus_add_match: %s", dbe.name);
 	/* Set up $dbus. */
-	if (!dbus_connection_register_fallback(dbus, MAFW_PLAYLIST_PATH, &path_vtable, NULL))
+	if (!dbus_connection_register_fallback(dbus, MAFW_PLAYLIST_PATH,
+                                               &path_vtable, NULL))
 		g_error("dbus_connection_register_fallback: failed");
-	
+
 	g_type_init();
 	Reg = mafw_registry_get_instance();
-	g_signal_connect(Reg, "renderer-added", (GCallback)renderer_added_cb, NULL);
+	g_signal_connect(Reg, "renderer-added", (GCallback)renderer_added_cb,
+                         NULL);
 	if (!mafw_shared_init(Reg, &gerr))
 		g_error("Error during discover init: %s", gerr->message);
 }

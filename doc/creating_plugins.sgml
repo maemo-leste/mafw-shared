@@ -13,7 +13,7 @@
       <para>
         A MAFW source is an element that can provide media information,
         this means available media resources over a protocol and their
-        metadata. Accessing the media files stored in your local file 
+        metadata. Accessing the media files stored in your local file
 	system or the media served through UPnP servers are some examples.
       </para>
 
@@ -26,7 +26,7 @@
 
       <para>
         All the methods have a default implementation in #MafwSource
-        that raise an error by default, so it is not mandatory to implement 
+        that raise an error by default, so it is not mandatory to implement
 	all the methods, but only the ones you want to support. The most
         important ones are:
       </para>
@@ -34,8 +34,8 @@
       <itemizedlist>
         <listitem>
           <para>
-            <code>#mafw_source_browse</code>: it is used to query the source about
-            the available media.
+            <code>#mafw_source_browse</code>: it is used to query the source
+            about the available media.
           </para>
         </listitem>
         <listitem>
@@ -47,54 +47,54 @@
         </listitem>
         <listitem>
           <para>
-            <code>#mafw_source_get_metadata</code>: it is used to request the metadata
-            associated to a given media served by a source. For example, 
-	    when a renderer tries to play a certain media included in a playlist,
-	    it has to obtain the URI associated to that media, this is done
-	    by calling get_metadata and passing the object identifier of the 
-	    media.
+            <code>#mafw_source_get_metadata</code>: it is used to request the
+            metadata associated to a given media served by a source. For
+            example, when a renderer tries to play a certain media included in a
+            playlist, it has to obtain the URI associated to that media, this is
+            done by calling get_metadata and passing the object identifier of
+            the media.
           </para>
         </listitem>
       </itemizedlist>
 
       <para>
-        Other methods are those related to creation or 
-        destruction of media items or metadata modification. Even if your 
-	source does not need to implement these  methods, it may still be
-	interesting to provide dummy implementations so that other
-	components that use the source do not get errors then using these
-        services. For example, a renderer may use the #mafw_source_set_metadata method to 
-	automatically increase the play-count of media items when played.
-	If a source returns an error when this method is invoked instead of
-	of providing an empty implementation, the application could end up
-        receiving that error message or the renderer may abort the playback
-        operation, which may or may not be the intended behaviors.
+        Other methods are those related to creation or destruction of media
+        items or metadata modification. Even if your source does not need to
+        implement these methods, it may still be interesting to provide dummy
+        implementations so that other components that use the source do not get
+        errors then using these services. For example, a renderer may use the
+        #mafw_source_set_metadata method to automatically increase the
+        play-count of media items when played.  If a source returns an error
+        when this method is invoked instead of of providing an empty
+        implementation, the application could end up receiving that error
+        message or the renderer may abort the playback operation, which may or
+        may not be the intended behaviors.
       </para>
 
       <itemizedlist>
         <listitem>
           <para>
-            <code>#mafw_source_set_metadata</code>: Sets metadata for a particular media 
-	    resource.
+            <code>#mafw_source_set_metadata</code>: Sets metadata for a
+	    particular media resource.
           </para>
         </listitem>
         <listitem>
           <para>
-            <code>#mafw_source_create_object</code>: Adds a new media resource or container 
-	    to a particular source.
+            <code>#mafw_source_create_object</code>: Adds a new media resource
+	    or container to a particular source.
           </para>
         </listitem>
         <listitem>
           <para>
-            <code>#mafw_source_destroy_object</code>: Removes a media item or container from a
-            particular source.
+            <code>#mafw_source_destroy_object</code>: Removes a media item or
+            container from a particular source.
           </para>
         </listitem>
       </itemizedlist>
 
       <para>
         Other than creating a &gobject; the developer has to
-	define a symbol containing the plugin name and functions to 
+	define a symbol containing the plugin name and functions to
 	initialize and deinitialize the plugin. An example of this is:
       </para>
 
@@ -125,7 +125,7 @@ G_MODULE_EXPORT MafwPluginDescriptor mafw_my_source_plugin_description = {
  * Plugin initialization. Sets UUID and name of this source and then
  * adds it to the registry, making it available to applications.
  */
-static gboolean 
+static gboolean
 mafw_my_source_initialize(MafwRegistry *registry,
                           GError **error)
 {
@@ -209,7 +209,7 @@ MafwSource *mafw_my_source_new(void)
       <itemizedlist>
         <listitem>
           <para>
-            <emphasis>Playback</emphasis>: Those used to control playback (play, 
+            <emphasis>Playback</emphasis>: Those used to control playback (play,
             stop, pause, resume, volume, etc)
           </para>
         </listitem>
@@ -221,14 +221,14 @@ MafwSource *mafw_my_source_new(void)
         </listitem>
         <listitem>
           <para>
-            <emphasis>Status</emphasis>: Used to query the status of the renderer, like its 
-	    current playback state or selected media.
+            <emphasis>Status</emphasis>: Used to query the status of the
+	    renderer, like its current playback state or selected media.
           </para>
         </listitem>
         <listitem>
           <para>
-            <emphasis>Position</emphasis>: Used to query the current playback position or set
-            it (seeking).
+            <emphasis>Position</emphasis>: Used to query the current playback
+            position or set it (seeking).
           </para>
         </listitem>
       </itemizedlist>
@@ -240,7 +240,8 @@ MafwSource *mafw_my_source_new(void)
       <title>Signals</title>
 
       <para>
-        Renderers also define some signals that should be taken into account, such as:
+        Renderers also define some signals that should be taken into account,
+        such as:
       </para>
 
       <itemizedlist>
@@ -249,20 +250,21 @@ MafwSource *mafw_my_source_new(void)
           playlist is assigned to the renderer.
         </listitem>
         <listitem>
-	  #MafwRenderer::media-changed, which should be emitted when new media is
-          selected in the renderer.
+	  #MafwRenderer::media-changed, which should be emitted when new media
+          is selected in the renderer.
         </listitem>
         <listitem>
-	  #MafwRenderer::state-changed, which should be emitted when the renderer
-          changes from on state to another.
+	  #MafwRenderer::state-changed, which should be emitted when the
+          renderer changes from on state to another.
         </listitem>
         <listitem>
-	  #MafwRenderer::buffering-info, which should be emitted to inform about the
-          buffering progress when playing streams.
+	  #MafwRenderer::buffering-info, which should be emitted to inform about
+          the buffering progress when playing streams.
         </listitem>
         <listitem>
-	  #MafwRenderer::metadata-changed, which should be emitted when the renderer
-          obtains metadata information from the currently selected media.
+	  #MafwRenderer::metadata-changed, which should be emitted when the
+          renderer obtains metadata information from the currently selected
+          media.
         </listitem>
       </itemizedlist>
 
@@ -277,18 +279,17 @@ MafwSource *mafw_my_source_new(void)
     <section>
 
       <title>Properties</title>
-      
+
       <para>
-        #MafwExtension objects (renderers and sources) can define properties (#MafwExtension
-        properties, not &gobject;'s) to configure them on execution
-        time. To use them, get and set functions have to be provided 
-        and hooked in the <code>class_init</code> method.
-        method:
+        #MafwExtension objects (renderers and sources) can define properties
+        (#MafwExtension properties, not &gobject;'s) to configure them on
+        execution time. To use them, get and set functions have to be provided
+        and hooked in the <code>class_init</code> method.  method:
       </para>
 
       <informalexample>
         <programlisting>
-static void 
+static void
 mafw_my_renderer_get_property(MafwExtension *self,
 	 		      const gchar *key,
 			      MafwExtensionPropertyCallback callback,
@@ -382,8 +383,8 @@ static void mafw_my_renderer_init(MafwMyRenderer *self)
 
       <para>
         The code shows examples of renderer properties, but the same
-        could be applied to sources (as this is a mechanism defined for 
-	any kind of extension), for example, a slow source could use 
+        could be applied to sources (as this is a mechanism defined for
+	any kind of extension), for example, a slow source could use
 	properties to define an eager vs. lazy strategy or the use of caches.
       </para>
 

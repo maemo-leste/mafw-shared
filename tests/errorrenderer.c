@@ -40,7 +40,7 @@ static void quit_main_loop(MafwRenderer *self, gchar const *fun)
 		g_main_loop_quit(es->mainloop);
 	}
 }
-	
+
 static void play(MafwRenderer *self, MafwRendererPlaybackCB callback,
 		 gpointer user_data)
 {
@@ -49,7 +49,8 @@ static void play(MafwRenderer *self, MafwRendererPlaybackCB callback,
 	if (callback != NULL)
 	{
 		GError* error = NULL;
-		g_set_error(&error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,
+		g_set_error(&error, MAFW_EXTENSION_ERROR,
+                            MAFW_EXTENSION_ERROR_FAILED,
 			    "Error renderer fails in everything it does.");
 		callback(self, user_data, error);
 		g_error_free(error);
@@ -67,7 +68,8 @@ static void play_object(MafwRenderer *self, const gchar *object_id,
 	if (callback != NULL)
 	{
 		GError* error = NULL;
-		g_set_error(&error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,
+		g_set_error(&error, MAFW_EXTENSION_ERROR,
+                            MAFW_EXTENSION_ERROR_FAILED,
 			    "Error renderer fails in everything it does.");
 		callback(self, user_data, error);
 		g_error_free(error);
@@ -81,11 +83,12 @@ static void play_uri(MafwRenderer *self, const gchar *uri,
 		     MafwRendererPlaybackCB callback, gpointer user_data)
 {
 	ErrorRenderer* es = (ErrorRenderer*) self;
-	
+
 	if (callback != NULL)
 	{
 		GError* error = NULL;
-		g_set_error(&error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,
+		g_set_error(&error, MAFW_EXTENSION_ERROR,
+                            MAFW_EXTENSION_ERROR_FAILED,
 			    "Error renderer fails in everything it does.");
 		callback(self, user_data, error);
 		g_error_free(error);
@@ -103,7 +106,8 @@ static void stop(MafwRenderer *self, MafwRendererPlaybackCB callback,
 	if (callback != NULL)
 	{
 		GError* error = NULL;
-		g_set_error(&error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,
+		g_set_error(&error, MAFW_EXTENSION_ERROR,
+                            MAFW_EXTENSION_ERROR_FAILED,
 			    "Error renderer fails in everything it does.");
 		callback(self, user_data, error);
 		g_error_free(error);
@@ -121,7 +125,8 @@ static void _pause(MafwRenderer *self, MafwRendererPlaybackCB callback,
 	if (callback != NULL)
 	{
 		GError* error = NULL;
-		g_set_error(&error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,
+		g_set_error(&error, MAFW_EXTENSION_ERROR,
+                            MAFW_EXTENSION_ERROR_FAILED,
 			    "Error renderer fails in everything it does.");
 		callback(self, user_data, error);
 		g_error_free(error);
@@ -139,7 +144,8 @@ static void resume(MafwRenderer *self, MafwRendererPlaybackCB callback,
 	if (callback != NULL)
 	{
 		GError* error = NULL;
-		g_set_error(&error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,
+		g_set_error(&error, MAFW_EXTENSION_ERROR,
+                            MAFW_EXTENSION_ERROR_FAILED,
 			    "Error renderer fails in everything it does.");
 		callback(self, user_data, error);
 		g_error_free(error);
@@ -157,7 +163,8 @@ static void get_status(MafwRenderer *self, MafwRendererStatusCB callback,
 	if (callback != NULL)
 	{
 		GError* error = NULL;
-		g_set_error(&error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,
+		g_set_error(&error, MAFW_EXTENSION_ERROR,
+                            MAFW_EXTENSION_ERROR_FAILED,
 			    "Error renderer fails in everything it does.");
 		callback(self, NULL, 0, 0, NULL, user_data, error);
 		g_error_free(error);
@@ -167,14 +174,15 @@ static void get_status(MafwRenderer *self, MafwRendererStatusCB callback,
 	quit_main_loop(self, G_STRFUNC);
 }
 
-static gboolean assign_playlist(MafwRenderer *self, MafwPlaylist *playlist, 
+static gboolean assign_playlist(MafwRenderer *self, MafwPlaylist *playlist,
 				GError **error)
 {
 	ErrorRenderer* es = (ErrorRenderer*) self;
 
 	if (error)
 	{
-		g_set_error(error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,
+		g_set_error(error, MAFW_EXTENSION_ERROR,
+                            MAFW_EXTENSION_ERROR_FAILED,
 			    "Error renderer fails in everything it does.");
 	}
 	es->assign_playlist_called++;
@@ -191,7 +199,8 @@ static void next(MafwRenderer *self, MafwRendererPlaybackCB callback,
 	if (callback != NULL)
 	{
 		GError* error = NULL;
-		g_set_error(&error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,
+		g_set_error(&error, MAFW_EXTENSION_ERROR,
+                            MAFW_EXTENSION_ERROR_FAILED,
 			    "Error renderer fails in everything it does.");
 		callback(self, user_data, error);
 		g_error_free(error);
@@ -209,7 +218,8 @@ static void previous(MafwRenderer *self, MafwRendererPlaybackCB callback,
 	if (callback != NULL)
 	{
 		GError* error = NULL;
-		g_set_error(&error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,
+		g_set_error(&error, MAFW_EXTENSION_ERROR,
+                            MAFW_EXTENSION_ERROR_FAILED,
 			    "Error renderer fails in everything it does.");
 		callback(self, user_data, error);
 		g_error_free(error);
@@ -227,7 +237,8 @@ static void goto_index(MafwRenderer *self, guint index,
 	if (callback != NULL)
 	{
 		GError* error = NULL;
-		g_set_error(&error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,
+		g_set_error(&error, MAFW_EXTENSION_ERROR,
+                            MAFW_EXTENSION_ERROR_FAILED,
 			    "Error renderer fails in everything it does.");
 		callback(self, user_data, error);
 		g_error_free(error);
@@ -237,8 +248,9 @@ static void goto_index(MafwRenderer *self, guint index,
 	quit_main_loop(self, G_STRFUNC);
 }
 
-static void set_position(MafwRenderer *self, MafwRendererSeekMode mode, gint seconds,
-			 MafwRendererPositionCB callback, gpointer user_data)
+static void set_position(MafwRenderer *self, MafwRendererSeekMode mode,
+                         gint seconds, MafwRendererPositionCB callback,
+                         gpointer user_data)
 {
 	ErrorRenderer* es = (ErrorRenderer*) self;
 
@@ -247,7 +259,8 @@ static void set_position(MafwRenderer *self, MafwRendererSeekMode mode, gint sec
 	if (callback != NULL)
 	{
 		GError* error = NULL;
-		g_set_error(&error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,
+		g_set_error(&error, MAFW_EXTENSION_ERROR,
+                            MAFW_EXTENSION_ERROR_FAILED,
 			    "Error renderer fails in everything it does.");
 		callback(self, seconds, user_data, error);
 		g_error_free(error);
@@ -266,7 +279,8 @@ static void get_position(MafwRenderer *self, MafwRendererPositionCB callback,
 	if (callback != NULL)
 	{
 		GError* error = NULL;
-		g_set_error(&error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,
+		g_set_error(&error, MAFW_EXTENSION_ERROR,
+                            MAFW_EXTENSION_ERROR_FAILED,
 			    "Error renderer fails in everything it does.");
 		callback(self, 0, user_data, error);
 		g_error_free(error);

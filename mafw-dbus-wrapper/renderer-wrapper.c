@@ -54,7 +54,8 @@ struct buffering_data {
   Playback operation success/failure callback
   ----------------------------------------------------------------------------*/
 
-static void playback_cb(MafwRenderer *renderer, gpointer user_data, const GError *error)
+static void playback_cb(MafwRenderer *renderer, gpointer user_data,
+                        const GError *error)
 {
 	MafwDBusOpCompletedInfo* oci;
 
@@ -75,9 +76,10 @@ static void playback_cb(MafwRenderer *renderer, gpointer user_data, const GError
   Get status
   ----------------------------------------------------------------------------*/
 
-static void get_status_cb(MafwRenderer *renderer, MafwPlaylist *playlist, guint index,
-			  MafwPlayState state, const gchar* object_id,
-			  gpointer user_data, const GError *error)
+static void get_status_cb(MafwRenderer *renderer, MafwPlaylist *playlist,
+                          guint index, MafwPlayState state,
+                          const gchar* object_id, gpointer user_data,
+                          const GError *error)
 {
 	MafwDBusOpCompletedInfo* oci;
 	guint playlist_id;
@@ -154,17 +156,20 @@ DBusHandlerResult handle_renderer_msg(DBusConnection *conn,
 		mafw_renderer_play(renderer, playback_cb, oci);
 		return DBUS_HANDLER_RESULT_HANDLED;
 
-	} else if (dbus_message_has_member(msg, MAFW_RENDERER_METHOD_PLAY_OBJECT)) {
+	} else if (dbus_message_has_member(msg,
+                                           MAFW_RENDERER_METHOD_PLAY_OBJECT)) {
 
 		MafwDBusOpCompletedInfo *oci;
 		const gchar* object_id = NULL;
 
 		mafw_dbus_parse(msg, DBUS_TYPE_STRING, &object_id);
 		oci = mafw_dbus_oci_new(conn, msg);
-		mafw_renderer_play_object(renderer, object_id, playback_cb, oci);
+		mafw_renderer_play_object(renderer, object_id,
+                                          playback_cb, oci);
 		return DBUS_HANDLER_RESULT_HANDLED;
 
-	} else if (dbus_message_has_member(msg, MAFW_RENDERER_METHOD_PLAY_URI)) {
+	} else if (dbus_message_has_member(msg,
+                                           MAFW_RENDERER_METHOD_PLAY_URI)) {
 
 		MafwDBusOpCompletedInfo *oci;
 		const gchar* uri = NULL;
@@ -202,14 +207,16 @@ DBusHandlerResult handle_renderer_msg(DBusConnection *conn,
 		mafw_renderer_next(renderer, playback_cb, oci);
 		return DBUS_HANDLER_RESULT_HANDLED;
 
-	} else if (dbus_message_has_member(msg, MAFW_RENDERER_METHOD_PREVIOUS)) {
+	} else if (dbus_message_has_member(msg,
+                                           MAFW_RENDERER_METHOD_PREVIOUS)) {
 
 		MafwDBusOpCompletedInfo *oci;
 		oci = mafw_dbus_oci_new(conn, msg);
 		mafw_renderer_previous(renderer, playback_cb, oci);
 		return DBUS_HANDLER_RESULT_HANDLED;
 
-	} else if (dbus_message_has_member(msg, MAFW_RENDERER_METHOD_GOTO_INDEX)) {
+	} else if (dbus_message_has_member(msg,
+                                           MAFW_RENDERER_METHOD_GOTO_INDEX)) {
 
 		guint index;
 		MafwDBusOpCompletedInfo *oci;
@@ -218,14 +225,17 @@ DBusHandlerResult handle_renderer_msg(DBusConnection *conn,
 		mafw_renderer_goto_index(renderer, index, playback_cb, oci);
 		return DBUS_HANDLER_RESULT_HANDLED;
 
-	} else if (dbus_message_has_member(msg, MAFW_RENDERER_METHOD_GET_STATUS)) {
+	} else if (dbus_message_has_member(msg,
+                                           MAFW_RENDERER_METHOD_GET_STATUS)) {
 
 		MafwDBusOpCompletedInfo *oci;
 		oci = mafw_dbus_oci_new(conn, msg);
 		mafw_renderer_get_status(renderer, get_status_cb, oci);
 		return DBUS_HANDLER_RESULT_HANDLED;
 
-	} else if (dbus_message_has_member(msg, MAFW_RENDERER_METHOD_ASSIGN_PLAYLIST)) {
+	} else if (dbus_message_has_member(
+                           msg,
+                           MAFW_RENDERER_METHOD_ASSIGN_PLAYLIST)) {
 
 		guint pls_id;
 		MafwPlaylist *playlist;
@@ -238,7 +248,7 @@ DBusHandlerResult handle_renderer_msg(DBusConnection *conn,
 		if (pls_id == 0) {
 			g_debug("Unassigning playlist...");
 			playlist = NULL;
-			
+
 		} else {
 			pm = mafw_playlist_manager_get();
 			playlist = MAFW_PLAYLIST(
@@ -252,23 +262,28 @@ DBusHandlerResult handle_renderer_msg(DBusConnection *conn,
 		}
 		else
 		{
-			mafw_renderer_assign_playlist(renderer, playlist, &errp);
+			mafw_renderer_assign_playlist(renderer, playlist,
+                                                      &errp);
 		}
 		mafw_dbus_ack_or_error(conn, msg, errp);
 		return DBUS_HANDLER_RESULT_HANDLED;
 
-	} else if (dbus_message_has_member(msg, MAFW_RENDERER_METHOD_SET_POSITION)) {
+	} else if (dbus_message_has_member(msg,
+                                           MAFW_RENDERER_METHOD_SET_POSITION)) {
 
 		MafwDBusOpCompletedInfo *oci;
 		MafwRendererSeekMode mode;
 		guint seconds;
 
-		mafw_dbus_parse(msg, DBUS_TYPE_INT32, &mode, DBUS_TYPE_INT32, &seconds);
+		mafw_dbus_parse(msg, DBUS_TYPE_INT32, &mode, DBUS_TYPE_INT32,
+                                &seconds);
 		oci = mafw_dbus_oci_new(conn, msg);
-		mafw_renderer_set_position(renderer, mode, seconds, set_get_position_cb, oci);
+		mafw_renderer_set_position(renderer, mode, seconds,
+                                           set_get_position_cb, oci);
 		return DBUS_HANDLER_RESULT_HANDLED;
 
-	} else if (dbus_message_has_member(msg, MAFW_RENDERER_METHOD_GET_POSITION)) {
+	} else if (dbus_message_has_member(msg,
+                                           MAFW_RENDERER_METHOD_GET_POSITION)) {
 
 		MafwDBusOpCompletedInfo *oci;
 		oci = mafw_dbus_oci_new(conn, msg);
@@ -348,7 +363,7 @@ static void playlist_changed(MafwRenderer * self,
  * all UI connections.
  */
 static void media_changed(MafwRenderer * self,
-			   gint index, const gchar * object_id, 
+			   gint index, const gchar * object_id,
 			   gpointer userdata)
 {
 	ExportedComponent *ecomp;
@@ -374,7 +389,7 @@ static void _emit_buffering_info(ExportedComponent *ecomp, gfloat status)
 					MAFW_RENDERER_INTERFACE,
 					MAFW_RENDERER_SIGNAL_BUFFERING_INFO,
 					MAFW_DBUS_DOUBLE(status)));
-	
+
 }
 
 static gboolean emit_buffering_info_tout(struct buffering_data *bufdata)
@@ -384,7 +399,8 @@ static gboolean emit_buffering_info_tout(struct buffering_data *bufdata)
 	return FALSE;
 }
 
-#define BUFFERING_EMIT_INTERVAL 750	/* buffering status emit interval in ms */
+#define BUFFERING_EMIT_INTERVAL 750	/* buffering status emit interval in
+                                         * ms */
 
 /**
  * buffering_info:
@@ -392,10 +408,11 @@ static gboolean emit_buffering_info_tout(struct buffering_data *bufdata)
  * Handle buffering_info signal from a renderer. Forward it to
  * all UI connections.
  */
-static void buffering_info(MafwRenderer * self, gfloat status, gpointer userdata)
+static void buffering_info(MafwRenderer * self, gfloat status,
+                           gpointer userdata)
 {
 	struct buffering_data *bufdata = (struct buffering_data*) userdata;
-	
+
 	if (status != 100.0 && bufdata->buffering_info_id == 0)
 	{
 		_emit_buffering_info(bufdata -> ecomp, status);
@@ -454,7 +471,7 @@ void connect_to_renderer_signals(gpointer ecomp)
 	bufdata->ecomp = ecomp;
 
 
-	id = g_signal_connect_data(bufdata->ecomp->comp, "buffering-info", 
+	id = g_signal_connect_data(bufdata->ecomp->comp, "buffering-info",
 				(GCallback)buffering_info,
 				bufdata, (GClosureNotify)_destroy_bufdata, 0);
 	g_array_append_val(bufdata->ecomp->sighandlers, id);

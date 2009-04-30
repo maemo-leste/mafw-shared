@@ -41,7 +41,7 @@ typedef struct {
 	stop_called, pause_called, resume_called, get_status_called,
 	assign_playlist_called, next_called, previous_called,
 	goto_index_called, set_position_called,
-	get_position_called, state_changed_called, media_changed_called, 
+	get_position_called, state_changed_called, media_changed_called,
 	playlist_changed_called, buffering_info_called, metadata_changed_called;
 
 	GMainLoop *mainloop;
@@ -50,7 +50,8 @@ typedef struct {
 } MockedRenderer;
 
 extern GType mocked_renderer_get_type(void);
-#define MOCKED_RENDERER(o) (G_TYPE_CHECK_INSTANCE_CAST((o), mocked_renderer_get_type(), MockedRenderer))
+#define MOCKED_RENDERER(o) (G_TYPE_CHECK_INSTANCE_CAST((o),\
+                            mocked_renderer_get_type(), MockedRenderer))
 
 extern gpointer mocked_renderer_new(const gchar *name, const gchar *uuid,
 				GMainLoop *mainloop);

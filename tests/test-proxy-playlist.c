@@ -782,7 +782,8 @@ static void test_shuffle_stress(guint nturns, guint nitems)
 		/* Check that a) exactly the same items are in the playlist
 		 * but b) all of them at a different playing position. */
 		fail_if(mafw_playlist_get_size(g_playlist, NULL) != nitems);
-		mafw_playlist_get_starting_index(g_playlist, &next_id, &item, NULL);
+		mafw_playlist_get_starting_index(g_playlist, &next_id, &item,
+                                                 NULL);
 		newpos = 0;
 		do
 		{
@@ -879,7 +880,8 @@ START_TEST(test_shuffle)
 	g_timeout_add_seconds(5,(GSourceFunc)g_main_loop_quit,Loop);
 	dont_quit = TRUE;
 	g_main_loop_run(Loop);
-	fail_if(contents_changed->len -1!= nchanges_expected,"%d %d",contents_changed->len,nchanges_expected);
+	fail_if(contents_changed->len -1!= nchanges_expected,"%d %d",
+                contents_changed->len,nchanges_expected);
 
 	fail_if(nshuffles != nshuffles_expected);
 

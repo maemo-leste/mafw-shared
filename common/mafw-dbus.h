@@ -203,7 +203,8 @@ typedef struct {
 	DBusMessage *msg;
 } MafwDBusOpCompletedInfo;
 
-extern DBusMessage *mafw_dbus_reply_v(DBusMessage *call, int first_arg_type, ...);
+extern DBusMessage *mafw_dbus_reply_v(DBusMessage *call,
+                                      int first_arg_type, ...);
 extern void mafw_dbus_ack_or_error(DBusConnection *conn,
 				   DBusMessage *call, GError *error);
 extern DBusMessage *mafw_dbus_error(DBusMessage *call, GQuark domain,

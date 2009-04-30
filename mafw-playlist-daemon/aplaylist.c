@@ -164,7 +164,7 @@ gboolean pls_set_name(Pls *pls, const gchar *name)
 	pls->name = g_strdup(name);
 	if (!initialize)
 		i_am_dirty(pls);
-	
+
 	return TRUE;
 }
 
@@ -233,7 +233,7 @@ gboolean pls_inserts(Pls *pls, guint idx, const gchar **oids, guint len)
 	{
 		g_debug("shuffled");
 		guint j, npx;
-		
+
 		for (j = len; j > 0; j--)
 		{
 			if (pls->len)
@@ -261,10 +261,10 @@ gboolean pls_inserts(Pls *pls, guint idx, const gchar **oids, guint len)
 		pls->len += len;
 		for (i = idx; i <= pls->len; i++)
 			pls->pidx[i] = i;
-		
+
 	}
-	
-	
+
+
 
 	i_am_dirty(pls);
 	return TRUE;
@@ -331,7 +331,7 @@ void pls_shuffle(Pls *pls)
 void pls_unshuffle(Pls *pls)
 {
 	guint i;
-	
+
 	pls->shuffled = FALSE;
 
 	for (i = 0; i < pls->len; ++i)
@@ -351,7 +351,7 @@ gchar **pls_get_items(Pls *pls, guint fidx, guint lidx)
 	GPtrArray *oidarray = NULL;
 	gchar **oids;
 	guint i;
-	
+
 	if (fidx >= pls->len || lidx < fidx)
 		return NULL;
 	if (lidx > pls->len-1)
@@ -363,12 +363,12 @@ gchar **pls_get_items(Pls *pls, guint fidx, guint lidx)
 	{
 		g_ptr_array_add(oidarray, pls->vidx[i]);
 	}
-	
+
 	g_ptr_array_add(oidarray, NULL);
-	
+
 	oids = (gchar**)oidarray->pdata;
 	g_ptr_array_free(oidarray, FALSE);
-	
+
 	return oids;
 }
 
@@ -409,7 +409,8 @@ gboolean pls_get_next(Pls *pls, guint *index, gchar **oid)
 				if (i < pls->len-1)
 				{
 					*index = pls->pidx[i+1];
-					*oid = g_strdup(pls->vidx[pls->pidx[i+1]]);
+					*oid = g_strdup(
+                                                pls->vidx[pls->pidx[i+1]]);
 					return TRUE;
 				}
 				else
@@ -428,8 +429,8 @@ gboolean pls_get_next(Pls *pls, guint *index, gchar **oid)
 	return FALSE;
 }
 
-/* Sets the previous playable item's visual index, and object id if there is any,
-   according to the repeat setting */
+/* Sets the previous playable item's visual index, and object id if there is
+   any, according to the repeat setting */
 gboolean pls_get_prev(Pls *pls, guint *index, gchar **oid)
 {
 	guint i;
@@ -442,7 +443,8 @@ gboolean pls_get_prev(Pls *pls, guint *index, gchar **oid)
 				if (i != 0)
 				{
 					*index = pls->pidx[i-1];
-					*oid = g_strdup(pls->vidx[pls->pidx[i-1]]);
+					*oid = g_strdup(
+                                                pls->vidx[pls->pidx[i-1]]);
 					return TRUE;
 				}
 				else

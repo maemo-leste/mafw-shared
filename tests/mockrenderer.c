@@ -119,7 +119,8 @@ static void get_status(MafwRenderer *self, MafwRendererStatusCB callback,
 	MockedRenderer* ms = (MockedRenderer*) self;
 
 	if (callback != NULL)
-		callback(self, ms->get_stat_pl, 42, Paused, "bar", user_data, NULL);
+		callback(self, ms->get_stat_pl, 42, Paused, "bar", user_data,
+                         NULL);
 
 	ms->get_status_called++;
 	quit_main_loop(self, G_STRFUNC);
@@ -172,8 +173,9 @@ static void goto_index(MafwRenderer *self, guint index,
 	quit_main_loop(self, G_STRFUNC);
 }
 
-static void set_position(MafwRenderer *self, MafwRendererSeekMode mode, gint seconds,
-			 MafwRendererPositionCB callback, gpointer user_data)
+static void set_position(MafwRenderer *self, MafwRendererSeekMode mode,
+                         gint seconds, MafwRendererPositionCB callback,
+                         gpointer user_data)
 {
 	MockedRenderer* ms = (MockedRenderer*) self;
 
@@ -188,10 +190,10 @@ static void get_position(MafwRenderer *self, MafwRendererPositionCB callback,
 			 gpointer user_data)
 {
 	MockedRenderer* ms = (MockedRenderer*) self;
-	
+
 	if (callback != NULL)
 		callback(MAFW_RENDERER(self), 1337, user_data, NULL);
-	
+
 	ms->get_position_called++;
 	quit_main_loop(self, G_STRFUNC);
 }
@@ -270,7 +272,7 @@ gpointer mocked_renderer_new(const gchar *name, const gchar *uuid,
 			 GMainLoop *mainloop)
 {
 	MockedRenderer *ms;
-	
+
 	ms = g_object_new(mocked_renderer_get_type(),
 			  "plugin", "mockland",
 			  "uuid", uuid,

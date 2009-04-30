@@ -437,7 +437,7 @@ static gboolean assign_playlist(MafwRenderer *self, MafwPlaylist *playlist,
 	/* Validate what we got. */
 	fail_if(strcmp(mafw_playlist_get_name(playlist), "maj playlist"));
 	Assign_playlist_called++;
-	
+
 	if (error)
 	{
 		g_set_error(error,
@@ -451,7 +451,8 @@ static gboolean assign_playlist(MafwRenderer *self, MafwPlaylist *playlist,
 	return FALSE;
 }
 
-static void goto_index(MafwRenderer *self, guint index, MafwRendererPlaybackCB callback,
+static void goto_index(MafwRenderer *self, guint index,
+                       MafwRendererPlaybackCB callback,
 		       gpointer user_data)
 {
 	Goto_index_called++;
@@ -787,9 +788,10 @@ static gboolean create_object_bg(CreateObjectInfo *info)
 	} else {
 		GError *error;
 
-		error = g_error_new_literal(MAFW_SOURCE_ERROR,
-				    MAFW_EXTENSION_ERROR_EXTENSION_NOT_RESPONDING,
-				    "dead");
+		error = g_error_new_literal(
+                        MAFW_SOURCE_ERROR,
+                        MAFW_EXTENSION_ERROR_EXTENSION_NOT_RESPONDING,
+                        "dead");
 		info->cb(info->self, NULL, info->cbdata, error);
 		g_error_free(error);
 	}
@@ -958,8 +960,10 @@ static void ui_metadata_result(MafwSource *src, const gchar *object_id,
 	quit_main_loop(G_STRFUNC);
 }
 
-static void ui_metadata_result_with_error(MafwSource *src, const gchar *object_id,
-					  GHashTable *metadata, gpointer user_data,
+static void ui_metadata_result_with_error(MafwSource *src,
+                                          const gchar *object_id,
+					  GHashTable *metadata,
+                                          gpointer user_data,
 					  const GError *error)
 {
 	/* Validate arguments. */
@@ -995,19 +999,22 @@ static void ui_src_added(MafwRegistry *reg, MafwSource *src, void *udata)
 	fail_unless(MAFW_IS_SOURCE(Src), "source_added parameter is not a "
 						"source");
 	fail_unless(!strcmp(mafw_extension_get_uuid(MAFW_EXTENSION(Src)),
-				FAKE_SOURCE_NAME), 
+				FAKE_SOURCE_NAME),
 				"Wrong uuid for source");
 	if (Src && Renderer) quit_main_loop(G_STRFUNC);
 }
 
-static void ui_renderer_added(MafwRegistry *reg, MafwRenderer *renderer, void *udata)
+static void ui_renderer_added(MafwRegistry *reg, MafwRenderer *renderer,
+                              void *udata)
 {
 	Renderer = renderer;
-	fail_unless(MAFW_IS_RENDERER(Renderer), "renderer_added parameter is not a renderer");
-	fail_unless(!strcmp(mafw_extension_get_uuid(MAFW_EXTENSION(Renderer)), 
-				FAKE_RENDERER_NAME), 
+	fail_unless(MAFW_IS_RENDERER(Renderer),
+                    "renderer_added parameter is not a renderer");
+	fail_unless(!strcmp(mafw_extension_get_uuid(MAFW_EXTENSION(Renderer)),
+				FAKE_RENDERER_NAME),
 				"Wrong uuid for renderer");
-	g_signal_connect(MAFW_EXTENSION(Renderer), "error", G_CALLBACK(error_signal), NULL);
+	g_signal_connect(MAFW_EXTENSION(Renderer), "error",
+                         G_CALLBACK(error_signal), NULL);
 	if (Src && Renderer) quit_main_loop(G_STRFUNC);
 }
 
@@ -1024,7 +1031,7 @@ static DBusHandlerResult ui_dbus_handler(DBusConnection* conn, DBusMessage* msg,
 		quit_main_loop(G_STRFUNC);
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
-	
+
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
@@ -1036,19 +1043,22 @@ static void setup_ui_dbus(void)
 	dbus_error_init(&err);
 	/* Get a reference to the session bus and add a filter. */
 	s_bus = dbus_bus_get(DBUS_BUS_SESSION, &err);
-	
-	ret = dbus_bus_request_name(s_bus, MAFW_TEST_UI_INTERFACE, DBUS_NAME_FLAG_REPLACE_EXISTING , &err);
-	if (dbus_error_is_set(&err)) { 
+
+	ret = dbus_bus_request_name(s_bus, MAFW_TEST_UI_INTERFACE,
+                                    DBUS_NAME_FLAG_REPLACE_EXISTING , &err);
+	if (dbus_error_is_set(&err)) {
 		g_critical("Name Error (%s)\n", err.message);
-		dbus_error_free(&err); 
+		dbus_error_free(&err);
 	}
 	g_assert (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER == ret);
-	
+
 	dbus_connection_add_filter(s_bus,
 				   (DBusHandleMessageFunction) ui_dbus_handler,
 				   NULL,
 				   NULL);
-	dbus_bus_add_match(s_bus, "type='signal'"/*member='" TEST_PREPARED_SIGNAL"'"*/, NULL);
+	dbus_bus_add_match(s_bus,
+                           "type='signal'",/*member='" TEST_PREPARED_SIGNAL"'"*/
+                           NULL);
 
 	dbus_connection_setup_with_g_main(s_bus, NULL);
 }
@@ -1058,11 +1068,12 @@ static void setup_ui(void)
 	/* Set up the registry, and find the source. */
 	Reg = MAFW_REGISTRY(mafw_registry_get_instance());
 	Mainloop = g_main_loop_new(NULL, FALSE);
-	
+
 	setup_ui_dbus();
-	
+
 	g_signal_connect(Reg, "source-added", G_CALLBACK(ui_src_added), NULL);
-	g_signal_connect(Reg, "renderer-added", G_CALLBACK(ui_renderer_added), NULL);
+	g_signal_connect(Reg, "renderer-added", G_CALLBACK(ui_renderer_added),
+                         NULL);
 	g_main_loop_run(Mainloop);
 }
 
@@ -1097,7 +1108,8 @@ START_TEST(test_ui_source_browse)
 				 "(egyik=masik)", "wrong_sort_string",
 				 MAFW_SOURCE_LIST("uri"), 11, 99,
 				 ui_browse_result, NULL, &error);
-	fail_if(bid != MAFW_SOURCE_INVALID_BROWSE_ID, "Browse should have faild");
+	fail_if(bid != MAFW_SOURCE_INVALID_BROWSE_ID,
+                "Browse should have faild");
 	fail_if(error == NULL, "Error was not set");
 	fail_if(error->domain != MAFW_SOURCE_ERROR,
 		"Wrong error domain");
@@ -1429,7 +1441,7 @@ START_TEST(test_ui_source_destroy_object)
 }
 END_TEST
 
-static void ui_source_metadata_changed(MafwSource *src, const gchar *object_id, 
+static void ui_source_metadata_changed(MafwSource *src, const gchar *object_id,
 		gboolean *called)
 {
 	*called = TRUE;
@@ -1440,19 +1452,19 @@ static void ui_source_metadata_changed(MafwSource *src, const gchar *object_id,
 START_TEST(test_ui_source_metadata_chaged)
 {
 	gboolean called = FALSE;
-	
+
 	g_signal_connect(Src,"metadata_changed",
 				G_CALLBACK(ui_source_metadata_changed),
 				(gpointer)&called);
-	
+
 	g_main_loop_run(Mainloop);
-	
+
 	fail_if(!called);
 }
 END_TEST
 
-static void ui_source_container_changed(MafwSource *src, const gchar *object_id, 
-		gboolean *called)
+static void ui_source_container_changed(MafwSource *src, const gchar *object_id,
+                                        gboolean *called)
 {
 	*called = TRUE;
 	fail_if(strcmp(object_id, METADATA_CHD_OBJ_ID) != 0);
@@ -1466,17 +1478,18 @@ START_TEST(test_ui_source_container_chaged)
 	g_signal_connect(Src,"container_changed",
 				G_CALLBACK(ui_source_container_changed),
 				(gpointer)&called);
-	
+
 	g_main_loop_run(Mainloop);
-	
+
 	fail_if(!called);
 }
 END_TEST
 
 /* Renderer test cases (UI). */
 
-static void test_ui_renderer_playback_cb(MafwRenderer* renderer, gpointer user_data,
-				     const GError* error)
+static void test_ui_renderer_playback_cb(MafwRenderer* renderer,
+                                         gpointer user_data,
+                                         const GError* error)
 {
 	/* Play will return with an error */
 	fail_if(error == NULL);
@@ -1636,7 +1649,8 @@ static void get_status_gs_no_db_cb(MafwRenderer *self,
 
 static gboolean test_ui_gs_no_db_idle(gpointer data)
 {
-	mafw_renderer_get_status(MAFW_RENDERER(Renderer), get_status_gs_no_db_cb, NULL);
+	mafw_renderer_get_status(MAFW_RENDERER(Renderer),
+                                 get_status_gs_no_db_cb, NULL);
 	return FALSE;
 }
 
@@ -1658,7 +1672,7 @@ static void get_status_gs_no_null_playlist_id_cb(MafwRenderer *self,
 						 gpointer user_data,
 						 const GError *error)
 {
-	
+
 	fail_if(0 != index, "Wrong index (%u)", index);
 	fail_if(NULL == playlist, "Wrong playlist");
 	fail_if(1 != state, "Wrong state (%d)", state);
@@ -1693,7 +1707,7 @@ static void get_status_gs_not_null_cb(MafwRenderer *self,
 	fail_if(strncmp(object_id, "id", 3), "Wrong object id (%s)", object_id);
 
 	g_object_unref(playlist);
-	
+
 	quit_main_loop(G_STRFUNC);
 }
 
@@ -1707,12 +1721,13 @@ START_TEST(test_ui_gs_not_null)
 
 	/* Preconditions setup end */
 
-	mafw_renderer_get_status(MAFW_RENDERER(Renderer), get_status_gs_not_null_cb,
+	mafw_renderer_get_status(MAFW_RENDERER(Renderer),
+                                 get_status_gs_not_null_cb,
 			     playlist);
 
 	g_main_loop_run(Mainloop);
 	signal_wrapper(NULL);
-	
+
 }
 END_TEST
 
@@ -1731,7 +1746,7 @@ static void get_status_gs_null_objid_cb(MafwRenderer *self,
 		"Wrong object id (%s)", object_id);
 
 	g_object_unref(playlist);
-	
+
 	quit_main_loop(G_STRFUNC);
 }
 
@@ -1745,12 +1760,13 @@ START_TEST(test_ui_gs_null_objid)
 
 	/* Preconditions setup end */
 
-	mafw_renderer_get_status(MAFW_RENDERER(Renderer), get_status_gs_null_objid_cb,
-			     playlist);
+	mafw_renderer_get_status(MAFW_RENDERER(Renderer),
+                                 get_status_gs_null_objid_cb,
+                                 playlist);
 
 	g_main_loop_run(Mainloop);
 	signal_wrapper(NULL);
-	
+
 }
 END_TEST
 
@@ -1783,11 +1799,12 @@ START_TEST(test_ui_sc_initial)
 
 	/* Should update only objid and state */
 
-	mafw_renderer_get_status(MAFW_RENDERER(Renderer), get_status_initial_cb, NULL);
+	mafw_renderer_get_status(MAFW_RENDERER(Renderer),
+                                 get_status_initial_cb, NULL);
 
 	g_main_loop_run(Mainloop);
 	signal_wrapper(NULL);
-	
+
 }
 END_TEST
 
@@ -1821,8 +1838,9 @@ START_TEST(test_ui_sc_update_objid)
 		mafw_playlist_manager_get(), "t pl 2", NULL));
 
 
-	mafw_renderer_get_status(MAFW_RENDERER(Renderer), get_status_update_objid_cb,
-			     playlist1);
+	mafw_renderer_get_status(MAFW_RENDERER(Renderer),
+                                 get_status_update_objid_cb,
+                                 playlist1);
 
 	g_main_loop_run(Mainloop);
 	signal_wrapper(NULL);
@@ -1844,7 +1862,7 @@ static void get_status_update_null_objid_cb(MafwRenderer *self,
 		"Wrong object id (%s)", object_id);
 
 	g_object_unref(playlist);
-	
+
 	quit_main_loop(G_STRFUNC);
 }
 
@@ -1862,25 +1880,27 @@ START_TEST(test_ui_sc_update_null_objid)
 
 	/* Preconditions setup end */
 
-	mafw_renderer_get_status(MAFW_RENDERER(Renderer), get_status_update_null_objid_cb,
-			     playlist2);
+	mafw_renderer_get_status(MAFW_RENDERER(Renderer),
+                                 get_status_update_null_objid_cb,
+                                 playlist2);
 
 	g_main_loop_run(Mainloop);
 	signal_wrapper(NULL);
 }
 END_TEST
 
-static void renderer_plist_changed(MafwRenderer *renderer, MafwPlaylist *playlist,
+static void renderer_plist_changed(MafwRenderer *renderer,
+                                   MafwPlaylist *playlist,
 		gpointer udata)
 {
-	MafwPlaylist *playlist1 = 
+	MafwPlaylist *playlist1 =
 		MAFW_PLAYLIST(mafw_playlist_manager_create_playlist(
 		mafw_playlist_manager_get(), "t pl 2", NULL));
 	static gboolean called = FALSE;
 	fail_if(called, "playlist_changed called more than once");
 	fail_if(playlist == NULL, "Playlist is NULL");
 	fail_if(mafw_proxy_playlist_get_id(
-				MAFW_PROXY_PLAYLIST(playlist)) != 
+				MAFW_PROXY_PLAYLIST(playlist)) !=
 			mafw_proxy_playlist_get_id(
 				MAFW_PROXY_PLAYLIST(playlist1)),
 			"Playlist is not the same");
@@ -1897,7 +1917,7 @@ static void renderer_state_changed(MafwRenderer *renderer, MafwPlayState state,
 	quit_main_loop(G_STRFUNC);
 }
 
-static void renderer_media_changed(MafwRenderer *renderer, guint index, 
+static void renderer_media_changed(MafwRenderer *renderer, guint index,
 		const gchar *object_id,
 		gpointer udata)
 {
@@ -1909,7 +1929,7 @@ static void renderer_media_changed(MafwRenderer *renderer, guint index,
 				"Wrong media_changed parameters no.1");
 	} else
 	{
-		fail_unless(index == 0 && object_id && 
+		fail_unless(index == 0 && object_id &&
 				strncmp(object_id, "id", 3) == 0,
 				"Wrong media_changed parameters no.2");
 	}
@@ -1921,14 +1941,17 @@ static void renderer_media_changed(MafwRenderer *renderer, guint index,
 START_TEST(test_ui_sc_signals)
 {
 	ui_wait_for_prepared_state();
-	
-	g_signal_connect(Renderer,"playlist_changed",G_CALLBACK(renderer_plist_changed),
+
+	g_signal_connect(Renderer,"playlist_changed",
+                         G_CALLBACK(renderer_plist_changed),
 		NULL);
-	
-	g_signal_connect(Renderer,"state_changed",G_CALLBACK(renderer_state_changed),
+
+	g_signal_connect(Renderer,"state_changed",
+                         G_CALLBACK(renderer_state_changed),
 		NULL);
-	
-	g_signal_connect(Renderer,"media_changed",G_CALLBACK(renderer_media_changed),
+
+	g_signal_connect(Renderer,"media_changed",
+                         G_CALLBACK(renderer_media_changed),
 		NULL);
 	g_idle_add(signal_wrapper,NULL);
 	ui_wait_for_prepared_state();
@@ -1940,8 +1963,10 @@ END_TEST
 static gboolean signal_ui(gpointer data)
 {
 	mafw_dbus_send(s_bus,
-		       mafw_dbus_signal_full(MAFW_TEST_UI_INTERFACE, MAFW_OBJECT,
-			MAFW_TEST_UI_INTERFACE,TEST_PREPARED_SIGNAL));
+		       mafw_dbus_signal_full(MAFW_TEST_UI_INTERFACE,
+                                             MAFW_OBJECT,
+                                             MAFW_TEST_UI_INTERFACE,
+                                             TEST_PREPARED_SIGNAL));
 	return FALSE;
 }
 
@@ -1949,7 +1974,7 @@ static gboolean signal_ui(gpointer data)
 static void wrapper_start_wrapping(void)
 {
 	Reg = MAFW_REGISTRY(mafw_registry_get_instance());
-	
+
 	wrapper_init();
 	source_wrapper_init(MAFW_REGISTRY(Reg));
 	renderer_wrapper_init(MAFW_REGISTRY(Reg));
@@ -1962,7 +1987,7 @@ static void wrapper_start_wrapping(void)
 			   "uuid", "DEADBEEF",
 			   "name", "mock-src",
 			   NULL);
-	
+
 	g_idle_add(wrapper_add_extensions, 0);
 	g_main_loop_run(Mainloop);
 
@@ -2131,19 +2156,19 @@ START_TEST(test_wrapper_renderer_gs_null_playlist_id)
 
 	g_signal_emit_by_name(Renderer, "playlist_changed",
 						  playlist);
-	
+
 	g_signal_emit_by_name(Renderer, "media_changed",
 						  1,
 						  "id");
-	
+
 	g_signal_emit_by_name(Renderer, "state_changed",
 						  1);
-	
-	
+
+
 	/* Preconditions setup end */
-	
+
 	g_idle_add(signal_ui, NULL);
-	
+
 	g_main_loop_run(Mainloop);
 
 	mafw_playlist_manager_destroy_playlist(
@@ -2162,31 +2187,31 @@ START_TEST(test_wrapper_renderer_gs_not_null)
 	playlist = MAFW_PLAYLIST(mafw_playlist_manager_create_playlist(
 		mafw_playlist_manager_get(), "t pl 1", NULL));
 
-	
+
 	g_signal_emit_by_name(Renderer, "playlist_changed",
 						  playlist);
-	
+
 	g_signal_emit_by_name(Renderer, "media_changed",
 						  1,
 						  NULL);
-	
+
 	g_signal_emit_by_name(Renderer, "state_changed",
 						  1);
 
-						  
+
 	g_signal_emit_by_name(Renderer, "playlist_changed",
 						  playlist);
-	
+
 	g_signal_emit_by_name(Renderer, "media_changed",
 						  1,
 						  "id");
-	
+
 	g_signal_emit_by_name(Renderer, "state_changed",
 						  1);
 	/* Preconditions setup end */
-	
+
 	g_idle_add(signal_ui, NULL);
-	
+
 	g_main_loop_run(Mainloop);
 	mafw_playlist_manager_destroy_playlist(
 					mafw_playlist_manager_get(),
@@ -2205,21 +2230,21 @@ START_TEST(test_wrapper_renderer_gs_null_objid)
 	playlist = MAFW_PLAYLIST(mafw_playlist_manager_create_playlist(
 		mafw_playlist_manager_get(), "t pl 1", NULL));
 
-	
+
 	g_signal_emit_by_name(Renderer, "playlist_changed",
 						  playlist);
-	
+
 	g_signal_emit_by_name(Renderer, "media_changed",
 						  1,
 						  NULL);
-	
+
 	g_signal_emit_by_name(Renderer, "state_changed",
 						  1);
 
 	/* Preconditions setup end */
-	
+
 	g_idle_add(signal_ui, NULL);
-	
+
 	g_main_loop_run(Mainloop);
 	mafw_playlist_manager_destroy_playlist(
 					mafw_playlist_manager_get(),
@@ -2234,7 +2259,7 @@ START_TEST(test_wrapper_renderer_sc_initial)
 	MafwPlaylist *playlist;
 
 	fill_db();
-	
+
 	playlist = MAFW_PLAYLIST(mafw_playlist_manager_create_playlist(
 		mafw_playlist_manager_get(), "t pl 1", NULL));
 
@@ -2243,18 +2268,18 @@ START_TEST(test_wrapper_renderer_sc_initial)
 	/* Should update only objid and state */
 	g_signal_emit_by_name(Renderer, "playlist_changed",
 						  playlist);
-	
+
 	g_signal_emit_by_name(Renderer, "media_changed",
 						  2,
 						  "id");
-	
+
 	g_signal_emit_by_name(Renderer, "state_changed",
 						  2);
 
 	/* Preconditions setup end */
-	
+
 	g_idle_add(signal_ui, NULL);
-	
+
 	g_main_loop_run(Mainloop);
 	mafw_playlist_manager_destroy_playlist(
 					mafw_playlist_manager_get(),
@@ -2268,45 +2293,45 @@ START_TEST(test_wrapper_renderer_sc_update_objid)
 	MafwPlaylist *playlist1, *playlist2;
 
 	fill_db();
-	
+
 	playlist1 = MAFW_PLAYLIST(mafw_playlist_manager_create_playlist(
 		mafw_playlist_manager_get(), "t pl 1", NULL));
 	playlist2 = MAFW_PLAYLIST(mafw_playlist_manager_create_playlist(
 		mafw_playlist_manager_get(), "t pl 2", NULL));
-	
+
 	g_signal_emit_by_name(Renderer, "playlist_changed",
 						  playlist1);
-	
+
 	g_signal_emit_by_name(Renderer, "media_changed",
 						  1,
 						  "id");
-	
+
 	g_signal_emit_by_name(Renderer, "state_changed",
 						  1);
-	
+
 	g_signal_emit_by_name(Renderer, "playlist_changed",
 						  playlist1);
-	
+
 	g_signal_emit_by_name(Renderer, "media_changed",
 						  1,
 						  NULL);
-	
+
 	g_signal_emit_by_name(Renderer, "state_changed",
 						  1);
 	/* Preconditions setup end */
 
 	g_signal_emit_by_name(Renderer, "playlist_changed",
 						  playlist2);
-	
+
 	g_signal_emit_by_name(Renderer, "media_changed",
 						  2,
 						  "tid");
-	
+
 	g_signal_emit_by_name(Renderer, "state_changed",
 						  2);
 
 	/* Preconditions setup end */
-	
+
 	g_idle_add(signal_ui, NULL);
 	g_main_loop_run(Mainloop);
 	mafw_playlist_manager_destroy_playlist(
@@ -2338,17 +2363,17 @@ START_TEST(test_wrapper_renderer_sc_update_null_objid)
 	g_signal_emit_by_name(Renderer, "media_changed",
 						  1,
 						  "id");
-	
+
 	g_signal_emit_by_name(Renderer, "state_changed",
 						  1);
 
 	g_signal_emit_by_name(Renderer, "playlist_changed",
 						  playlist1);
-	
+
 	g_signal_emit_by_name(Renderer, "media_changed",
 						  1,
 						  NULL);
-	
+
 	g_signal_emit_by_name(Renderer, "state_changed",
 						  1);
 
@@ -2356,16 +2381,16 @@ START_TEST(test_wrapper_renderer_sc_update_null_objid)
 
 	g_signal_emit_by_name(Renderer, "playlist_changed",
 						  playlist2);
-	
+
 	g_signal_emit_by_name(Renderer, "media_changed",
 						  2,
 						  NULL);
-	
+
 	g_signal_emit_by_name(Renderer, "state_changed",
 						  2);
 
 
-	
+
 	g_idle_add(signal_ui, NULL);
 	g_main_loop_run(Mainloop);
 	mafw_playlist_manager_destroy_playlist(
@@ -2397,7 +2422,7 @@ START_TEST(test_wrapper_renderer_sc_signals)
 	g_signal_emit_by_name(Renderer, "media_changed",
 						  1,
 						  "id");
-	
+
 	g_signal_emit_by_name(Renderer, "state_changed",
 						  1);
 	g_idle_add(signal_ui, NULL);
@@ -2491,7 +2516,7 @@ static Suite *wrapped_test_suite(void)
 	TCase *tc;
 
 	s = suite_create("Wrapper part");
-		
+
 	tc = tcase_create("Source");
 	tcase_add_test(tc, test_wrapper_source_browse);
 	tcase_add_test(tc, test_wrapper_source_get_metadata);
@@ -2544,7 +2569,7 @@ static Suite *ui_test_suite(void)
 	TCase *tc;
 
 	s = suite_create("UI part");
-		
+
 	tc = tcase_create("Source");
 	tcase_add_test(tc, test_ui_source_browse);
 	tcase_add_test(tc, test_ui_source_get_metadata);
@@ -2594,8 +2619,9 @@ static gboolean wrapper_add_extensions(gpointer data)
 	return FALSE;
 }
 
-static DBusHandlerResult wrapper_dbus_handler(DBusConnection* conn, DBusMessage* msg,
-				      gpointer* udata)
+static DBusHandlerResult wrapper_dbus_handler(DBusConnection* conn,
+                                              DBusMessage* msg,
+                                              gpointer* udata)
 {
 	if (dbus_message_has_member(msg, TEST_DONE_SIGNAL))
 	{
@@ -2627,17 +2653,20 @@ static void setup_wrapper_dbus(void)
 	/* Get a reference to the session bus and add a filter. */
 	s_bus = dbus_bus_get(DBUS_BUS_SESSION, &err);
 
-	ret = dbus_bus_request_name(s_bus, MAFW_REGISTRY_INTERFACE, DBUS_NAME_FLAG_REPLACE_EXISTING , &err);
+	ret = dbus_bus_request_name(s_bus, MAFW_REGISTRY_INTERFACE,
+                                    DBUS_NAME_FLAG_REPLACE_EXISTING , &err);
 	if (dbus_error_is_set(&err)) {
 		g_critical("Name Error (%s)\n", err.message);
 		dbus_error_free(&err);
 	}
-	
-	dbus_connection_add_filter(s_bus,
-				   (DBusHandleMessageFunction) wrapper_dbus_handler,
-				   NULL,
-				   NULL);
-	dbus_bus_add_match(s_bus, "type='signal'member='" TEST_DONE_SIGNAL"'", NULL);
+
+	dbus_connection_add_filter(
+                s_bus,
+                (DBusHandleMessageFunction) wrapper_dbus_handler,
+                NULL,
+                NULL);
+	dbus_bus_add_match(s_bus, "type='signal'member='" TEST_DONE_SIGNAL"'",
+                           NULL);
 
 	dbus_connection_setup_with_g_main(s_bus, NULL);
 }

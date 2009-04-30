@@ -277,7 +277,7 @@ START_TEST(test_gvaluearray)
 	fail_unless(varr2->n_values == 2);
 	fail_unless(g_value_get_int(&varr2->values[0]) == 43);
 	fail_unless(g_value_get_int(&varr2->values[1]) == 88);
-	
+
 	g_value_array_free(varr1);
 	g_value_array_free(varr2);
 	dbus_message_unref(msg);

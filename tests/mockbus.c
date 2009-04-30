@@ -240,7 +240,7 @@ void mockbus_reset(void)
 	}
 	g_slist_free(Handlers);
 	Handlers = NULL;
-	
+
 	stored_notify.pending = NULL;
 	stored_notify.func = NULL;
 	stored_notify.udata = NULL;
@@ -277,7 +277,8 @@ void mockbus_finish(void)
 			puts(msginfo(m));
 		fail("MOCKBUS: not all incoming messages were consumed");
 	}
-	fail_if(stored_notify.pending, "A reply was not set, but async method sent");
+	fail_if(stored_notify.pending,
+                "A reply was not set, but async method sent");
 }
 
 /*
@@ -338,19 +339,20 @@ gboolean mockbus_deliver(DBusConnection *conn)
 							object_path);
 			if (path_data)
 			{
-				hres = path_data->vtable->message_function(conn, m,
-							path_data->user_data);
+				hres = path_data->vtable->message_function(
+                                        conn, m, path_data->user_data);
 			}
 		}
 		if (hres == DBUS_HANDLER_RESULT_NOT_YET_HANDLED)
-		{	
+		{
 			while(cur_path)
 			{
 				path_data = fallback_list->data;
-				if (g_str_has_prefix(object_path, path_data->path))
+				if (g_str_has_prefix(object_path,
+                                                     path_data->path))
 				{
-					path_data->vtable->message_function(conn, m,
-							path_data->user_data);
+					path_data->vtable->message_function(
+                                                conn, m, path_data->user_data);
 				}
 				cur_path = cur_path->next;
 			}
@@ -365,14 +367,15 @@ void mockbus_send_stored_reply(void)
 	/* process a reply, if a delayed reply was expected */
 	if (stored_notify.pending)
 	{
-	
+
 		stored_notify.func(stored_notify.pending, stored_notify.udata);
-		if (stored_notify.free_udata) stored_notify.free_udata(stored_notify.udata);
+		if (stored_notify.free_udata)
+                        stored_notify.free_udata(stored_notify.udata);
 		stored_notify.pending = NULL;
 		stored_notify.func = NULL;
 		stored_notify.udata = NULL;
 		stored_notify.free_udata = NULL;
-	}	
+	}
 }
 
 /*
@@ -391,7 +394,8 @@ void mockbus_error(GQuark domain, guint code, const gchar *message)
 	DBusMessage *msg;
 	gchar *msg_with_code;
 
-	msg_with_code = g_strdup_printf("%s:%u:%s", g_quark_to_string(domain), code, message);
+	msg_with_code = g_strdup_printf("%s:%u:%s", g_quark_to_string(domain),
+                                        code, message);
 
 	msg = dbus_message_new(DBUS_MESSAGE_TYPE_ERROR);
 	dbus_message_set_error_name(msg, "com.nokia.mafw");
@@ -404,7 +408,7 @@ void mockbus_error(GQuark domain, guint code, const gchar *message)
 
 /*
  * Returns a mafw metadata hash table, created out of the arguments as
- * string key-value pairs, therminated by a NULL.  Don't forget to
+ * string key-value pairs, terminated by a NULL.  Don't forget to
  * release the returned hash table.
  */
 GHashTable *mockbus_mkmeta(gchar const *key, ...)
@@ -468,7 +472,8 @@ static gboolean cmpmsgs(DBusMessageIter *ia, DBusMessageIter *ib)
 			case DBUS_TYPE_UINT64:
 			case DBUS_TYPE_DOUBLE:
 				if (aval.uint64 != bval.uint64) {
-					g_debug("%llu != %llu", aval.uint64, bval.uint64);
+					g_debug("%llu != %llu", aval.uint64,
+                                                bval.uint64);
 					return FALSE;
 				}
 				break;
@@ -476,7 +481,8 @@ static gboolean cmpmsgs(DBusMessageIter *ia, DBusMessageIter *ib)
 			case DBUS_TYPE_OBJECT_PATH:
 			case DBUS_TYPE_SIGNATURE:
 				if (strcmp(aval.charp, bval.charp)) {
-					g_debug("'%s' != '%s'", aval.charp, bval.charp);
+					g_debug("'%s' != '%s'", aval.charp,
+                                                bval.charp);
 					return FALSE;
 				}
 				break;
@@ -513,7 +519,7 @@ static void ckmsg(DBusMessage *m)
 	DBusMessage *emsg;
 
  	emsg = g_queue_pop_head(&Expected_messages);
-	
+
 	fail_if(emsg == NULL, "MOCKBUS: this message was unexpected");
 	fail_unless(
 		dbus_message_get_type(m) == dbus_message_get_type(emsg),
@@ -525,7 +531,7 @@ static void ckmsg(DBusMessage *m)
 					dbus_message_get_path(m));
 	fail_unless(
 		dbus_message_has_interface(m, dbus_message_get_interface(emsg)),
-		"MOCKBUS: expected different interface: %s vs %s", 
+		"MOCKBUS: expected different interface: %s vs %s",
 					dbus_message_get_interface(emsg),
 					dbus_message_get_interface(m));
 	fail_unless(
@@ -767,10 +773,11 @@ dbus_bool_t dbus_connection_send_with_reply(DBusConnection *connection,
 	return TRUE;
 }
 
-DBusMessage *dbus_connection_send_with_reply_and_block(DBusConnection *connection,
-						       DBusMessage *message,
-						       int timeout_milliseconds,
-						       DBusError *error)
+DBusMessage
+*dbus_connection_send_with_reply_and_block(DBusConnection *connection,
+                                           DBusMessage *message,
+                                           int timeout_milliseconds,
+                                           DBusError *error)
 {
 	DBusMessage *reply = NULL;
 
@@ -824,17 +831,21 @@ static void _free_obpath_data(ObjectPathData *reg_data)
 	g_free(reg_data);
 }
 
-dbus_bool_t dbus_connection_register_object_path(DBusConnection *connection,
-						const char *path,
-						const DBusObjectPathVTable *vtable,
-						void *user_data)
+dbus_bool_t
+dbus_connection_register_object_path(DBusConnection *connection,
+                                     const char *path,
+                                     const DBusObjectPathVTable *vtable,
+                                     void *user_data)
 {
 	ObjectPathData *reg_data;
 
 	if (!object_path_hash)
 	{
-		object_path_hash = g_hash_table_new_full(g_str_hash, g_str_equal,
-					g_free, (GDestroyNotify)_free_obpath_data);
+		object_path_hash =
+                        g_hash_table_new_full(
+                                g_str_hash,
+                                g_str_equal,
+                                g_free, (GDestroyNotify)_free_obpath_data);
 	}
 
 	reg_data = g_new0(ObjectPathData, 1);
@@ -847,10 +858,11 @@ dbus_bool_t dbus_connection_register_object_path(DBusConnection *connection,
 	return TRUE;
 }
 
-dbus_bool_t dbus_connection_register_fallback(DBusConnection *connection,
-						const char *path,
-						const DBusObjectPathVTable *vtable,
-						void *user_data)
+dbus_bool_t
+dbus_connection_register_fallback(DBusConnection *connection,
+                                  const char *path,
+                                  const DBusObjectPathVTable *vtable,
+                                  void *user_data)
 {
 	ObjectPathData *reg_data;
 
@@ -866,7 +878,7 @@ dbus_bool_t dbus_connection_register_fallback(DBusConnection *connection,
 }
 
 dbus_bool_t dbus_connection_unregister_object_path(DBusConnection *connection,
-						const char *path) 	
+						const char *path)
 {
 	ObjectPathData *reg_data = g_hash_table_lookup(object_path_hash, path);
 	GList *cur_path = fallback_list;
@@ -874,7 +886,7 @@ dbus_bool_t dbus_connection_unregister_object_path(DBusConnection *connection,
 	{
 		g_hash_table_remove(object_path_hash, path);
 	}
-	
+
 	while(cur_path)
 	{
 		reg_data = fallback_list->data;
@@ -887,7 +899,7 @@ dbus_bool_t dbus_connection_unregister_object_path(DBusConnection *connection,
 		}
 		cur_path = cur_path->next;
 	}
-	return TRUE;	
+	return TRUE;
 }
 
 static gint get_handler(MockbusHandler *a, DBusHandleMessageFunction function)
@@ -896,7 +908,7 @@ static gint get_handler(MockbusHandler *a, DBusHandleMessageFunction function)
 	{
 		return 0;
 	}
-	
+
 	return -1;
 }
 
@@ -908,10 +920,10 @@ void dbus_connection_remove_filter(DBusConnection *connection,
 
 	fail_unless(connection == Mockbus_conn || connection == Mockbus_bus,
 		    "MOCKBUS: invalid connection");
-	
+
 	removed_element = g_slist_find_custom(Handlers, function,
 						(GCompareFunc)get_handler);
-	
+
 	if (removed_element)
 	{
 		g_free(removed_element -> data);

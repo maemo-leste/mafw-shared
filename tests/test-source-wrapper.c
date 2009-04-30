@@ -92,7 +92,7 @@ START_TEST(test_source_wrapper)
 	DBusMessageIter iter_array, iter_msg;
 	gint i;
 	const gchar *objlist[] = {"testobject", "testobject1", NULL};
-	
+
 	metadata = mockbus_mkmeta("title", "Easy", NULL);
 
 	registry = mafw_registry_get_instance();
@@ -102,7 +102,8 @@ START_TEST(test_source_wrapper)
 	source = mocked_source_new("mocksource", "mocksource", Loop);
 
 	mock_appearing_extension(FAKE_SOURCE_SERVICE, FALSE);
-	mafw_registry_add_extension(MAFW_REGISTRY(registry), MAFW_EXTENSION(source));
+	mafw_registry_add_extension(MAFW_REGISTRY(registry),
+                                    MAFW_EXTENSION(source));
 
 	/* Browse */
 	mockbus_incoming(c = mafw_dbus_method(MAFW_SOURCE_METHOD_BROWSE,
@@ -114,9 +115,9 @@ START_TEST(test_source_wrapper)
 				      MAFW_DBUS_UINT32(0),
 				      MAFW_DBUS_UINT32(11)));
 	replmsg = append_browse_res(NULL, &iter_msg, &iter_array, 1408, -1, 0,
-				"testobject", metadata, "", 0, "");
+                                    "testobject", metadata, "", 0, "");
 	replmsg = append_browse_res(replmsg, &iter_msg, &iter_array, 1408, 0, 0,
-				"", metadata, "", 0, "");
+                                    "", metadata, "", 0, "");
 	dbus_message_iter_close_container(&iter_msg, &iter_array);
 	mockbus_expect(replmsg);
 	mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_UINT32(1408)));
@@ -135,12 +136,13 @@ START_TEST(test_source_wrapper)
 				      MAFW_DBUS_UINT32(11)));
 	replmsg = NULL;
 	for (i=0; i<25; i++)
-		replmsg = append_browse_res(replmsg, &iter_msg, &iter_array, 1408, -1, 0,
-				"testobject", metadata, "", 0, "");
+		replmsg = append_browse_res(replmsg, &iter_msg, &iter_array,
+                                            1408, -1, 0,
+                                            "testobject", metadata, "", 0, "");
 	dbus_message_iter_close_container(&iter_msg, &iter_array);
 	mockbus_expect(replmsg);
 	replmsg = append_browse_res(NULL, &iter_msg, &iter_array, 1408, 0, 0,
-				"", metadata, "", 0, "");
+                                    "", metadata, "", 0, "");
 	dbus_message_iter_close_container(&iter_msg, &iter_array);
 	mockbus_expect(replmsg);
 	mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_UINT32(1408)));
@@ -159,32 +161,37 @@ START_TEST(test_source_wrapper)
 				      MAFW_DBUS_UINT32(11)));
 	replmsg = NULL;
 	for (i=0; i<25; i++)
-		replmsg = append_browse_res(replmsg, &iter_msg, &iter_array, 1408, -1, 0,
-				"testobject", metadata, "", 0, "");
+		replmsg = append_browse_res(replmsg, &iter_msg, &iter_array,
+                                            1408, -1, 0,
+                                            "testobject", metadata, "", 0, "");
 	dbus_message_iter_close_container(&iter_msg, &iter_array);
 	mockbus_expect(replmsg);
 	replmsg = NULL;
 	for (i=0; i<75; i++)
-		replmsg = append_browse_res(replmsg, &iter_msg, &iter_array, 1408, -1, 0,
-				"testobject", metadata, "", 0, "");
+		replmsg = append_browse_res(replmsg, &iter_msg, &iter_array,
+                                            1408, -1, 0,
+                                            "testobject", metadata, "", 0, "");
 	dbus_message_iter_close_container(&iter_msg, &iter_array);
 	mockbus_expect(replmsg);
 	replmsg = NULL;
 	for (i=0; i<225; i++)
-		replmsg = append_browse_res(replmsg, &iter_msg, &iter_array, 1408, -1, 0,
-				"testobject", metadata, "", 0, "");
+		replmsg = append_browse_res(replmsg, &iter_msg, &iter_array,
+                                            1408, -1, 0,
+                                            "testobject", metadata, "", 0, "");
 	dbus_message_iter_close_container(&iter_msg, &iter_array);
 	mockbus_expect(replmsg);
 	replmsg = NULL;
 	for (i=0; i<500; i++)
-		replmsg = append_browse_res(replmsg, &iter_msg, &iter_array, 1408, -1, 0,
-				"testobject", metadata, "", 0, "");
+		replmsg = append_browse_res(replmsg, &iter_msg, &iter_array,
+                                            1408, -1, 0,
+                                            "testobject", metadata, "", 0, "");
 	dbus_message_iter_close_container(&iter_msg, &iter_array);
 	mockbus_expect(replmsg);
 	replmsg = NULL;
 	for (i=0; i<5; i++)
-		replmsg = append_browse_res(replmsg, &iter_msg, &iter_array, 1408, -1, 0,
-				"testobject", metadata, "", 0, "");
+		replmsg = append_browse_res(replmsg, &iter_msg, &iter_array,
+                                            1408, -1, 0,
+                                            "testobject", metadata, "", 0, "");
 	replmsg = append_browse_res(replmsg, &iter_msg, &iter_array, 1408, 0, 0,
 				"", metadata, "", 0, "");
 	dbus_message_iter_close_container(&iter_msg, &iter_array);
@@ -208,8 +215,9 @@ START_TEST(test_source_wrapper)
 				      MAFW_DBUS_UINT32(11)));
 	replmsg = NULL;
 	for (i=0; i<25; i++)
-		replmsg = append_browse_res(replmsg, &iter_msg, &iter_array, 1408, -1, 0,
-				"testobject", metadata, "", 0, "");
+		replmsg = append_browse_res(replmsg, &iter_msg, &iter_array,
+                                            1408, -1, 0,
+                                            "testobject", metadata, "", 0, "");
 	dbus_message_iter_close_container(&iter_msg, &iter_array);
 	mockbus_expect(replmsg);
 	mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_UINT32(1408)));
@@ -219,7 +227,7 @@ START_TEST(test_source_wrapper)
 	mockbus_expect(mafw_dbus_reply(c));
 	mockbus_deliver(NULL);
 	mockbus_deliver(NULL);
-	
+
 	g_timeout_add(100, quit_mainloop_on_tout, NULL);
 	g_main_loop_run(Loop);
 
@@ -233,9 +241,11 @@ START_TEST(test_source_wrapper)
 	mockbus_finish();
 
 	/* Get metadata */
-	mockbus_incoming(c = mafw_dbus_method(MAFW_SOURCE_METHOD_GET_METADATA,
-					  MAFW_DBUS_STRING("testobject"),
-					  MAFW_DBUS_C_STRVZ("title", "artist")));
+	mockbus_incoming(c =
+                         mafw_dbus_method(
+                                 MAFW_SOURCE_METHOD_GET_METADATA,
+                                 MAFW_DBUS_STRING("testobject"),
+                                 MAFW_DBUS_C_STRVZ("title", "artist")));
 
 	mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_METADATA(metadata)));
 
@@ -243,9 +253,11 @@ START_TEST(test_source_wrapper)
 	fail_unless(source->get_metadata_called == 1);
 
 	/* Get metadatas */
-	mockbus_incoming(c = mafw_dbus_method(MAFW_SOURCE_METHOD_GET_METADATAS,
-					  MAFW_DBUS_C_STRVZ("testobject", "testobject2"),
-					  MAFW_DBUS_C_STRVZ("title", "artist")));
+	mockbus_incoming(c =
+                         mafw_dbus_method(
+                                 MAFW_SOURCE_METHOD_GET_METADATAS,
+                                 MAFW_DBUS_C_STRVZ("testobject", "testobject2"),
+                                 MAFW_DBUS_C_STRVZ("title", "artist")));
 
 	mockbus_expect(mdatas_repl(c, objlist, metadata, FALSE));
 
@@ -281,12 +293,12 @@ START_TEST(test_source_wrapper)
 
 	mockbus_deliver(NULL);
 	fail_unless(source->destroy_object_called == 1);
-	
+
 	/* Signals */
 	mockbus_expect(mafw_dbus_signal(MAFW_SOURCE_SIGNAL_METADATA_CHANGED,
 					MAFW_DBUS_STRING("testobj")));
 	g_signal_emit_by_name(source, "metadata-changed", "testobj");
-	
+
 	mockbus_expect(mafw_dbus_signal(MAFW_SOURCE_SIGNAL_CONTAINER_CHANGED,
 				MAFW_DBUS_STRING("testobj")));
 	g_signal_emit_by_name(source, "container-changed", "testobj");
@@ -310,10 +322,12 @@ START_TEST(test_source_errors)
 	mockbus_reset();
 	wrapper_init();
 
-	source = ERROR_SOURCE(error_source_new("mocksource", "mocksource", Loop));
+	source = ERROR_SOURCE(error_source_new("mocksource", "mocksource",
+                                               Loop));
 
 	mock_appearing_extension(FAKE_SOURCE_SERVICE, FALSE);
-	mafw_registry_add_extension(MAFW_REGISTRY(registry), MAFW_EXTENSION(source));
+	mafw_registry_add_extension(MAFW_REGISTRY(registry),
+                                    MAFW_EXTENSION(source));
 
 	g_set_error(&error, MAFW_EXTENSION_ERROR, MAFW_EXTENSION_ERROR_FAILED,
 		    "Error source fails in everything it does.");
@@ -331,7 +345,7 @@ START_TEST(test_source_errors)
 					  MAFW_DBUS_UINT32(0),
 					  MAFW_DBUS_UINT32(11)));
 	mockbus_expect(mafw_dbus_gerror(c, error));
-	
+
 	mockbus_deliver(NULL);
 	fail_unless(source->browse_called == 1);
 
@@ -396,10 +410,12 @@ static Suite *source_wrapper_suite(void)
 	TCase *tc_export_unexport, *tc_source_wrapper, * tc_source_errors;
 
 	suite = suite_create("Source Wrapper");
-if(1) {	tc_export_unexport = checkmore_add_tcase(suite, "Exporting & unexporting",
-			    test_export_unexport);
+if(1) {	tc_export_unexport = checkmore_add_tcase(suite,
+                                                 "Exporting & unexporting",
+                                                 test_export_unexport);
 	tcase_set_timeout(tc_export_unexport, 60); }
-if(1) {	tc_source_wrapper = checkmore_add_tcase(suite, "Source wrapper", test_source_wrapper);
+if(1) {	tc_source_wrapper = checkmore_add_tcase(suite, "Source wrapper",
+                                                test_source_wrapper);
 	tcase_set_timeout(tc_source_wrapper, 60); }
 if(1) {	tc_source_errors = checkmore_add_tcase(suite, "Source errors",
 			    test_source_errors);

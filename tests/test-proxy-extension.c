@@ -81,8 +81,8 @@ START_TEST(test_extension_properties_list)
 					MAFW_EXTENSION_INTERFACE,
 					MAFW_EXTENSION_METHOD_GET_NAME));
 	mockbus_reply(MAFW_DBUS_STRING("TestName"));
-	/* Beware: proxy-extension tries to be clever and asks the property list only
-	 * once.  That means we don't mock_emtpy_props() here. */
+	/* Beware: proxy-extension tries to be clever and asks the property list
+	 * only once.  That means we don't mock_emtpy_props() here. */
 	mockbus_expect(
 		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
 				      MAFW_EXTENSION_INTERFACE,
@@ -91,13 +91,19 @@ START_TEST(test_extension_properties_list)
 		      MAFW_DBUS_C_ARRAY(UINT32, guint32,
 					G_TYPE_INT, G_TYPE_DOUBLE));
 
-	extension = MAFW_EXTENSION(mafw_proxy_source_new(UUID, "fake", mafw_registry_get_instance()));
+	extension = MAFW_EXTENSION(mafw_proxy_source_new(
+                                           UUID, "fake",
+                                           mafw_registry_get_instance()));
 	props = mafw_extension_list_properties(extension);
 	fail_unless(props->len == 2);
-	fail_if(strcmp(((MafwExtensionProperty *)(props->pdata[0]))->name, "zidane"));
-	fail_unless(((MafwExtensionProperty *)(props->pdata[0]))->type == G_TYPE_INT);
-	fail_if(strcmp(((MafwExtensionProperty *)(props->pdata[1]))->name, "cigany"));
-	fail_unless(((MafwExtensionProperty *)(props->pdata[1]))->type == G_TYPE_DOUBLE);
+	fail_if(strcmp(((MafwExtensionProperty *)(props->pdata[0]))->name,
+                       "zidane"));
+	fail_unless(((MafwExtensionProperty *)(props->pdata[0]))->type ==
+                    G_TYPE_INT);
+	fail_if(strcmp(((MafwExtensionProperty *)(props->pdata[1]))->name,
+                       "cigany"));
+	fail_unless(((MafwExtensionProperty *)(props->pdata[1]))->type ==
+                    G_TYPE_DOUBLE);
 	mockbus_finish();
 }
 END_TEST
@@ -133,7 +139,9 @@ START_TEST(test_extension_properties_get_set)
 		      MAFW_DBUS_C_ARRAY(UINT32, guint32,
 					G_TYPE_INT, G_TYPE_DOUBLE));
 
-	extension = MAFW_EXTENSION(mafw_proxy_source_new(UUID, "fake", mafw_registry_get_instance()));
+	extension = MAFW_EXTENSION(mafw_proxy_source_new(
+                                           UUID, "fake",
+                                           mafw_registry_get_instance()));
 	g_value_init(&v, G_TYPE_INT);
 	g_value_set_int(&v, 12345);
 	mockbus_expect(
@@ -143,7 +151,8 @@ START_TEST(test_extension_properties_get_set)
 				      MAFW_DBUS_STRING("zidane"),
 				      MAFW_DBUS_GVALUE(&v)));
 	mafw_extension_set_property_int(extension, "zidane", 12345);
-	mockbus_expect(mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+	mockbus_expect(mafw_dbus_method_full(MAFW_DBUS_DESTINATION,
+                                             MAFW_DBUS_PATH,
 					     MAFW_EXTENSION_INTERFACE,
 					     MAFW_EXTENSION_METHOD_GET_PROPERTY,
 					     MAFW_DBUS_STRING("zidane")));
@@ -159,7 +168,7 @@ START_TEST(test_gee_properties)
 {
 	GValue v = {0};
 	gpointer src;
-	
+
 
 	mockbus_reset();
 	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
@@ -170,7 +179,7 @@ START_TEST(test_gee_properties)
 	mockbus_expect(mafw_dbus_method(MAFW_EXTENSION_METHOD_SET_NAME,
 					MAFW_DBUS_STRING("moso masa")));
 	g_object_set(src, "name", "moso masa", NULL);
-	
+
 	mockbus_finish();
 }
 END_TEST
@@ -197,9 +206,9 @@ START_TEST(test_errors)
 				      MAFW_EXTENSION_INTERFACE,
 				      MAFW_EXTENSION_METHOD_LIST_PROPERTIES));
 	mockbus_error(MAFW_EXTENSION_ERROR, 3, "testproblem");
-	
+
 	fail_if(mafw_extension_list_properties(src));
-	
+
 	mockbus_expect(
 		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
 				      MAFW_EXTENSION_INTERFACE,
@@ -207,7 +216,7 @@ START_TEST(test_errors)
 	mockbus_reply(MAFW_DBUS_C_STRVZ("zidane", "cigany"),
 		      MAFW_DBUS_C_ARRAY(UINT32, guint32,
 					G_TYPE_INT, G_TYPE_DOUBLE));
-	
+
 	fail_if(!mafw_extension_list_properties(src));
 
 	mockbus_finish();
@@ -246,26 +255,29 @@ START_TEST(test_signals)
 	gpointer src;
 	GValue val = {0, };
 	gboolean cb_called = FALSE;
-	
+
 	g_value_init(&val, G_TYPE_INT);
 	g_value_set_int(&val, 2);
 
 	mockbus_reset();
 	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
 	src = mafw_proxy_source_new(UUID, "fake", mafw_registry_get_instance());
-	
-	g_signal_connect(src, "notify::name", (GCallback)name_changed_cb, &cb_called);
-	g_signal_connect(src, "error", (GCallback)error_cb, &cb_called);
-	g_signal_connect(src, "property-changed", (GCallback)prop_changed_cb, &cb_called);
 
-	mockbus_incoming(mafw_dbus_signal(MAFW_EXTENSION_SIGNAL_PROPERTY_CHANGED,
-					  MAFW_DBUS_STRING("testprop"),
-					MAFW_DBUS_GVALUE(&val)));
+	g_signal_connect(src, "notify::name", (GCallback)name_changed_cb,
+                         &cb_called);
+	g_signal_connect(src, "error", (GCallback)error_cb, &cb_called);
+	g_signal_connect(src, "property-changed", (GCallback)prop_changed_cb,
+                         &cb_called);
+
+	mockbus_incoming(mafw_dbus_signal(
+                                 MAFW_EXTENSION_SIGNAL_PROPERTY_CHANGED,
+                                 MAFW_DBUS_STRING("testprop"),
+                                 MAFW_DBUS_GVALUE(&val)));
 	mockbus_deliver(mafw_dbus_session(NULL));
 	mockbus_deliver(mafw_dbus_session(NULL));
 	fail_if(!cb_called);
 	cb_called = FALSE;
-	
+
 	mockbus_incoming(mafw_dbus_signal(MAFW_EXTENSION_SIGNAL_ERROR,
 					MAFW_DBUS_STRING("domain_str"),
 					MAFW_DBUS_INT32(3),
@@ -296,7 +308,7 @@ START_TEST(test_exists)
 {
 	gpointer src;
 	gpointer src2;
-	
+
 	src = g_object_new(fsrc_get_type(),
 			    "uuid", UUID,
 			    NULL);
@@ -308,12 +320,13 @@ START_TEST(test_exists)
 					MAFW_EXTENSION_METHOD_GET_NAME));
 	mockbus_reply(MAFW_DBUS_STRING("TestName"));
 	mockbus_expect(mafw_dbus_method(MAFW_EXTENSION_METHOD_LIST_PROPERTIES));
-	src2 = mafw_proxy_source_new(UUID, "fake", mafw_registry_get_instance());
+	src2 = mafw_proxy_source_new(UUID, "fake",
+                                     mafw_registry_get_instance());
 	g_object_ref(src2);
 	g_idle_add(report_props, NULL);
 	checkmore_spin_loop(100);
 	fail_if(G_OBJECT(src2)->ref_count != 1);
-	
+
 	g_object_unref(src2);
 }
 END_TEST

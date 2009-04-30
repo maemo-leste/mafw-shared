@@ -37,15 +37,17 @@
 #define PATH_NAME g_quark_from_static_string("extension_path")
 #define SERVICE_NAME g_quark_from_static_string("extension_service")
 
-#define proxy_extension_return_path(extension) g_object_get_qdata(G_OBJECT(extension), \
-					PATH_NAME)
-#define proxy_extension_return_service(extension) g_object_get_qdata(G_OBJECT(extension), \
-				SERVICE_NAME)
+#define proxy_extension_return_path(extension) \
+        g_object_get_qdata(G_OBJECT(extension), PATH_NAME)
+#define proxy_extension_return_service(extension) \
+        g_object_get_qdata(G_OBJECT(extension), SERVICE_NAME)
 
 extern const GPtrArray *proxy_extension_list_properties(MafwExtension *self);
-extern void proxy_extension_set_extension_property(MafwExtension *self, const gchar *name,
+extern void proxy_extension_set_extension_property(MafwExtension *self,
+                                                   const gchar *name,
 					 const GValue *value);
-extern void proxy_extension_get_extension_property(MafwExtension *self, const gchar *name,
+extern void proxy_extension_get_extension_property(MafwExtension *self,
+                                                   const gchar *name,
 					 MafwExtensionPropertyCallback cb,
 					 gpointer udata);
 extern void proxy_extension_attach(GObject *extension, DBusConnection *conn,

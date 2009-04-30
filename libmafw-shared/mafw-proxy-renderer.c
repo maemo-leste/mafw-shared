@@ -58,8 +58,9 @@ static DBusConnection *connection;
  * Handles the received DBus signal "state_changed", i.e.
  * parses the message and emits a corresponding g_signal
  */
-static void mafw_proxy_renderer_handle_signal_state_changed(MafwProxyRenderer *self,
-							 DBusMessage *msg)
+static void
+mafw_proxy_renderer_handle_signal_state_changed(MafwProxyRenderer *self,
+                                                DBusMessage *msg)
 {
 	MafwPlayState state;
 
@@ -81,8 +82,9 @@ static void mafw_proxy_renderer_handle_signal_state_changed(MafwProxyRenderer *s
  * Handles the received DBus signal "playlist_changed", i.e.
  * parses the message and emits a corresponding g_signal
  */
-static void mafw_proxy_renderer_handle_signal_playlist_changed(MafwProxyRenderer *self,
-							 DBusMessage *msg)
+static void
+mafw_proxy_renderer_handle_signal_playlist_changed(MafwProxyRenderer *self,
+                                                               DBusMessage *msg)
 {
 	guint playlist_id;
 	MafwProxyPlaylist *playlist;
@@ -111,8 +113,9 @@ static void mafw_proxy_renderer_handle_signal_playlist_changed(MafwProxyRenderer
  * Handles the received DBus signal "media_changed", i.e.
  * parses the message and emits a corresponding g_signal
  */
-static void mafw_proxy_renderer_handle_signal_media_changed(MafwProxyRenderer *self,
-							 DBusMessage *msg)
+static void
+mafw_proxy_renderer_handle_signal_media_changed(MafwProxyRenderer *self,
+                                                DBusMessage *msg)
 {
 	guint index;
 	gchar *object_id;
@@ -141,8 +144,9 @@ static void mafw_proxy_renderer_handle_signal_media_changed(MafwProxyRenderer *s
  * Handles the received DBus signal "buffering_info", i.e.
  * parses the message and emits a corresponding g_signal
  */
-static void mafw_proxy_renderer_handle_signal_buffering_info(MafwProxyRenderer *self,
-							 DBusMessage *msg)
+static void
+mafw_proxy_renderer_handle_signal_buffering_info(MafwProxyRenderer *self,
+                                                 DBusMessage *msg)
 {
 	gdouble status;
 
@@ -155,8 +159,9 @@ static void mafw_proxy_renderer_handle_signal_buffering_info(MafwProxyRenderer *
 	g_signal_emit_by_name(self, "buffering_info", (gfloat)status);
 }
 
-static void mafw_proxy_renderer_handle_signal_metadata_changed(MafwProxyRenderer *self,
-							   DBusMessage *msg)
+static void
+mafw_proxy_renderer_handle_signal_metadata_changed(MafwProxyRenderer *self,
+                                                   DBusMessage *msg)
 {
 	const gchar *key;
 	GValueArray *values;
@@ -182,9 +187,10 @@ static void mafw_proxy_renderer_handle_signal_metadata_changed(MafwProxyRenderer
  * Handles the received DBus messages
  * Returns: Whether the message was handled or not
  */
-static DBusHandlerResult mafw_proxy_renderer_dispatch_message(DBusConnection *conn,
-							  DBusMessage *msg,
-							  gpointer data)
+static DBusHandlerResult
+mafw_proxy_renderer_dispatch_message(DBusConnection *conn,
+                                     DBusMessage *msg,
+                                     gpointer data)
 {
 	MafwProxyRenderer *self;
 
@@ -192,7 +198,7 @@ static DBusHandlerResult mafw_proxy_renderer_dispatch_message(DBusConnection *co
 	g_assert(msg != NULL);
 
 	self = MAFW_PROXY_RENDERER(data);
-	
+
 	if (dbus_message_has_interface(msg, MAFW_EXTENSION_INTERFACE))
 		return proxy_extension_dispatch(conn, msg, self);
 
@@ -200,20 +206,24 @@ static DBusHandlerResult mafw_proxy_renderer_dispatch_message(DBusConnection *co
 	if (mafw_dbus_is_signal(msg, MAFW_RENDERER_SIGNAL_STATE_CHANGED)) {
 		mafw_proxy_renderer_handle_signal_state_changed(self, msg);
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-	} else if (mafw_dbus_is_signal(msg, MAFW_RENDERER_SIGNAL_PLAYLIST_CHANGED)) {
+	} else if (mafw_dbus_is_signal(msg,
+                                       MAFW_RENDERER_SIGNAL_PLAYLIST_CHANGED)) {
 		mafw_proxy_renderer_handle_signal_playlist_changed(self, msg);
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-	} else if (mafw_dbus_is_signal(msg, MAFW_RENDERER_SIGNAL_ITEM_CHANGED)) {
+	} else if (mafw_dbus_is_signal(msg,
+                                       MAFW_RENDERER_SIGNAL_ITEM_CHANGED)) {
 		mafw_proxy_renderer_handle_signal_media_changed(self, msg);
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-	} else if (mafw_dbus_is_signal(msg, MAFW_RENDERER_SIGNAL_BUFFERING_INFO)) {
+	} else if (mafw_dbus_is_signal(msg,
+                                       MAFW_RENDERER_SIGNAL_BUFFERING_INFO)) {
 		mafw_proxy_renderer_handle_signal_buffering_info(self, msg);
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-	} else if (mafw_dbus_is_signal(msg, MAFW_RENDERER_SIGNAL_METADATA_CHANGED)) {
+	} else if (mafw_dbus_is_signal(msg,
+                                       MAFW_RENDERER_SIGNAL_METADATA_CHANGED)) {
 		mafw_proxy_renderer_handle_signal_metadata_changed(self, msg);
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
-	
+
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
@@ -285,8 +295,9 @@ static void mafw_proxy_renderer_playback_cb(DBusPendingCall *pending_call,
 /**
  * See #MafwRenderer for a description.
  */
-static void mafw_proxy_renderer_play(MafwRenderer *self, MafwRendererPlaybackCB callback,
-				  gpointer user_data)
+static void mafw_proxy_renderer_play(MafwRenderer *self,
+                                     MafwRendererPlaybackCB callback,
+                                     gpointer user_data)
 {
 	AsyncParams *ap;
 	MafwProxyRenderer *proxy;
@@ -302,22 +313,25 @@ static void mafw_proxy_renderer_play(MafwRenderer *self, MafwRendererPlaybackCB 
 	ap->callback = callback;
 	ap->user_data = user_data;
 
-	mafw_dbus_send_async(connection, &pending_call,
-			     mafw_dbus_method_full(proxy_extension_return_service(proxy),
-				proxy_extension_return_path(proxy),
-				MAFW_RENDERER_INTERFACE,
-				MAFW_RENDERER_METHOD_PLAY));
-	
-	dbus_pending_call_set_notify(pending_call, mafw_proxy_renderer_playback_cb,
+	mafw_dbus_send_async(
+                connection, &pending_call,
+                mafw_dbus_method_full(proxy_extension_return_service(proxy),
+                                      proxy_extension_return_path(proxy),
+                                      MAFW_RENDERER_INTERFACE,
+                                      MAFW_RENDERER_METHOD_PLAY));
+
+	dbus_pending_call_set_notify(pending_call,
+                                     mafw_proxy_renderer_playback_cb,
 				     ap, mafw_proxy_renderer_async_free);
 }
 
 /**
  * See #MafwRenderer for a description.
  */
-static void mafw_proxy_renderer_play_object(MafwRenderer *self, const gchar* object_id,
-					 MafwRendererPlaybackCB callback,
-					 gpointer user_data)
+static void mafw_proxy_renderer_play_object(MafwRenderer *self,
+                                            const gchar* object_id,
+                                            MafwRendererPlaybackCB callback,
+                                            gpointer user_data)
 {
 	AsyncParams *ap;
 	MafwProxyRenderer *proxy;
@@ -333,14 +347,16 @@ static void mafw_proxy_renderer_play_object(MafwRenderer *self, const gchar* obj
 	ap->callback = callback;
 	ap->user_data = user_data;
 
-	mafw_dbus_send_async(connection, &pending_call,
-			     mafw_dbus_method_full(proxy_extension_return_service(proxy),
-				proxy_extension_return_path(proxy),
-				MAFW_RENDERER_INTERFACE,
-				MAFW_RENDERER_METHOD_PLAY_OBJECT,
-				MAFW_DBUS_STRING(object_id)));
-	
-	dbus_pending_call_set_notify(pending_call, mafw_proxy_renderer_playback_cb,
+	mafw_dbus_send_async(
+                connection, &pending_call,
+                mafw_dbus_method_full(proxy_extension_return_service(proxy),
+                                      proxy_extension_return_path(proxy),
+                                      MAFW_RENDERER_INTERFACE,
+                                      MAFW_RENDERER_METHOD_PLAY_OBJECT,
+                                      MAFW_DBUS_STRING(object_id)));
+
+	dbus_pending_call_set_notify(pending_call,
+                                     mafw_proxy_renderer_playback_cb,
 				     ap, mafw_proxy_renderer_async_free);
 }
 
@@ -365,22 +381,25 @@ static void mafw_proxy_renderer_play_uri(MafwRenderer *self, const gchar* uri,
 	ap->callback = callback;
 	ap->user_data = user_data;
 
-	mafw_dbus_send_async(connection, &pending_call,
-			     mafw_dbus_method_full(proxy_extension_return_service(proxy),
-				proxy_extension_return_path(proxy),
-				MAFW_RENDERER_INTERFACE,
-				MAFW_RENDERER_METHOD_PLAY_URI,
-				MAFW_DBUS_STRING(uri)));
-	
-	dbus_pending_call_set_notify(pending_call, mafw_proxy_renderer_playback_cb,
+	mafw_dbus_send_async(
+                connection, &pending_call,
+                mafw_dbus_method_full(proxy_extension_return_service(proxy),
+                                      proxy_extension_return_path(proxy),
+                                      MAFW_RENDERER_INTERFACE,
+                                      MAFW_RENDERER_METHOD_PLAY_URI,
+                                      MAFW_DBUS_STRING(uri)));
+
+	dbus_pending_call_set_notify(pending_call,
+                                     mafw_proxy_renderer_playback_cb,
 				     ap, mafw_proxy_renderer_async_free);
 }
 
 /**
  * See #MafwRenderer for a description.
  */
-static void mafw_proxy_renderer_stop(MafwRenderer *self, MafwRendererPlaybackCB callback,
-				  gpointer user_data)
+static void mafw_proxy_renderer_stop(MafwRenderer *self,
+                                     MafwRendererPlaybackCB callback,
+                                     gpointer user_data)
 {
 	AsyncParams* ap;
 	MafwProxyRenderer *proxy;
@@ -396,21 +415,24 @@ static void mafw_proxy_renderer_stop(MafwRenderer *self, MafwRendererPlaybackCB 
 	ap->callback = callback;
 	ap->user_data = user_data;
 
-	mafw_dbus_send_async(connection, &pending_call,
-			     mafw_dbus_method_full(proxy_extension_return_service(proxy),
-				proxy_extension_return_path(proxy),
-				MAFW_RENDERER_INTERFACE,
-				MAFW_RENDERER_METHOD_STOP));
-	
-	dbus_pending_call_set_notify(pending_call, mafw_proxy_renderer_playback_cb,
+	mafw_dbus_send_async(
+                connection, &pending_call,
+                mafw_dbus_method_full(proxy_extension_return_service(proxy),
+                                      proxy_extension_return_path(proxy),
+                                      MAFW_RENDERER_INTERFACE,
+                                      MAFW_RENDERER_METHOD_STOP));
+
+	dbus_pending_call_set_notify(pending_call,
+                                     mafw_proxy_renderer_playback_cb,
 				     ap, mafw_proxy_renderer_async_free);
 }
 
 /**
  * See #MafwRenderer for a description.
  */
-static void mafw_proxy_renderer_pause(MafwRenderer *self, MafwRendererPlaybackCB callback,
-				   gpointer user_data)
+static void mafw_proxy_renderer_pause(MafwRenderer *self,
+                                      MafwRendererPlaybackCB callback,
+                                      gpointer user_data)
 {
 	AsyncParams* ap;
 	MafwProxyRenderer *proxy;
@@ -426,21 +448,24 @@ static void mafw_proxy_renderer_pause(MafwRenderer *self, MafwRendererPlaybackCB
 	ap->callback = callback;
 	ap->user_data = user_data;
 
-	mafw_dbus_send_async(connection, &pending_call,
-			     mafw_dbus_method_full(proxy_extension_return_service(proxy),
-				proxy_extension_return_path(proxy),
-				MAFW_RENDERER_INTERFACE,
-				MAFW_RENDERER_METHOD_PAUSE));
-	
-	dbus_pending_call_set_notify(pending_call, mafw_proxy_renderer_playback_cb,
+	mafw_dbus_send_async(
+                connection, &pending_call,
+                mafw_dbus_method_full(proxy_extension_return_service(proxy),
+                                      proxy_extension_return_path(proxy),
+                                      MAFW_RENDERER_INTERFACE,
+                                      MAFW_RENDERER_METHOD_PAUSE));
+
+	dbus_pending_call_set_notify(pending_call,
+                                     mafw_proxy_renderer_playback_cb,
 				     ap, mafw_proxy_renderer_async_free);
 }
 
 /**
  * See #MafwRenderer for a description.
  */
-static void mafw_proxy_renderer_resume(MafwRenderer *self, MafwRendererPlaybackCB callback,
-				    gpointer user_data)
+static void mafw_proxy_renderer_resume(MafwRenderer *self,
+                                       MafwRendererPlaybackCB callback,
+                                       gpointer user_data)
 {
 	AsyncParams* ap;
 	MafwProxyRenderer *proxy;
@@ -456,13 +481,15 @@ static void mafw_proxy_renderer_resume(MafwRenderer *self, MafwRendererPlaybackC
 	ap->callback = callback;
 	ap->user_data = user_data;
 
-	mafw_dbus_send_async(connection, &pending_call,
-			     mafw_dbus_method_full(proxy_extension_return_service(proxy),
-				proxy_extension_return_path(proxy),
-				MAFW_RENDERER_INTERFACE,
-				MAFW_RENDERER_METHOD_RESUME));
-	
-	dbus_pending_call_set_notify(pending_call, mafw_proxy_renderer_playback_cb,
+	mafw_dbus_send_async(
+                connection, &pending_call,
+                mafw_dbus_method_full(proxy_extension_return_service(proxy),
+                                      proxy_extension_return_path(proxy),
+                                      MAFW_RENDERER_INTERFACE,
+                                      MAFW_RENDERER_METHOD_RESUME));
+
+	dbus_pending_call_set_notify(pending_call,
+                                     mafw_proxy_renderer_playback_cb,
 				     ap, mafw_proxy_renderer_async_free);
 }
 
@@ -508,7 +535,7 @@ static void mafw_proxy_renderer_get_status_cb(DBusPendingCall *pending_call,
 
 		if (object_id && object_id[0] == '\0')
 			object_id = NULL;
-		
+
 		if (playlist_id != MAFW_PROXY_PLAYLIST_INVALID_ID) {
 
 			manager = mafw_playlist_manager_get();
@@ -528,11 +555,11 @@ static void mafw_proxy_renderer_get_status_cb(DBusPendingCall *pending_call,
 							 NULL);
 	} else {
 		if (params->callback)
-			((MafwRendererStatusCB) (params->callback))	(params->renderer, 
-							 NULL, 0,
-							 0, NULL,
-							 params->user_data,
-							 error);
+			((MafwRendererStatusCB) (params->callback))(params->renderer,
+                                                                    NULL, 0,
+                                                                    0, NULL,
+                                                                    params->user_data,
+                                                                    error);
 		g_error_free(error);
 	}
 
@@ -562,12 +589,13 @@ static void mafw_proxy_renderer_get_status(MafwRenderer *self,
 	ap->callback = callback;
 	ap->user_data = user_data;
 
-	mafw_dbus_send_async(connection, &pending_call,
-			     mafw_dbus_method_full(proxy_extension_return_service(proxy),
-				proxy_extension_return_path(proxy),
-				MAFW_RENDERER_INTERFACE,
-				MAFW_RENDERER_METHOD_GET_STATUS));
-	
+	mafw_dbus_send_async(
+                connection, &pending_call,
+                mafw_dbus_method_full(proxy_extension_return_service(proxy),
+                                      proxy_extension_return_path(proxy),
+                                      MAFW_RENDERER_INTERFACE,
+                                      MAFW_RENDERER_METHOD_GET_STATUS));
+
 	dbus_pending_call_set_notify(pending_call,
 				     mafw_proxy_renderer_get_status_cb,
 				     ap, mafw_proxy_renderer_async_free);
@@ -591,7 +619,7 @@ static gboolean mafw_proxy_renderer_assign_playlist(MafwRenderer *self,
 	g_return_val_if_fail(self != NULL, FALSE);
 	g_return_val_if_fail(connection != NULL, FALSE);
 
-	if (playlist != NULL) 
+	if (playlist != NULL)
 		g_return_val_if_fail(MAFW_IS_PROXY_PLAYLIST(playlist), FALSE);
 
 	proxy = MAFW_PROXY_RENDERER(self);
@@ -612,20 +640,21 @@ static gboolean mafw_proxy_renderer_assign_playlist(MafwRenderer *self,
 					MAFW_RENDERER_METHOD_ASSIGN_PLAYLIST,
 					MAFW_DBUS_UINT32(pls_id)),
 		MAFW_RENDERER_ERROR, error);
-	
+
 	if (reply) {
 		dbus_message_unref(reply);
 	 	return TRUE;
 	}
-	
+
 	return FALSE;
 }
 
 /**
  * See #MafwRenderer for a description.
  */
-static void mafw_proxy_renderer_next(MafwRenderer *self, MafwRendererPlaybackCB callback,
-				  gpointer user_data)
+static void mafw_proxy_renderer_next(MafwRenderer *self,
+                                     MafwRendererPlaybackCB callback,
+                                     gpointer user_data)
 {
 	AsyncParams *ap;
 	MafwProxyRenderer *proxy;
@@ -641,13 +670,15 @@ static void mafw_proxy_renderer_next(MafwRenderer *self, MafwRendererPlaybackCB 
 	ap->callback = callback;
 	ap->user_data = user_data;
 
-	mafw_dbus_send_async(connection, &pending_call,
-			     mafw_dbus_method_full(proxy_extension_return_service(proxy),
-				proxy_extension_return_path(proxy),
-				MAFW_RENDERER_INTERFACE,
-				MAFW_RENDERER_METHOD_NEXT));
-	
-	dbus_pending_call_set_notify(pending_call, mafw_proxy_renderer_playback_cb,
+	mafw_dbus_send_async(
+                connection, &pending_call,
+                mafw_dbus_method_full(proxy_extension_return_service(proxy),
+                                      proxy_extension_return_path(proxy),
+                                      MAFW_RENDERER_INTERFACE,
+                                      MAFW_RENDERER_METHOD_NEXT));
+
+	dbus_pending_call_set_notify(pending_call,
+                                     mafw_proxy_renderer_playback_cb,
 				     ap, mafw_proxy_renderer_async_free);
 }
 
@@ -673,12 +704,14 @@ static void mafw_proxy_renderer_previous(MafwRenderer *self,
 	ap->user_data = user_data;
 
 	mafw_dbus_send_async(connection, &pending_call,
-			     mafw_dbus_method_full(proxy_extension_return_service(proxy),
-				proxy_extension_return_path(proxy),
-				MAFW_RENDERER_INTERFACE,
-				MAFW_RENDERER_METHOD_PREVIOUS));
-	
-	dbus_pending_call_set_notify(pending_call, mafw_proxy_renderer_playback_cb,
+			     mafw_dbus_method_full(
+                                     proxy_extension_return_service(proxy),
+                                     proxy_extension_return_path(proxy),
+                                     MAFW_RENDERER_INTERFACE,
+                                     MAFW_RENDERER_METHOD_PREVIOUS));
+
+	dbus_pending_call_set_notify(pending_call,
+                                     mafw_proxy_renderer_playback_cb,
 				     ap, mafw_proxy_renderer_async_free);
 }
 
@@ -703,14 +736,16 @@ static void mafw_proxy_renderer_goto_index(MafwRenderer *self, guint index,
 	ap->callback = callback;
 	ap->user_data = user_data;
 
-	mafw_dbus_send_async(connection, &pending_call,
-			     mafw_dbus_method_full(proxy_extension_return_service(proxy),
-				proxy_extension_return_path(proxy),
-				MAFW_RENDERER_INTERFACE,
-				MAFW_RENDERER_METHOD_GOTO_INDEX,
-				MAFW_DBUS_UINT32(index)));
-	
-	dbus_pending_call_set_notify(pending_call, mafw_proxy_renderer_playback_cb,
+	mafw_dbus_send_async(
+                connection, &pending_call,
+                mafw_dbus_method_full(proxy_extension_return_service(proxy),
+                                      proxy_extension_return_path(proxy),
+                                      MAFW_RENDERER_INTERFACE,
+                                      MAFW_RENDERER_METHOD_GOTO_INDEX,
+                                      MAFW_DBUS_UINT32(index)));
+
+	dbus_pending_call_set_notify(pending_call,
+                                     mafw_proxy_renderer_playback_cb,
 				     ap, mafw_proxy_renderer_async_free);
 }
 
@@ -748,7 +783,7 @@ static void set_get_position_cb(DBusPendingCall *pending_call,
 							    error);
 		g_error_free(error);
 	}
-	
+
 	dbus_message_unref(reply);
 	dbus_pending_call_unref(pending_call);
 }
@@ -756,10 +791,11 @@ static void set_get_position_cb(DBusPendingCall *pending_call,
 /**
  * See #MafwRenderer for a description.
  */
-static void mafw_proxy_renderer_set_position(MafwRenderer *self, MafwRendererSeekMode mode,
-					  gint seconds,
-					  MafwRendererPositionCB callback,
-					  gpointer user_data)
+static void mafw_proxy_renderer_set_position(MafwRenderer *self,
+                                             MafwRendererSeekMode mode,
+                                             gint seconds,
+                                             MafwRendererPositionCB callback,
+                                             gpointer user_data)
 {
 	MafwProxyRenderer *proxy;
 	AsyncParams *ap;
@@ -812,11 +848,12 @@ static void mafw_proxy_renderer_get_position(MafwRenderer *self,
 	ap->callback = callback;
 	ap->user_data = user_data;
 
-	mafw_dbus_send_async(connection, &pending_call,
-			     mafw_dbus_method_full(proxy_extension_return_service(proxy),
-				proxy_extension_return_path(proxy),
-				MAFW_RENDERER_INTERFACE,
-				MAFW_RENDERER_METHOD_GET_POSITION));
+	mafw_dbus_send_async(
+                connection, &pending_call,
+                mafw_dbus_method_full(proxy_extension_return_service(proxy),
+                                      proxy_extension_return_path(proxy),
+                                      MAFW_RENDERER_INTERFACE,
+                                      MAFW_RENDERER_METHOD_GET_POSITION));
 
 	dbus_pending_call_set_notify(pending_call, set_get_position_cb,
 				     ap, mafw_proxy_renderer_async_free);
@@ -838,9 +875,12 @@ static void mafw_proxy_renderer_class_init(MafwProxyRendererClass *klass)
 
 	gobject_class->dispose = mafw_proxy_renderer_dispose;
 
-	extension_class->list_extension_properties = (gpointer)proxy_extension_list_properties;
-	extension_class->get_extension_property = (gpointer)proxy_extension_get_extension_property;
-	extension_class->set_extension_property = (gpointer)proxy_extension_set_extension_property;
+	extension_class->list_extension_properties =
+                (gpointer)proxy_extension_list_properties;
+	extension_class->get_extension_property =
+                (gpointer)proxy_extension_get_extension_property;
+	extension_class->set_extension_property =
+                (gpointer)proxy_extension_set_extension_property;
 
 	/* Playback */
 
@@ -872,12 +912,12 @@ static void mafw_proxy_renderer_init(MafwProxyRenderer *self)
 static void mafw_proxy_renderer_dispose (GObject *obj)
 {
 	MafwProxyRenderer *renderer_obj = MAFW_PROXY_RENDERER(obj);
-	
+
 	if (connection)
 	{
 		dbus_connection_unregister_object_path(connection,
 				proxy_extension_return_path(renderer_obj));
-	
+
 		dbus_connection_unref(connection);
 	}
 }
@@ -902,30 +942,31 @@ GObject *mafw_proxy_renderer_new(const gchar *uuid, const gchar *plugin,
 	DBusObjectPathVTable path_vtable;
 
 	memset(&path_vtable, 0, sizeof(DBusObjectPathVTable));
-	path_vtable.message_function = 
+	path_vtable.message_function =
 		(DBusObjectPathMessageFunction)mafw_proxy_renderer_dispatch_message;
 
-	
+
 	if (!new_obj)
 		return NULL;
-	
+
 	renderer_obj = MAFW_PROXY_RENDERER(new_obj);
-	
+
 	path = g_strdup_printf(MAFW_RENDERER_OBJECT "/%s", uuid);
-	
+
 	connection = mafw_dbus_session(NULL);
-	
+
 	if (!connection) goto renderer_new_error;
-	
+
 	dbus_error_init(&err);
-	
-	match_str = g_strdup_printf(MAFW_EXTENSION_MATCH, MAFW_RENDERER_INTERFACE,
-					path);
-	
+
+	match_str = g_strdup_printf(MAFW_EXTENSION_MATCH,
+                                    MAFW_RENDERER_INTERFACE,
+                                    path);
+
 	dbus_bus_add_match(connection, match_str, &err);
-	
+
 	g_free(match_str);
-	
+
 	if (dbus_error_is_set(&err)) goto renderer_new_error;
 
 	if (!dbus_connection_register_object_path(connection,
@@ -937,14 +978,14 @@ GObject *mafw_proxy_renderer_new(const gchar *uuid, const gchar *plugin,
 	/* See mafw-proxy-source.c as to why setup_with_g_main() is here. */
 	dbus_connection_setup_with_g_main(connection, NULL);
 	proxy_extension_attach(G_OBJECT(new_obj), connection, plugin, registry);
-	
+
 	return new_obj;
-	
+
 renderer_new_error:
-	
+
 	if (connection)
 		dbus_connection_unref(connection);
-	
+
 	g_object_unref(new_obj);
 	return NULL;
 }

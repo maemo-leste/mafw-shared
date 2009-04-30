@@ -39,7 +39,7 @@ typedef struct {
 	stop_called, pause_called, resume_called, get_status_called,
 	assign_playlist_called, next_called, previous_called,
 	goto_index_called, set_position_called,
-	get_position_called, state_changed_called, media_changed_called, 
+	get_position_called, state_changed_called, media_changed_called,
 	playlist_changed_called, buffering_info_called,
 		metadata_changed_called;
 
@@ -48,7 +48,8 @@ typedef struct {
 } ErrorRenderer;
 
 extern GType error_renderer_get_type(void);
-#define ERROR_RENDERER(o) (G_TYPE_CHECK_INSTANCE_CAST((o), error_renderer_get_type(), ErrorRenderer))
+#define ERROR_RENDERER(o) (G_TYPE_CHECK_INSTANCE_CAST((o),\
+                           error_renderer_get_type(), ErrorRenderer))
 
 extern gpointer error_renderer_new(const gchar *name, const gchar *uuid,
 			       GMainLoop *mainloop);

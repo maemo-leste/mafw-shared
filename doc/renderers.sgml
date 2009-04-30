@@ -7,8 +7,8 @@
 <title>Introduction</title>
 
 <para>
-Renderers are used to control media playback, and they are designed 
-so that any of them can play content from any source, and can be thought of 
+Renderers are used to control media playback, and they are designed
+so that any of them can play content from any source, and can be thought of
 as a &gstreamer; chain, although this might usually not be the actual case.
 </para>
 
@@ -34,7 +34,7 @@ the playlist.
 </para>
 
 <para>
-The application can also control playlist playback, commanding the 
+The application can also control playlist playback, commanding the
 renderer to move to any item in the playlist at any moment.
 </para>
 
@@ -62,8 +62,8 @@ media it is playing.
 <para>
 Renderers behave like state machines. Operations may or may not be valid
 depending on the renderer's state, or may change their behavior depending on it.
-For example, a STOP command may be ignored if the renderer is already stopped, but
-otherwise it should stop any ongoing playback.
+For example, a STOP command may be ignored if the renderer is already stopped,
+but otherwise it should stop any ongoing playback.
 </para>
 
 <para>
@@ -76,25 +76,26 @@ The renderer's state machine has four states:
 </itemizedlist>
 </para>
 
-A renderer is <emphasis>Stopped</emphasis> if it is not playing any media. Whenever
-the renderer receives the order to play some media content, it moves to the 
-<emphasis>Transitioning</emphasis> state. In this state, the renderer attempts to get
-anything it may need to play the selected item, for example, it should
-get the URI of the item to be played by invoking #mafw_source_get_metadata, and then
-use this URI to start playback using the underlying playback engine (for example,
-GStreamer). The renderer moves to the <emphasis>Playing</emphasis> state
-once playback has been started by the underlying playback engine. During
-this state, the user can call #mafw_renderer_pause, which
-makes the renderer move to <emphasis>Paused</emphasis> state. In this state, it is 
-possible to call #mafw_renderer_resume to continue playback. Also, the user may call
+A renderer is <emphasis>Stopped</emphasis> if it is not playing any
+media. Whenever the renderer receives the order to play some media content, it
+moves to the
+<emphasis>Transitioning</emphasis> state. In this state, the renderer attempts
+to get anything it may need to play the selected item, for example, it should
+get the URI of the item to be played by invoking #mafw_source_get_metadata, and
+then use this URI to start playback using the underlying playback engine (for
+example, GStreamer). The renderer moves to the <emphasis>Playing</emphasis>
+state once playback has been started by the underlying playback engine. During
+this state, the user can call #mafw_renderer_pause, which makes the renderer
+move to <emphasis>Paused</emphasis> state. In this state, it is possible to call
+#mafw_renderer_resume to continue playback. Also, the user may call
 #mafw_renderer_stop at any time, making the renderer move back to
 the <emphasis>Stopped</emphasis> state again.
 
 <para>
 Application developers should react to state changes in the renderer and update
-the application accordingly. For example, when the renderer is in the 
+the application accordingly. For example, when the renderer is in the
 <emphasis>Stopped</emphasis> state the developer may want to disable the
-<emphasis>Pause</emphasis> button, however if the renderer state is 
+<emphasis>Pause</emphasis> button, however if the renderer state is
 <emphasis>Playing</emphasis> it may be enabled.
 </para>
 
@@ -111,7 +112,8 @@ Here is a small code snippet illustrating these concepts:
 
 <programlisting role="c">
 static void
-state_changed_cb(MafwRenderer *renderer, MafwPlayState state, gpointer user_data)
+state_changed_cb(MafwRenderer *renderer, MafwPlayState state,
+                 gpointer user_data)
 {
         switch (state) {
                 case Playing:
@@ -129,7 +131,7 @@ state_changed_cb(MafwRenderer *renderer, MafwPlayState state, gpointer user_data
 }
 
 static void
-set_state_changed_handler(MafwRenderer *renderer) 
+set_state_changed_handler(MafwRenderer *renderer)
 {
         g_signal_connect(renderer, "state-changed",
                          G_CALLBACK(state_changed_cb), NULL);
@@ -145,21 +147,20 @@ set_state_changed_handler(MafwRenderer *renderer)
 <title>Assigning media to a renderer</title>
 
 <para>
-In order to play content in a renderer, a playlist should be created
-and assigned to it. For this purpose developers have to use 
-#mafw_renderer_assign_playlist. Once a playlist
-has been assigned to the renderer the user may choose to start playback
-right away (starting from the first item in the playlist) or choose a
-specific item to start from. For the latter case, the renderer offers the
-methods #mafw_renderer_next, #mafw_renderer_previous and
-#mafw_renderer_goto_index, that allow the user to select the next and
-previous items to the one currently selected or move directly to a particular
-item in the playlist. Also, the currently selected media may change due to other
-factors, for example, when playback of the current item in the playlist finishes
-the renderer will move to the next automatically, it might also happen
-in the case of errors that do not allow to play the current item, in this scenario
-the renderer may choose to automatically move to the next item in the
-playlist too.
+In order to play content in a renderer, a playlist should be created and
+assigned to it. For this purpose developers have to use
+#mafw_renderer_assign_playlist. Once a playlist has been assigned to the
+renderer the user may choose to start playback right away (starting from the
+first item in the playlist) or choose a specific item to start from. For the
+latter case, the renderer offers the methods #mafw_renderer_next,
+#mafw_renderer_previous and #mafw_renderer_goto_index, that allow the user to
+select the next and previous items to the one currently selected or move
+directly to a particular item in the playlist. Also, the currently selected
+media may change due to other factors, for example, when playback of the current
+item in the playlist finishes the renderer will move to the next automatically,
+it might also happen in the case of errors that do not allow to play the current
+item, in this scenario the renderer may choose to automatically move to the next
+item in the playlist too.
 </para>
 
 <para>
@@ -177,20 +178,21 @@ Here is a small code snippet illustrating this:
 
 <programlisting role="c">
 static void
-media_changed_cb(MafwRenderer *renderer, gint index, gchar *object_id, 
+media_changed_cb(MafwRenderer *renderer, gint index, gchar *object_id,
                  gpointer user_data)
 {
         if (index >= 0) {
                 /* Update UI: select item at position 'index' */
         } else {
                /* Playlist playback interrupted, maybe inform the user
-                  about this and then wait until it is resumed, then we 
+                  about this and then wait until it is resumed, then we
                   will get a new media-changed signal */
         }
 }
 
-static void 
-assign_playlist_cb(MafwRenderer *renderer, gpointer user_data, const GError *error)
+static void
+assign_playlist_cb(MafwRenderer *renderer, gpointer user_data,
+                   const GError *error)
 {
         if (error != NULL) {
                 /* error management code here */
@@ -198,25 +200,25 @@ assign_playlist_cb(MafwRenderer *renderer, gpointer user_data, const GError *err
 }
 
 static void
-assign_playlist(MafwRenderer *renderer, MafwPlaylist *playlist) 
-{     
+assign_playlist(MafwRenderer *renderer, MafwPlaylist *playlist)
+{
         g_signal_connect(renderer, "media-changed",
                          G_CALLBACK(media_changed_cb), NULL);
 
-        mafw_renderer_assign_playlist(renderer, playlist, assign_playlist_cb, NULL);
+        mafw_renderer_assign_playlist(renderer, playlist,
+                                      assign_playlist_cb, NULL);
 }
 </programlisting>
 </para>
 
 <para>
-In the code above, the #MafwRenderer::media-changed handler checks if the
-index is positive, if that is the case it could now use this
-information to update the application, ensuring that the user knows what
-item is currently selected in the renderer. This index parameter can be negative,
-this happens when the playlist playback has been interrupted. This may
-happen, for example, if #mafw_renderer_play_object was invoked, which puts 
-off playlist playback to play another individual item, resuming
-playlist playback when finished.
+In the code above, the #MafwRenderer::media-changed handler checks if the index
+is positive, if that is the case it could now use this information to update the
+application, ensuring that the user knows what item is currently selected in the
+renderer. This index parameter can be negative, this happens when the playlist
+playback has been interrupted. This may happen, for example, if
+#mafw_renderer_play_object was invoked, which puts off playlist playback to play
+another individual item, resuming playlist playback when finished.
 </para>
 
 </section>
@@ -248,14 +250,15 @@ to the #MafwExtension::error signal to handle these errors properly.
 Here is a small code snippet:
 <programlisting role="c">
 static void
-error_cb(MafwExtension *extension, guint domain, guint code, gchar *message, 
+error_cb(MafwExtension *extension, guint domain, guint code, gchar *message,
          gpointer user_data)
 {
         /* Error management code here */
 }
 
-static void 
-assign_playlist_cb(MafwRenderer *renderer, gpointer user_data, const GError *error)
+static void
+assign_playlist_cb(MafwRenderer *renderer, gpointer user_data,
+                   const GError *error)
 {
         if (error != NULL) {
                 /* error management code here */
@@ -267,8 +270,9 @@ assign_playlist(MafwRenderer *renderer, MafwPlaylist *playlist)
 {
         g_signal_connect(MAFW_EXTENSION(renderer), "error",
                          G_CALLBACK(error_cb), NULL);
-     
-        mafw_renderer_assign_playlist(renderer, playlist, assign_playlist_cb, NULL);
+
+        mafw_renderer_assign_playlist(renderer, playlist,
+                                      assign_playlist_cb, NULL);
 }
 </programlisting>
 </para>
@@ -280,8 +284,8 @@ assign_playlist(MafwRenderer *renderer, MafwPlaylist *playlist)
 <title>Using a renderer</title>
 
 <para>
-Renderers are extensions, therefore, the first step is to obtain a reference to them
-using the framework registry, like this:
+Renderers are extensions, therefore, the first step is to obtain a reference to
+them using the framework registry, like this:
 
 <programlisting role="c">
 MafwProxyRegistry *registry = MAFW_REGISTRY(mafw_registry_get_instance());
@@ -291,8 +295,8 @@ if (registry) {
 </programlisting>
 
 The code above allows the application developer to obtain a list of available
-renderers. The developer can use this list to show the available renderers to the 
-users, allowing them to select the renderer they are interested in.
+renderers. The developer can use this list to show the available renderers to
+the users, allowing them to select the renderer they are interested in.
 </para>
 
 <para>
@@ -303,7 +307,8 @@ application developer can start using it. Here is a simple example:
 <para>
 <programlisting role="c">
 static void
-_generic_error_cb(MafwExtension *extension, guint domain, guint code, gchar *message, 
+_generic_error_cb(MafwExtension *extension, guint domain,
+                  guint code, gchar *message,
                   gpointer user_data)
 {
         /* Error management code here */
@@ -348,7 +353,8 @@ stop_button_clicked_cb(GtkButton *button, gpointer user_data)
 }
 
 static void
-state_changed_cb(MafwRenderer *renderer, MafwPlayState state, gpointer user_data)
+state_changed_cb(MafwRenderer *renderer, MafwPlayState state,
+                 gpointer user_data)
 {
         switch (state) {
                 case Playing:
@@ -366,20 +372,21 @@ state_changed_cb(MafwRenderer *renderer, MafwPlayState state, gpointer user_data
 }
 
 static void
-media_changed_cb(MafwRenderer *renderer, gint index, gchar *object_id, 
+media_changed_cb(MafwRenderer *renderer, gint index, gchar *object_id,
                  gpointer user_data)
 {
         if (index >= 0) {
                 /* Update UI: select item at position 'index' */
         } else {
                /* Playlist playback interrupted, maybe inform the user
-                  about this and then wait until it is resumed, then we 
+                  about this and then wait until it is resumed, then we
                   will get a new media-changed signal */
         }
 }
 
-static void 
-assign_playlist_cb(MafwRenderer *renderer, gpointer user_data, const GError *error)
+static void
+assign_playlist_cb(MafwRenderer *renderer, gpointer user_data,
+                   const GError *error)
 {
         if (error != NULL) {
                 /* error management code here */
@@ -389,16 +396,16 @@ assign_playlist_cb(MafwRenderer *renderer, gpointer user_data, const GError *err
         }
 }
 
-static void 
-renderer_example(void) 
+static void
+renderer_example(void)
 {
         MafwRenderer *renderer = NULL;
 
-        MafwProxyRegistry *registry = 
+        MafwProxyRegistry *registry =
                 MAFW_REGISTRY(mafw_registry_get_instance());
 
         if (registry) {
-                GList *renderers = 
+                GList *renderers =
                         mafw_registry_get_renderers(MAFW_REGISTRY(registry));
                 if (renderers) {
                         /* Just take the first one available */
@@ -414,8 +421,8 @@ renderer_example(void)
                                  G_CALLBACK(state_changed_cb), NULL);
                 g_signal_connect(renderer, "media-changed",
                                  G_CALLBACK(media_changed_cb), NULL);
-     
-                mafw_renderer_assign_playlist(renderer, playlist, 
+
+                mafw_renderer_assign_playlist(renderer, playlist,
                                           assign_playlist_cb, NULL);
         }
 }
@@ -432,7 +439,7 @@ handlers for the <code>clicked</code> events of these buttons.
 The program starts by selecting a suitable renderer if any, then it
 assigns a playlist to the renderer, and, if the playlist could be
 assigned, it starts playing it right away. As the reader can see,
-#mafw_renderer_play plays the item currently selected in the renderer. 
+#mafw_renderer_play plays the item currently selected in the renderer.
 </para>
 
 <para>

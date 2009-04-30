@@ -1,4 +1,4 @@
-/* 
+/*
 The code examples copyrighted by Nokia Corporation that are included to
 this material are licensed to you under following MIT-style License:
 
@@ -43,7 +43,7 @@ GMainLoop * main_loop = NULL;
 gchar *state_str[] = {"STOPPED", "PLAYING", "PAUSED", "TRANSITIONING"};
 
 static void
-play_cb (MafwRenderer *renderer, 
+play_cb (MafwRenderer *renderer,
 	 gpointer user_data,
 	 const GError *error)
 {
@@ -64,7 +64,7 @@ error_cb (MafwRenderer *renderer,
 
 static void
 state_changed_cb (MafwRenderer *renderer,
-                  MafwPlayState state, 
+                  MafwPlayState state,
 		  gpointer user_data)
 {
         g_print("State changed! New state is %s\n",
@@ -90,18 +90,18 @@ media_changed_cb (MafwRenderer *renderer,
 }
 
 static void
-metadata_changed_cb (MafwRenderer *renderer, 
-		     gchar *key, 
+metadata_changed_cb (MafwRenderer *renderer,
+		     gchar *key,
 		     GValueArray *value,
 		     gpointer user_data)
 {
-	g_print ("  Got metadata %s: %s\n", 
-		 key, 
+	g_print ("  Got metadata %s: %s\n",
+		 key,
 		 g_strdup_value_contents (&(value->values[0])));
 }
 
 static MafwPlaylist *
-find_playlist (gchar *playlist_name, GError **error) 
+find_playlist (gchar *playlist_name, GError **error)
 {
 	MafwPlaylistManager *manager;
 	MafwPlaylist *playlist = NULL;
@@ -138,11 +138,11 @@ do_assign_playlist_request (gpointer user_data)
 	MafwPlaylist *playlist;
 	gchar *playlist_name = (gchar *) user_data;
 
-	g_print ("[INFO] Assigning playlist %s to "  WANTED_RENDERER ".\n", 
+	g_print ("[INFO] Assigning playlist %s to "  WANTED_RENDERER ".\n",
 		 playlist_name);
-	
+
 	playlist = find_playlist (playlist_name, &error);
-	
+
 	if (error != NULL)  {
 		g_error ("Failed to find playlist\n");
 	}
@@ -167,16 +167,16 @@ do_assign_playlist_request (gpointer user_data)
  */
 
 /*
- * Checks for a particular source to be added and 
+ * Checks for a particular source to be added and
  * saves a reference to it.
  */
-static void 
-source_added_cb (MafwRegistry *registry, 
-		 GObject *source, 
+static void
+source_added_cb (MafwRegistry *registry,
+		 GObject *source,
 		 gpointer user_data)
 {
 	if (MAFW_IS_SOURCE(source)) {
-		const gchar *name = 
+		const gchar *name =
 			mafw_extension_get_name(MAFW_EXTENSION(source));
 		g_print("[INFO] Source %s available.\n", name);
 	}
@@ -185,48 +185,48 @@ source_added_cb (MafwRegistry *registry,
 /*
  * Checks if the referenced source is removed, and if so, exits.
  */
-static void 
-source_removed_cb (MafwRegistry *registry, 
-		   GObject *source, 
+static void
+source_removed_cb (MafwRegistry *registry,
+		   GObject *source,
 		   gpointer user_data)
 {
 	if (MAFW_IS_SOURCE(source)) {
-		g_print("[INFO] Source %s removed.\n", 
+		g_print("[INFO] Source %s removed.\n",
 			mafw_extension_get_name(MAFW_EXTENSION(source)));
 	}
 }
 
-static void 
-renderer_added_cb (MafwRegistry *registry, 
-		   GObject *renderer, 
+static void
+renderer_added_cb (MafwRegistry *registry,
+		   GObject *renderer,
 		   gpointer user_data)
 {
 	if (MAFW_IS_RENDERER(renderer)) {
-		const gchar *name = 
+		const gchar *name =
 			mafw_extension_get_name (MAFW_EXTENSION(renderer));
-		
+
 		g_print("[INFO] Renderer %s available.\n", name);
 
 		if (strcmp (name, WANTED_RENDERER) == 0) {
 			g_print ("[INFO]     Wanted renderer found!\n");
 			app_renderer = g_object_ref (renderer);
-			
+
 			/* Connect to a few interesting signals */
-			g_signal_connect (renderer, 
+			g_signal_connect (renderer,
 					  "media-changed",
-					  G_CALLBACK (media_changed_cb), 
+					  G_CALLBACK (media_changed_cb),
 					  NULL);
-			g_signal_connect (renderer, 
+			g_signal_connect (renderer,
 					  "state-changed",
-					  G_CALLBACK (state_changed_cb), 
+					  G_CALLBACK (state_changed_cb),
 					  NULL);
-			g_signal_connect (renderer, 
+			g_signal_connect (renderer,
 					  "metadata-changed",
-					  G_CALLBACK (metadata_changed_cb), 
+					  G_CALLBACK (metadata_changed_cb),
 					  NULL);
-			g_signal_connect (renderer, 
+			g_signal_connect (renderer,
 					  "error",
-					  G_CALLBACK (error_cb), 
+					  G_CALLBACK (error_cb),
 					  NULL);
 
 			/* When we find the renderer we are interested in,
@@ -241,14 +241,14 @@ renderer_added_cb (MafwRegistry *registry,
 }
 
 static void
-renderer_removed_cb (MafwRegistry * registry, 
-		     GObject *renderer, 
+renderer_removed_cb (MafwRegistry * registry,
+		     GObject *renderer,
 		     gpointer user_data)
 {
 	if (MAFW_IS_RENDERER(renderer)) {
-		const gchar *name = 
+		const gchar *name =
 			mafw_extension_get_name (MAFW_EXTENSION(renderer));
-		
+
 		g_print("[INFO] Renderer %s removed.\n", name);
 
 		if (MAFW_RENDERER (renderer) == app_renderer) {
@@ -264,7 +264,7 @@ renderer_removed_cb (MafwRegistry * registry,
  * Loads MAFW plugins.
  *
  * This function lods out-of-process extensions and hooks to
- * renderer/source-added and renderer/source-removed signals 
+ * renderer/source-added and renderer/source-removed signals
  * for dynamic extension discovery and removal.
  *
  * Also, this function allows loading of in-process extensions
@@ -274,7 +274,7 @@ renderer_removed_cb (MafwRegistry * registry,
  * as the renderer of interest is loaded.
  */
 gboolean static
-app_init (gchar *playlist_name) 
+app_init (gchar *playlist_name)
 {
         GError *error = NULL;
 	gchar **plugins = NULL;
@@ -308,44 +308,44 @@ app_init (gchar *playlist_name)
 			   error->message);
 		g_error_free(error);
 		error = NULL;
-	} 
+	}
 
 	/* Connect to extension discovery signals. These signals will be
 	   emitted when new extensions are started or removed */
 	g_signal_connect (registry,
-			  "renderer_added", 
+			  "renderer_added",
 			  G_CALLBACK(renderer_added_cb), playlist_name);
 
 	g_signal_connect (registry,
-			  "renderer_removed", 
+			  "renderer_removed",
 			  G_CALLBACK(renderer_removed_cb), NULL);
 
 	g_signal_connect (registry,
-			  "source_added", 
+			  "source_added",
 			  G_CALLBACK(source_added_cb), NULL);
 
 	g_signal_connect (registry,
-			  "source_removed", 
+			  "source_removed",
 			  G_CALLBACK(source_removed_cb), NULL);
 
 	/* Also, check for already started extensions */
 	extension_list = mafw_registry_get_renderers(registry);
 	while (extension_list)
 	{
-		renderer_added_cb (registry, 
+		renderer_added_cb (registry,
 				   G_OBJECT(extension_list->data), NULL);
 		extension_list = g_list_next(extension_list);
 	}
-	
+
 	extension_list = mafw_registry_get_sources(registry);
 	while (extension_list)
 	{
-		source_added_cb (registry, 
+		source_added_cb (registry,
 				 G_OBJECT(extension_list->data), NULL);
 		extension_list = g_list_next(extension_list);
 	}
 
-	
+
 	/* ---- Start in-process plugin loading ---- */
 
 	/* MAFW_INP_PLUGINS shold contain a list of paths
@@ -354,7 +354,7 @@ app_init (gchar *playlist_name)
 	g_print ("[INFO] Checking for in-process plugins...\n");
 	if (g_getenv("MAFW_INP_PLUGINS") != NULL) {
 		plugins = g_strsplit (g_getenv ("MAFW_INP_PLUGINS"),
-				      G_SEARCHPATH_SEPARATOR_S, 
+				      G_SEARCHPATH_SEPARATOR_S,
 				      0);
 
 		for (; NULL != *plugins; plugins++) {
@@ -362,13 +362,13 @@ app_init (gchar *playlist_name)
 				 *plugins);
 
 			mafw_registry_load_plugin (MAFW_REGISTRY(registry),
-						   *plugins, 
+						   *plugins,
 						   &error);
 
 			if (error != NULL) {
 				gchar* msg;
 				msg = g_strdup_printf (
-					"Unable to load inp. plugin %s: %s", 
+					"Unable to load inp. plugin %s: %s",
 					*plugins,
 					error->message);
 
@@ -377,7 +377,7 @@ app_init (gchar *playlist_name)
 				g_free(msg);
 				g_error_free(error);
 				error = NULL;
-			} 
+			}
 		}
 	} else {
 		g_print ("[INFO]     No in-process plugins requested.\n");

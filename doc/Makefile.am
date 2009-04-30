@@ -67,7 +67,7 @@ content_files = version.xml describing-mafw.sgml initializing-mafw.sgml \
 	renderers.sgml playlists.sgml sources.sgml built_in_plugins.sgml \
 	creating_plugins.sgml examples.sgml preface.sgml
 
-# SGML files where gtk-doc abbrevations (#GtkWidget) are expanded
+# SGML files where gtk-doc abbreviations (#GtkWidget) are expanded
 # These files must be listed here *and* in content_files
 # e.g. expand_content_files=running.sgml
 expand_content_files = $(content_files)

@@ -4,11 +4,12 @@
 
   <section>
   <title>Introduction</title>
- 
-  <para>The &maemo; platform provides multimedia capabilities through the &gstreamer;
-framework. &gstreamer; takes care of all the low-level multimedia playback
-details (codecs, formats, protocols, etc), making developer's life really
-easy, and allowing fast developing of typical multimedia applications.</para>
+
+  <para>The &maemo; platform provides multimedia capabilities through the
+&gstreamer; framework. &gstreamer; takes care of all the low-level multimedia
+playback details (codecs, formats, protocols, etc), making developer's life
+really easy, and allowing fast developing of typical multimedia
+applications.</para>
 
   <para>However, there are still a few topics that are not covered by frameworks
 like &gstreamer;. Usually, these topics have to do with the complexity of
@@ -24,20 +25,20 @@ the already available multimedia related technologies. Specifically, MAFW
 intends to provide multimedia application developers with:</para>
 
   <itemizedlist>
-   <listitem><para>An extendable, pluggable framework interface, which allows to develop
-     new plugins that provide integration with new multimedia services or
-     rendering engines, that can be seamlessly integrated in all MAFW based
+   <listitem><para>An extendable, pluggable framework interface, which allows to
+     develop new plugins that provide integration with new multimedia services
+     or rendering engines, that can be seamlessly integrated in all MAFW based
      applications.</para></listitem>
 
-   <listitem><para>Easy to use APIs that speed up application developing, providing support
-     for playback control, discovery and browsing of multimedia resources and
-     playlist manipulation.</para></listitem>
+   <listitem><para>Easy to use APIs that speed up application developing,
+     providing support for playback control, discovery and browsing of
+     multimedia resources and playlist manipulation.</para></listitem>
 
-   <listitem><para>Independence of the technology. Since MAFW is a plugin based framework, 
-     it is not tied to a particular multimedia technology (&gstreamer;, MPlayer,
-     Tracker). Plugin developers have freedom to choose the technologies they 
-     want to use in their plugins, and application developers do not need to
-     know about them.</para></listitem>
+   <listitem><para>Independence of the technology. Since MAFW is a plugin based
+     framework, it is not tied to a particular multimedia technology
+     (&gstreamer;, MPlayer, Tracker). Plugin developers have freedom to choose
+     the technologies they want to use in their plugins, and application
+     developers do not need to know about them.</para></listitem>
   </itemizedlist>
 
 <para>The purpose of this manual is to introduce the basic concepts of the MAFW
@@ -48,74 +49,84 @@ develop multimedia applications in the &maemo; platform.</para>
 
   <section>
   <title>Pre-requisites</title>
-  <para>The source code examples in this manual are in C, so it is required that the
-reader is fairly comfortable with this programming language. Also. MAFW is
-heavily based on the &glib; and &gobject; frameworks. Hence, it is assumed
-the reader has a good understanding of these technologies.</para>
+  <para>The source code examples in this manual are in C, so it is required that
+the reader is fairly comfortable with this programming language. Also. MAFW is
+heavily based on the &glib; and &gobject; frameworks. Hence, it is assumed the
+reader has a good understanding of these technologies.</para>
 
-  <para>Also, it is assumed that the reader knows how to build applications for the
-&maemo; platform.</para>
+  <para>Also, it is assumed that the reader knows how to build applications for
+the &maemo; platform.</para>
   </section>
 
   <section>
   <title>Main concepts</title>
 
-  <para>Here follows a brief explanation on some of the fundamental concepts around the
-  MAFW framework. Most of them will be covered in more detail in further sections
-  of this manual:</para>
+  <para>Here follows a brief explanation on some of the fundamental concepts
+  around the MAFW framework. Most of them will be covered in more detail in
+  further sections of this manual:</para>
 
   <itemizedlist>
 
-    <listitem><para><emphasis>Renderer:</emphasis> An element capable of consuming multimedia content, this is,
-     an element capable of controlling media playback.</para></listitem>
+    <listitem><para><emphasis>Renderer:</emphasis> An element capable of
+     consuming multimedia content, this is, an element capable of controlling
+     media playback.</para></listitem>
 
-    <listitem><para><emphasis>Source:</emphasis> An element that provides access to multimedia 
-    content, such as the media stored in the local filesystem, &upnp; servers, Samba shares,
-    &bluetooth; devices, Internet services, etc.</para></listitem>
+    <listitem><para><emphasis>Source:</emphasis> An element that provides access
+    to multimedia content, such as the media stored in the local filesystem,
+    &upnp; servers, Samba shares, &bluetooth; devices, Internet services,
+    etc.</para></listitem>
 
-    <listitem><para><emphasis>Object Identifier:</emphasis> Sources identify multimedia resources
-    using object identifiers. Each individual resource has one unique object identifier associated
-    that is provided by the source serving it.</para></listitem>
+    <listitem><para><emphasis>Object Identifier:</emphasis> Sources identify
+    multimedia resources using object identifiers. Each individual resource has
+    one unique object identifier associated that is provided by the source
+    serving it.</para></listitem>
 
-    <listitem><para><emphasis>Shared playlist:</emphasis> A sorted list of multimedia resources ready to be
-    consumed by a renderer, which can be used and manipulated by several applications
-    in parallel. Playlists are populated with media items extracted from Source components,
-    and assigned to a renderer to be played.</para></listitem>
+    <listitem><para><emphasis>Shared playlist:</emphasis> A sorted list of
+    multimedia resources ready to be consumed by a renderer, which can be used
+    and manipulated by several applications in parallel. Playlists are populated
+    with media items extracted from Source components, and assigned to a
+    renderer to be played.</para></listitem>
 
-    <listitem><para><emphasis>Extension:</emphasis> An element that implements a particular task by following
-    a well defined interface. Currently, two types of extensions are supported, those 
-    that implement new Source components and those that implement new Renderer components. 
-    Also, extensions can be used in two manners:</para>
+    <listitem><para><emphasis>Extension:</emphasis> An element that implements a
+    particular task by following a well defined interface. Currently, two types
+    of extensions are supported, those that implement new Source components and
+    those that implement new Renderer components.  Also, extensions can be used
+    in two manners:</para>
 
     <itemizedlist>
-    <listitem><para><emphasis>In-Process extensions:</emphasis> Those that live in the same address space as the 
-    application that uses them.</para></listitem>
+    <listitem><para><emphasis>In-Process extensions:</emphasis> Those that live
+    in the same address space as the application that uses
+    them.</para></listitem>
 
-    <listitem><para><emphasis>Out-of-process extensions:</emphasis> Those that live in a separate process other than
-    the application's. The benefit of this type of extensions is that programming flaws in the
-    plugin code that lead to crashes or freezing of the extension, do not crash or freeze the 
-    main application. The main drawback of this approach is the need for inter-process
-    communications to communicate the application and the extensions, which may have a 
-    performance hit and require some extra synchronization effort.</para></listitem>
+    <listitem><para><emphasis>Out-of-process extensions:</emphasis> Those that
+    live in a separate process other than the application's. The benefit of this
+    type of extensions is that programming flaws in the plugin code that lead to
+    crashes or freezing of the extension, do not crash or freeze the main
+    application. The main drawback of this approach is the need for
+    inter-process communications to communicate the application and the
+    extensions, which may have a performance hit and require some extra
+    synchronization effort.</para></listitem>
     </itemizedlist>
     </listitem>
 
-     <listitem><para><emphasis>Plugin:</emphasis> A plugin is a shared object file implementing
-      a particular extension. For example, in the case of a &upnp;
-      source plugin, the shared file implementing the source is the plugin,
-      however, when the plugin is loaded by the framework it may instantiate several
-      source extensions, one per &upnp; server discovered.</para>
+     <listitem><para><emphasis>Plugin:</emphasis> A plugin is a shared object
+      file implementing a particular extension. For example, in the case of a
+      &upnp; source plugin, the shared file implementing the source is the
+      plugin, however, when the plugin is loaded by the framework it may
+      instantiate several source extensions, one per &upnp; server
+      discovered.</para>
      </listitem>
 
-    <listitem><para><emphasis>Wrapper:</emphasis> In order to make inter-process communications in the case
-    of out-of-process plugins transparent for application developers, all components
-    that can live in a separate process (Extensions and Shared playlists), are wrapped with 
-    local objects that handle the inter-process communication transparently. Thanks to these
-    wrapper objects, in most situations, application developers do not need to know if
-    they are using in-process or out-of-process components. Although wrappers play
-    an important role in MAFW, they are only interesting for developers interested in
-    hacking the internals of the framework, multimedia application developers do not need 
-    to know about them.</para></listitem>
+    <listitem><para><emphasis>Wrapper:</emphasis> In order to make inter-process
+    communications in the case of out-of-process plugins transparent for
+    application developers, all components that can live in a separate process
+    (Extensions and Shared playlists), are wrapped with local objects that
+    handle the inter-process communication transparently. Thanks to these
+    wrapper objects, in most situations, application developers do not need to
+    know if they are using in-process or out-of-process components. Although
+    wrappers play an important role in MAFW, they are only interesting for
+    developers interested in hacking the internals of the framework, multimedia
+    application developers do not need to know about them.</para></listitem>
   </itemizedlist>
 
   </section>
@@ -129,29 +140,34 @@ the reader has a good understanding of these technologies.</para>
     <listitem><para><emphasis><link linkend="chapter-mafw-reference">MAFW
           Library</link>:</emphasis> The MAFW library contains the basic classes
         and interfaces defined in the framework. These expose the
-	major elements of the framework, like the concepts of Extension, 
-        Source and Renderer and the APIs the developers will use to 
+	major elements of the framework, like the concepts of Extension,
+        Source and Renderer and the APIs the developers will use to
 	interact with them.</para></listitem>
 
-    <listitem><para><emphasis>MAFW Shared:</emphasis> This package provides means for sharing
-        components among different applications using MAFW. It implements the logic
-        behind the wrapper objects, as well as the concept of Shared playlists. It is composed of:</para>
+    <listitem><para><emphasis>MAFW Shared:</emphasis> This package provides
+        means for sharing components among different applications using MAFW. It
+        implements the logic behind the wrapper objects, as well as the concept
+        of Shared playlists. It is composed of:</para>
       <itemizedlist>
-        <listitem><para><emphasis>libmafw-shared:</emphasis> A library to use the shared components exposed by
-	sharing services (extensions and shared playlists).</para></listitem>
+        <listitem><para><emphasis>libmafw-shared:</emphasis> A library to use
+	the shared components exposed by sharing services (extensions and shared
+	playlists).</para></listitem>
 
         <listitem><para><emphasis><link linkend="section-daemon-wrapper">mafw-dbus-wrapper</link>:</emphasis>
-            This service is the one responsible for loading extensions in separate processes and
-	    export their interfaces as &dbus; services. These services are used by the wrapper 
-            objects defined in libmafw-shared in the out-of-process use case.</para></listitem>
+            This service is the one responsible for loading extensions in
+            separate processes and export their interfaces as &dbus;
+            services. These services are used by the wrapper objects defined in
+            libmafw-shared in the out-of-process use case.</para></listitem>
 
         <listitem><para><emphasis><link linkend="section-daemon-playlists">mafw-playlist-daemon</link>:</emphasis>
-	    A daemon that provides an API for shared playlist manipulation and storage.
+	    A daemon that provides an API for shared playlist manipulation and
+	    storage.
         </para></listitem>
       </itemizedlist>
     </listitem>
 
-    <listitem><para><emphasis>Plugins:</emphasis> Plugins are provided as separate packages.</para></listitem>
+    <listitem><para><emphasis>Plugins:</emphasis> Plugins are provided as
+    separate packages.</para></listitem>
 
   </itemizedlist>
 

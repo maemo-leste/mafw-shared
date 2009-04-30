@@ -242,8 +242,9 @@ static gboolean clever_append_more_valist(DBusMessageIter *iter,
 			nlen = 0;
 			if (v)
 				for (nlen = 0; v[nlen]; ++nlen);
-			if (!mafw_dbus_message_append_array(iter, DBUS_TYPE_STRING,
-						 nlen, v))
+			if (!mafw_dbus_message_append_array(iter,
+                                                            DBUS_TYPE_STRING,
+                                                            nlen, v))
 				goto fail;
 		} else if (arg_t == MAFW_DBUS_TYPE_GBYTEARRAY) {
 			/* MAFW_DBUS_TYPE_GBYTEARRAY, (GByteArray *) */
@@ -261,8 +262,10 @@ static gboolean clever_append_more_valist(DBusMessageIter *iter,
 
 			ht = va_arg(*args, GHashTable *);
 			ba = mafw_metadata_freeze_bary(ht);
-			isok = mafw_dbus_message_append_array(iter, DBUS_TYPE_BYTE,
-						   ba->len, ba->data);
+			isok = mafw_dbus_message_append_array(iter,
+                                                              DBUS_TYPE_BYTE,
+                                                              ba->len,
+                                                              ba->data);
 			g_byte_array_free(ba, TRUE);
 			if (!isok) goto fail;
 		} else if (arg_t == MAFW_DBUS_TYPE_GVALUE) {
@@ -341,7 +344,8 @@ static gboolean clever_append_more_valist(DBusMessageIter *iter,
 				if (!mafw_dbus_message_append_array(iter, etype,
 							 len, aval))
 					goto fail;
-			} else if (!mafw_dbus_message_append_array_struct(iter, args))
+			} else if (!mafw_dbus_message_append_array_struct(iter,
+                                                                          args))
 				goto fail;
 		} else {
 			g_warning("Unknown type: %d", arg_t);
@@ -432,7 +436,8 @@ static gboolean clever_parse_gbytearray(DBusMessageIter *iter, GByteArray **bap)
 	return TRUE;
 }
 
-gboolean mafw_dbus_message_parse_metadata(DBusMessageIter *iter, GHashTable **htp)
+gboolean mafw_dbus_message_parse_metadata(DBusMessageIter *iter,
+                                          GHashTable **htp)
 {
 	DBusMessageIter sub;
 	GHashTable *ht;
@@ -643,21 +648,27 @@ static gboolean clever_parse_valist(DBusMessage *msg,
 			if (!clever_parse_strvz(&iter, va_arg(args, char ***)))
 			       	goto fail;
 		} else if (arg_t == MAFW_DBUS_TYPE_GBYTEARRAY) {
-			if (!clever_parse_gbytearray(&iter, va_arg(args, GByteArray **)))
+			if (!clever_parse_gbytearray(&iter,
+                                                     va_arg(args,
+                                                            GByteArray **)))
 			       	goto fail;
 		} else if (arg_t == MAFW_DBUS_TYPE_METADATA) {
-			if (!mafw_dbus_message_parse_metadata(&iter, va_arg(args, GHashTable **)))
+			if (!mafw_dbus_message_parse_metadata(
+                                    &iter, va_arg(args, GHashTable **)))
 			       	goto fail;
 		} else if (arg_t == MAFW_DBUS_TYPE_GVALUE) {
 			if (!clever_parse_gvalue(&iter, va_arg(args, GValue *)))
 			       	goto fail;
 		} else if (arg_t == MAFW_DBUS_TYPE_GVALUEARRAY) {
-			if (!clever_parse_gvaluearray(&iter, va_arg(args, GValueArray **)))
+			if (!clever_parse_gvaluearray(&iter,
+                                                      va_arg(args,
+                                                             GValueArray **)))
 			       	goto fail;
 		} else if (arg_t == MAFW_DBUS_TYPE_IGNORE) {
 			/* NOP */
 		} else if (dbus_type_is_basic(arg_t)) {
-			if (!clever_parse_basic(&iter, arg_t, va_arg(args, void *)))
+			if (!clever_parse_basic(&iter, arg_t, va_arg(args,
+                                                                     void *)))
 			       	goto fail;
 		} else if (arg_t == DBUS_TYPE_ARRAY) {
 			if (!clever_parse_array(&iter, &args))
@@ -741,7 +752,7 @@ DBusMessage *mafw_dbus_error(DBusMessage *call, GQuark domain,
 			     gint code, const gchar *message)
 {
 	DBusMessage *msg;
-	
+
 	msg = dbus_message_new_error_printf(call, "com.nokia.mafw", "%s:%u:%s",
 				g_quark_to_string(domain),code, message);
 	return msg;
@@ -778,7 +789,8 @@ void mafw_dbus_error_to_gerror(GQuark domain, GError **glep, DBusError *dbe)
 		/* If $dbe is from D-BUS we cannot communicate with the
 		 * addressee (who is supposedly a extension---we don't talk
 		 * to anyone else). */
-		g_set_error(glep, domain, MAFW_EXTENSION_ERROR_EXTENSION_NOT_AVAILABLE,
+		g_set_error(glep, domain,
+                            MAFW_EXTENSION_ERROR_EXTENSION_NOT_AVAILABLE,
 			    "%s", dbe->message ? dbe->message : dbe->name);
 	} else {
 		guint code;

@@ -85,13 +85,14 @@ START_TEST(test_construct_nonempty)
 	mock_empty_props(FAKE_SOURCE_SERVICE, FAKE_SOURCE_OBJECT);
 
 	mafw_shared_deinit();
-	reg = g_object_new(MAFW_TYPE_REGISTRY, NULL); 
+	reg = g_object_new(MAFW_TYPE_REGISTRY, NULL);
 	fail_unless(mafw_shared_init(reg, NULL));
-	
+
 	fail_if(g_list_length(mafw_registry_get_renderers(reg)) != 1);
 	fail_if(g_list_length(mafw_registry_get_sources(reg)) != 1);
 
-	extension = mafw_registry_get_extension_by_uuid(reg, FAKE_RENDERER_NAME);
+	extension = mafw_registry_get_extension_by_uuid(reg,
+                                                        FAKE_RENDERER_NAME);
 	fail_unless(extension != NULL);
 	fail_if(strcmp("fake", mafw_extension_get_plugin(extension)));
 	fail_if(strcmp(FAKE_RENDERER_NAME, mafw_extension_get_uuid(extension)));
@@ -111,16 +112,19 @@ END_TEST
 static void source_cb(MafwRegistry *reg, MafwSource *src, gint *ncalled)
 {
 	fail_unless(MAFW_IS_SOURCE(src));
-	fail_if(strcmp(mafw_extension_get_uuid(MAFW_EXTENSION(src)), FAKE_SOURCE_NAME));
+	fail_if(strcmp(mafw_extension_get_uuid(MAFW_EXTENSION(src)),
+                       FAKE_SOURCE_NAME));
 	(*ncalled)++;
 	if (*ncalled == 2)
 		g_main_loop_quit(Mainloop);
 }
 
-static void renderer_cb(MafwRegistry *reg, MafwRenderer *renderer, gint *ncalled)
+static void renderer_cb(MafwRegistry *reg, MafwRenderer *renderer,
+                        gint *ncalled)
 {
 	fail_unless(MAFW_IS_RENDERER(renderer));
-	fail_if(strcmp(mafw_extension_get_uuid(MAFW_EXTENSION(renderer)), FAKE_RENDERER_NAME));
+	fail_if(strcmp(mafw_extension_get_uuid(MAFW_EXTENSION(renderer)),
+                       FAKE_RENDERER_NAME));
 	(*ncalled)++;
 	if (*ncalled == 2)
 		g_main_loop_quit(Mainloop);

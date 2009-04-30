@@ -261,18 +261,18 @@ START_TEST(test_metadatas)
 	DBusMessage *req;
 	const gchar *objlist[] = {"testobject", "testobject1", "testobject2",
 					NULL};
-	
+
 
 	metadata_keys = MAFW_SOURCE_LIST("title");
 	metadata = mockbus_mkmeta("title", "More than words", NULL);
 
 	mockbus_reset();
-	
+
 	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
-	
+
 	mockbus_expect(req =
 		mafw_dbus_method(MAFW_SOURCE_METHOD_GET_METADATAS,
-				 MAFW_DBUS_C_STRVZ("testobject", "testobject1", 
+				 MAFW_DBUS_C_STRVZ("testobject", "testobject1",
 							"testobject2"),
 				 MAFW_DBUS_C_STRVZ("title")));
 
@@ -291,7 +291,7 @@ START_TEST(test_metadatas)
 
 	mockbus_expect(req =
 		mafw_dbus_method(MAFW_SOURCE_METHOD_GET_METADATAS,
-				 MAFW_DBUS_C_STRVZ("testobject", "testobject1", 
+				 MAFW_DBUS_C_STRVZ("testobject", "testobject1",
 							"testobject2"),
 				 MAFW_DBUS_C_STRVZ("title")));
 
@@ -304,10 +304,10 @@ START_TEST(test_metadatas)
 
 
 	mafw_metadata_release(metadata);
-	
+
 	mockbus_expect(req =
 		mafw_dbus_method(MAFW_SOURCE_METHOD_GET_METADATAS,
-				 MAFW_DBUS_C_STRVZ("testobject", "testobject1", 
+				 MAFW_DBUS_C_STRVZ("testobject", "testobject1",
 							"testobject2"),
 				 MAFW_DBUS_C_STRVZ("title")));
 
@@ -320,7 +320,7 @@ START_TEST(test_metadatas)
 	/* Error */
 	mockbus_expect(req =
 		mafw_dbus_method(MAFW_SOURCE_METHOD_GET_METADATAS,
-				 MAFW_DBUS_C_STRVZ("testobject", "testobject1", 
+				 MAFW_DBUS_C_STRVZ("testobject", "testobject1",
 							"testobject2"),
 				 MAFW_DBUS_C_STRVZ("title")));
 
@@ -348,9 +348,9 @@ START_TEST(test_browse)
 	metadata = mockbus_mkmeta("title", "More than words", NULL);
 
 	mockbus_reset();
-	
+
 	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
-	
+
 	mockbus_expect(
 		mafw_dbus_method(MAFW_SOURCE_METHOD_BROWSE,
 				 MAFW_DBUS_STRING("testobject"),
@@ -387,7 +387,7 @@ START_TEST(test_browse)
 
 	mainloop_test = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(mainloop_test);
-	
+
 	fail_unless(browse_result_ok == TRUE, "Browse result signal missing.");
 
 
@@ -403,7 +403,7 @@ START_TEST(test_browse)
 
 	mockbus_error(MAFW_SOURCE_ERROR, 2, "testproblem");
 
-	
+
 	browse_id = mafw_source_browse(MAFW_SOURCE(sp),
 					     "testobject", FALSE, NULL, NULL,
 					     NULL, 0, 10,
@@ -413,15 +413,15 @@ START_TEST(test_browse)
 	info("Browse ID: %d", browse_id);
 
 	fail_unless(browse_result_ok == TRUE, "Browse result signal missing.");
-	
+
 	fail_if(browse_id != MAFW_SOURCE_INVALID_BROWSE_ID);
-	
-	
+
+
 	mafw_registry_remove_extension(mafw_registry_get_instance(),
                                         (gpointer)sp);
 	g_main_loop_unref(mainloop_test);
 	mockbus_finish();
-	
+
 }
 END_TEST
 
@@ -447,7 +447,7 @@ START_TEST(test_cancel_browse)
 				 MAFW_DBUS_UINT32(0),
 				 MAFW_DBUS_UINT32(0)));
 	mockbus_reply(MAFW_DBUS_UINT32(4444));
-	
+
 	replmsg = append_browse_res(NULL, &iter_msg, &iter_array, 4444, 5, 0,
 				"testobject::item0", NULL, "", 0, "");
 	replmsg = append_browse_res(replmsg, &iter_msg, &iter_array, 4444, 4, 0,
@@ -455,7 +455,7 @@ START_TEST(test_cancel_browse)
 	replmsg = append_browse_res(replmsg, &iter_msg, &iter_array, 4444, 3, 0,
 				"testobject::item2", NULL, "", 0, "");
 	dbus_message_iter_close_container(&iter_msg, &iter_array);
-	
+
 	mockbus_incoming(replmsg);
 	mockbus_expect(
 		mafw_dbus_method(MAFW_SOURCE_METHOD_CANCEL_BROWSE,
@@ -463,7 +463,7 @@ START_TEST(test_cancel_browse)
 	mockbus_reply();
 	src = MAFW_PROXY_SOURCE(mafw_proxy_source_new(SOURCE_UUID, "fake",
 					mafw_registry_get_instance()));
-	
+
 	results = g_ptr_array_new();
 	mafw_source_browse(MAFW_SOURCE(src),
 				 "bigcan", FALSE, NULL, NULL,
@@ -509,7 +509,7 @@ START_TEST(test_cancel_browse_invalid)
 				 MAFW_DBUS_UINT32(0),
 				 MAFW_DBUS_UINT32(0)));
 	mockbus_reply(MAFW_DBUS_UINT32(4444));
-	
+
 	replmsg = append_browse_res(NULL, &iter_msg, &iter_array, 4444, 0, 0,
 				"testobject::item0", NULL, "", 0, "");
 	dbus_message_iter_close_container(&iter_msg, &iter_array);
@@ -544,7 +544,7 @@ START_TEST(test_cancel_browse_invalid)
 				 MAFW_DBUS_UINT32(0),
 				 MAFW_DBUS_UINT32(0)));
 	mockbus_reply(MAFW_DBUS_UINT32(4444));
-	
+
 	browse_id = mafw_source_browse(
 		MAFW_SOURCE(src),
 		"abc", FALSE, NULL, NULL,
@@ -599,7 +599,7 @@ START_TEST(test_object_creation)
 	gpointer comm[2];
 
 	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
-	
+
 	src = MAFW_SOURCE(mafw_proxy_source_new(SOURCE_UUID, "fake",
 					mafw_registry_get_instance()));
 
@@ -766,7 +766,7 @@ START_TEST(test_set_metadata)
 	mafw_registry_remove_extension(mafw_registry_get_instance(),
                                         (gpointer)src);
 	mafw_metadata_release(md);
-	
+
 	fail_unless(mdat_set_cb_called && medat_set_failed_cb_called &&
 		mdat_set_error_cb_called && TRUE, "Some cb was not called");
 }
@@ -870,10 +870,10 @@ START_TEST(test_source_signals)
 	GHashTable *metadata;
 
 	mainloop_test = g_main_loop_new(NULL, FALSE);
-	
+
 	metadata = mockbus_mkmeta("title", "Less than you", NULL);
-	
-	
+
+
 	mockbus_reset();
 	mock_empty_props(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH);
 
@@ -885,7 +885,7 @@ START_TEST(test_source_signals)
 			 G_CALLBACK(sp_metadata_changed), NULL);
 	g_signal_connect(sp, "container-changed",
 			 G_CALLBACK(sp_container_changed), NULL);
-	
+
 	mockbus_incoming(mafw_dbus_signal(MAFW_SOURCE_SIGNAL_METADATA_CHANGED,
 					MAFW_DBUS_STRING("str")));
 	mockbus_incoming(mafw_dbus_signal(MAFW_SOURCE_SIGNAL_CONTAINER_CHANGED,

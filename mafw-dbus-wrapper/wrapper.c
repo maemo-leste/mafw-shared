@@ -168,12 +168,13 @@ static void wrapper_export(gpointer comp)
 	g_assert(ecomp->handler);
 
 	memset(&path_vtable, 0, sizeof(DBusObjectPathVTable));
-	path_vtable.message_function = 
+	path_vtable.message_function =
 		(DBusObjectPathMessageFunction)ecomp->handler;
 
-	if (!dbus_connection_register_object_path(Session_bus, ecomp->object_path,
-					&path_vtable,
-					ecomp))
+	if (!dbus_connection_register_object_path(Session_bus,
+                                                  ecomp->object_path,
+                                                  &path_vtable,
+                                                  ecomp))
 		goto err2;
 
 	Exports = g_list_prepend(Exports, ecomp);

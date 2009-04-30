@@ -1,4 +1,4 @@
-/* 
+/*
 The code examples copyrighted by Nokia Corporation that are included to
 this material are licensed to you under following MIT-style License:
 
@@ -50,7 +50,7 @@ gchar *object_id;
  * This function looks for a particular playlist using its name
  */
 static MafwPlaylist *
-find_playlist (gchar *name, GError **error) 
+find_playlist (gchar *name, GError **error)
 {
  	MafwPlaylistManager *manager;
 	MafwPlaylist *playlist = NULL;
@@ -85,7 +85,7 @@ create_playlist (void)
 	MafwPlaylistManager *manager;
 	MafwProxyPlaylist *playlist;
 	GError *error = NULL;
-	
+
 	manager = mafw_playlist_manager_get ();
 	mafw_playlist_manager_create_playlist (manager,
 					       playlist_name,
@@ -117,7 +117,7 @@ remove_playlist (void)
 		return g_error_new (MAFW_ERROR, 0, "Playlist not found");
 	}
 
-	mafw_playlist_manager_destroy_playlist (manager, 
+	mafw_playlist_manager_destroy_playlist (manager,
 						playlist,
 						&error);
 
@@ -154,7 +154,7 @@ show_playlist (void)
 
 	if (size > 0) {
 		for (i = 0; i < size; i++) {
-			gchar *id = 
+			gchar *id =
 				mafw_playlist_get_item (playlist, i, &error);
 			if (error != NULL) {
 				g_warning ("Error getting item %d "
@@ -162,8 +162,8 @@ show_playlist (void)
 					   i, error->message);
 				g_error_free (error);
 				error = NULL;
-			} 
-			
+			}
+
 			g_print ("  %d %s\n", i, id);
 		}
 	} else {
@@ -217,7 +217,7 @@ remove_item_from_playlist (void)
 		return g_error_new (MAFW_ERROR, 0, "Playlist not found");
 	}
 
-	g_print ("  Searching for %s in playlist %s\n", 
+	g_print ("  Searching for %s in playlist %s\n",
 		 object_id, playlist_name);
 	size = mafw_playlist_get_size (playlist, &error);
 
@@ -271,10 +271,10 @@ execute_command (gpointer user_data)
 	case COMMAND_SHOW:
 		error = show_playlist ();
 		break;
-	case COMMAND_ADD_ITEM:	
+	case COMMAND_ADD_ITEM:
 		error = add_item_to_playlist ();
 		if (error == NULL) {
-			g_print ("Item %s added to playlist %s\n", 
+			g_print ("Item %s added to playlist %s\n",
 				 object_id, playlist_name);
 		}
 		break;
@@ -299,9 +299,9 @@ execute_command (gpointer user_data)
  * info on the requested command and arguments.
  */
 static gboolean
-check_command_line (int argc, 
-		    gchar *argv[], 
-		    gint *command, 
+check_command_line (int argc,
+		    gchar *argv[],
+		    gint *command,
 		    gchar **playlist_name,
 		    gchar **object_id)
 {
@@ -324,7 +324,7 @@ check_command_line (int argc,
 		if (!strcmp (argv[1], "add-item")) {
 			*command = COMMAND_ADD_ITEM;
 		} else if (!strcmp (argv[1], "remove-item")) {
-			*command = COMMAND_REMOVE_ITEM;		
+			*command = COMMAND_REMOVE_ITEM;
 		} else {
 			return FALSE;
 		}
@@ -339,7 +339,7 @@ check_command_line (int argc,
 int
 main (int argc, gchar *argv[])
 {
-	if (!check_command_line (argc, argv, 
+	if (!check_command_line (argc, argv,
 				 &command, &playlist_name, &object_id)) {
 		g_error ("Please, provide one of these sets of arguments:\n"
 			 "  create <playlist-name>\n"

@@ -157,7 +157,7 @@ START_TEST(test_append)
 			   {1, "mouse"},
 			   {3, "blackbeard"}));
 	pls_free(p);
-	
+
 	Playlist = p = mkpls(APLS({0, "eek"},
 				  {2, "a"},
 				  {1, "mouse"}));
@@ -262,7 +262,7 @@ START_TEST(test_insert)
 			   {-1, "versus"},
 			   {-1, "shuffle"},
 			   {-1, "the last"}));
-	
+
 	j = 0;
 	for (i=0; i<5; i++)
 	{
@@ -410,7 +410,7 @@ START_TEST(test_iterator)
 	guint new_idx = 0;
 
 	pls_free(p);
-	
+
 	/* Check with empty playlist */
 	p = pls_new(66, "test-pl");
 	pls_get_starting(p, &new_idx, &oid);
@@ -449,14 +449,14 @@ START_TEST(test_iterator)
 	fail_if(strcmp(oid, "a"));
 	g_free(oid);
 	oid = NULL;
-	
+
 	pls_get_prev(p, &new_idx, &oid);
 	fail_if(oid);
-	
+
 	new_idx = 3;
 	pls_get_next(p, &new_idx, &oid);
 	fail_if(oid);
-	
+
 	/*repeat on */
 	p->repeat = TRUE;
 	pls_get_next(p, &new_idx, &oid);
@@ -464,8 +464,8 @@ START_TEST(test_iterator)
 	fail_if(strcmp(oid, "a"));
 	g_free(oid);
 	oid = NULL;
-	
-	pls_get_prev(p, &new_idx, &oid);	
+
+	pls_get_prev(p, &new_idx, &oid);
 	fail_if(new_idx != 3);
 	fail_if(strcmp(oid, "d"));
 	g_free(oid);

@@ -37,13 +37,16 @@ G_BEGIN_DECLS
 #define MAFW_TYPE_PROXY_RENDERER \
         (mafw_proxy_renderer_get_type())
 #define MAFW_PROXY_RENDERER(obj) \
-        (G_TYPE_CHECK_INSTANCE_CAST((obj), MAFW_TYPE_PROXY_RENDERER, MafwProxyRenderer))
+        (G_TYPE_CHECK_INSTANCE_CAST((obj), MAFW_TYPE_PROXY_RENDERER, \
+                                    MafwProxyRenderer))
 #define MAFW_IS_PROXY_RENDERER(obj) \
         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MAFW_TYPE_PROXY_RENDERER))
 #define MAFW_PROXY_RENDERER_CLASS(klass) \
-	(G_TYPE_CHECK_CLASS_CAST((klass), MAFW_TYPE_PROXY_RENDERER, MafwProxyRendererClass))
+	(G_TYPE_CHECK_CLASS_CAST((klass), MAFW_TYPE_PROXY_RENDERER, \
+                                 MafwProxyRendererClass))
 #define MAFW_PROXY_RENDERER_GET_CLASS(obj) \
-	(G_TYPE_INSTANCE_GET_CLASS((obj), MAFW_TYPE_PROXY_RENDERER, MafwProxyRendererClass))
+	(G_TYPE_INSTANCE_GET_CLASS((obj), MAFW_TYPE_PROXY_RENDERER, \
+                                   MafwProxyRendererClass))
 #define MAFW_IS_PROXY_RENDERER_CLASS(klass) \
 	(G_TYPE_CHECK_CLASS_TYPE((klass), MAFW_TYPE_PROXY_RENDERER))
 

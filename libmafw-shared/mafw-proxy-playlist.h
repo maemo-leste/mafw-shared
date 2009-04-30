@@ -69,7 +69,7 @@
 
 /**
  * MafwProxyPlaylist:
- * 
+ *
  * Object structure.
  */
 typedef struct _MafwProxyPlaylist MafwProxyPlaylist;

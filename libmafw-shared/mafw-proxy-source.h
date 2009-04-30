@@ -38,13 +38,16 @@ G_BEGIN_DECLS
 #define MAFW_TYPE_PROXY_SOURCE \
         (mafw_proxy_source_get_type())
 #define MAFW_PROXY_SOURCE(obj) \
-        (G_TYPE_CHECK_INSTANCE_CAST((obj), MAFW_TYPE_PROXY_SOURCE, MafwProxySource))
+        (G_TYPE_CHECK_INSTANCE_CAST((obj), MAFW_TYPE_PROXY_SOURCE, \
+                                    MafwProxySource))
 #define MAFW_IS_PROXY_SOURCE(obj) \
         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MAFW_TYPE_PROXY_SOURCE))
 #define MAFW_PROXY_SOURCE_CLASS(klass) \
-	(G_TYPE_CHECK_CLASS_CAST((klass), MAFW_TYPE_PROXY_SOURCE, MafwProxySourceClass))
+	(G_TYPE_CHECK_CLASS_CAST((klass), MAFW_TYPE_PROXY_SOURCE, \
+                                 MafwProxySourceClass))
 #define MAFW_PROXY_SOURCE_GET_CLASS(obj) \
-	(G_TYPE_INSTANCE_GET_CLASS((obj), MAFW_TYPE_PROXY_SOURCE, MafwProxySourceClass))
+	(G_TYPE_INSTANCE_GET_CLASS((obj), MAFW_TYPE_PROXY_SOURCE, \
+                                   MafwProxySourceClass))
 #define MAFW_IS_PROXY_SOURCE_CLASS(klass) \
 	(G_TYPE_CHECK_CLASS_TYPE((klass), MAFW_TYPE_PROXY_SOURCE))
 

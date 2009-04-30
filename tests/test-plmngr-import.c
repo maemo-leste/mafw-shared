@@ -45,13 +45,13 @@
 /* Playlists will be stored in PLS_DIR. */
 #define PLS_DIR			"testplimport"
 
-static gchar *test_uri_list[] = { "file://test1/test1.pls", 
+static gchar *test_uri_list[] = { "file://test1/test1.pls",
 				  "file://test2/test2.pls",
 				  "file://test3/test3.pls",
 				  NULL
 				};
 static gchar **uril;
-				
+
 static gboolean return_parser_error;
 
 TotemPlParserResult
@@ -84,11 +84,12 @@ START_TEST(test_import_source)
 	DBusMessage *replmsg;
 	DBusMessageIter iter_array, iter_msg;
 
-		
+
 	metadata = mockbus_mkmeta(MAFW_METADATA_KEY_URI, "http://test.test",
-			MAFW_METADATA_KEY_MIME, MAFW_METADATA_VALUE_MIME_CONTAINER,
-			NULL);
-	
+                                  MAFW_METADATA_KEY_MIME,
+                                  MAFW_METADATA_VALUE_MIME_CONTAINER,
+                                  NULL);
+
 	mockbus_reset();
 	mockbus_expect(mafw_dbus_method_full(
 			       DBUS_SERVICE_DBUS,
@@ -102,7 +103,7 @@ START_TEST(test_import_source)
 	mock_services(NULL);
 	mafw_shared_deinit();
 	init_playlist_wrapper(dbus_bus_get(0, NULL), TRUE, FALSE);
-	
+
 	/* Source ID, but no registered source */
 	mockbus_incoming(c = mafw_dbus_method_full(MAFW_PLAYLIST_SERVICE,
 				  MAFW_PLAYLIST_PATH,
@@ -110,7 +111,7 @@ START_TEST(test_import_source)
 				  MAFW_PLAYLIST_METHOD_IMPORT_PLAYLIST,
 				  MAFW_DBUS_STRING(FAKE_SOURCE_NAME "::"),
 				  MAFW_DBUS_STRING("")));
-	
+
 	mockbus_expect(mafw_dbus_error(c, MAFW_PLAYLIST_ERROR,
 					MAFW_PLAYLIST_ERROR_IMPORT_FAILED,
 					"Source not found"));
@@ -126,14 +127,18 @@ START_TEST(test_import_source)
 				  MAFW_PLAYLIST_METHOD_IMPORT_PLAYLIST,
 				  MAFW_DBUS_STRING(FAKE_SOURCE_NAME "::"),
 				  MAFW_DBUS_STRING("")));
-	
-	mockbus_expect(mdata = mafw_dbus_method_full(FAKE_SOURCE_SERVICE,
-					FAKE_SOURCE_OBJECT,
-					MAFW_SOURCE_INTERFACE,
-					MAFW_SOURCE_METHOD_GET_METADATA,
-					MAFW_DBUS_STRING(FAKE_SOURCE_NAME "::"),
-					MAFW_DBUS_STRVZ(MAFW_SOURCE_LIST(MAFW_METADATA_KEY_URI,
-					MAFW_METADATA_KEY_MIME))));
+
+	mockbus_expect(mdata =
+                       mafw_dbus_method_full(
+                               FAKE_SOURCE_SERVICE,
+                               FAKE_SOURCE_OBJECT,
+                               MAFW_SOURCE_INTERFACE,
+                               MAFW_SOURCE_METHOD_GET_METADATA,
+                               MAFW_DBUS_STRING(FAKE_SOURCE_NAME "::"),
+                               MAFW_DBUS_STRVZ(
+                                       MAFW_SOURCE_LIST(
+                                               MAFW_METADATA_KEY_URI,
+                                               MAFW_METADATA_KEY_MIME))));
 	mockbus_expect(browse = mafw_dbus_method_full(FAKE_SOURCE_SERVICE,
 				 FAKE_SOURCE_OBJECT,
 				 MAFW_SOURCE_INTERFACE,
@@ -157,7 +162,7 @@ START_TEST(test_import_source)
 				"test::oid2", NULL, "", 0, "");
 	dbus_message_iter_close_container(&iter_msg, &iter_array);
 	mockbus_incoming(replmsg);
-	
+
 	mockbus_expect(c = mafw_dbus_method_full(
 				"dummy.service.name",
 				MAFW_PLAYLIST_PATH,
@@ -165,10 +170,12 @@ START_TEST(test_import_source)
 				MAFW_PLAYLIST_METHOD_PLAYLIST_IMPORTED,
 				MAFW_DBUS_UINT32(2),
 				MAFW_DBUS_UINT32(1)));
-	mockbus_expect(mafw_dbus_signal_full(NULL, MAFW_PLAYLIST_PATH,
-				MAFW_PLAYLIST_INTERFACE,MAFW_PLAYLIST_SIGNAL_PLAYLIST_CREATED,
-						MAFW_DBUS_UINT32(1)));
-	
+	mockbus_expect(mafw_dbus_signal_full(
+                               NULL, MAFW_PLAYLIST_PATH,
+                               MAFW_PLAYLIST_INTERFACE,
+                               MAFW_PLAYLIST_SIGNAL_PLAYLIST_CREATED,
+                               MAFW_DBUS_UINT32(1)));
+
 	mockbus_deliver(NULL);
 	mockbus_deliver(NULL);
 
@@ -193,14 +200,18 @@ START_TEST(test_import_source)
 				  MAFW_PLAYLIST_METHOD_IMPORT_PLAYLIST,
 				  MAFW_DBUS_STRING(FAKE_SOURCE_NAME "::"),
 				  MAFW_DBUS_STRING("")));
-	
-	mockbus_expect(mdata = mafw_dbus_method_full(FAKE_SOURCE_SERVICE,
-					      FAKE_SOURCE_OBJECT,
-					      MAFW_SOURCE_INTERFACE,
-					      MAFW_SOURCE_METHOD_GET_METADATA,
-					      MAFW_DBUS_STRING(FAKE_SOURCE_NAME "::"),
-					      MAFW_DBUS_STRVZ(MAFW_SOURCE_LIST(MAFW_METADATA_KEY_URI,
-					MAFW_METADATA_KEY_MIME))));
+
+	mockbus_expect(mdata =
+                       mafw_dbus_method_full(
+                               FAKE_SOURCE_SERVICE,
+                               FAKE_SOURCE_OBJECT,
+                               MAFW_SOURCE_INTERFACE,
+                               MAFW_SOURCE_METHOD_GET_METADATA,
+                               MAFW_DBUS_STRING(FAKE_SOURCE_NAME "::"),
+                               MAFW_DBUS_STRVZ(
+                                       MAFW_SOURCE_LIST(
+                                               MAFW_METADATA_KEY_URI,
+                                               MAFW_METADATA_KEY_MIME))));
 	mockbus_expect(browse = mafw_dbus_method_full(FAKE_SOURCE_SERVICE,
 				 FAKE_SOURCE_OBJECT,
 				 MAFW_SOURCE_INTERFACE,
@@ -223,7 +234,8 @@ START_TEST(test_import_source)
 				"test::oid1", NULL, "", 0, "");
 	/* Second has error */
 	replmsg = append_browse_res(replmsg, &iter_msg, &iter_array, 4, 0, 1,
-				"test::oid2", NULL, "domain_str", 10, "error->message");
+                                    "test::oid2", NULL, "domain_str", 10,
+                                    "error->message");
 	dbus_message_iter_close_container(&iter_msg, &iter_array);
 	mockbus_incoming(replmsg);
 
@@ -240,7 +252,7 @@ START_TEST(test_import_source)
 	mockbus_deliver(NULL);
 	mafw_metadata_release(metadata);
 	mockbus_finish();
-	
+
 
 	/* Error at get_metadata */
 	mockbus_incoming(c = mafw_dbus_method_full(MAFW_PLAYLIST_SERVICE,
@@ -249,31 +261,38 @@ START_TEST(test_import_source)
 				  MAFW_PLAYLIST_METHOD_IMPORT_PLAYLIST,
 				  MAFW_DBUS_STRING(FAKE_SOURCE_NAME "::"),
 				  MAFW_DBUS_STRING("")));
-	
-	mockbus_expect(mdata = mafw_dbus_method_full(FAKE_SOURCE_SERVICE,
-					      FAKE_SOURCE_OBJECT,
-					      MAFW_SOURCE_INTERFACE,
-					      MAFW_SOURCE_METHOD_GET_METADATA,
-					      MAFW_DBUS_STRING(FAKE_SOURCE_NAME "::"),
-					      MAFW_DBUS_STRVZ(MAFW_SOURCE_LIST(MAFW_METADATA_KEY_URI,
-					MAFW_METADATA_KEY_MIME))));
+
+	mockbus_expect(mdata =
+                       mafw_dbus_method_full(
+                               FAKE_SOURCE_SERVICE,
+                               FAKE_SOURCE_OBJECT,
+                               MAFW_SOURCE_INTERFACE,
+                               MAFW_SOURCE_METHOD_GET_METADATA,
+                               MAFW_DBUS_STRING(FAKE_SOURCE_NAME "::"),
+                               MAFW_DBUS_STRVZ(
+                                       MAFW_SOURCE_LIST(
+                                               MAFW_METADATA_KEY_URI,
+                                               MAFW_METADATA_KEY_MIME))));
 	mockbus_reply_msg(mafw_dbus_error(mdata, MAFW_PLAYLIST_ERROR,
 					MAFW_PLAYLIST_ERROR_IMPORT_FAILED,
 					"Source not found"));
-	
-	mockbus_expect(c = mafw_dbus_method_full(
-				"dummy.service.name",
-				MAFW_PLAYLIST_PATH,
-				MAFW_PLAYLIST_INTERFACE,
-				MAFW_PLAYLIST_METHOD_PLAYLIST_IMPORTED,
-				MAFW_DBUS_UINT32(4),
-				MAFW_DBUS_STRING("com.nokia.mafw.error.playlist"),
-				MAFW_DBUS_INT32(MAFW_PLAYLIST_ERROR_IMPORT_FAILED),
-				MAFW_DBUS_STRING("Source not found")));
+
+	mockbus_expect(c =
+                       mafw_dbus_method_full(
+                               "dummy.service.name",
+                               MAFW_PLAYLIST_PATH,
+                               MAFW_PLAYLIST_INTERFACE,
+                               MAFW_PLAYLIST_METHOD_PLAYLIST_IMPORTED,
+                               MAFW_DBUS_UINT32(4),
+                               MAFW_DBUS_STRING(
+                                       "com.nokia.mafw.error.playlist"),
+                               MAFW_DBUS_INT32(
+                                       MAFW_PLAYLIST_ERROR_IMPORT_FAILED),
+                               MAFW_DBUS_STRING("Source not found")));
 	mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_UINT32(4)));
 	mockbus_deliver(NULL);
 	mockbus_deliver(NULL);
-	
+
 
 	/* Test, when importing from a file... plfile empty */
 	mockbus_incoming(c = mafw_dbus_method_full(MAFW_PLAYLIST_SERVICE,
@@ -289,11 +308,13 @@ START_TEST(test_import_source)
 				MAFW_PLAYLIST_METHOD_PLAYLIST_IMPORTED,
 				MAFW_DBUS_UINT32(5),
 				MAFW_DBUS_UINT32(2)));
-	mockbus_expect(mafw_dbus_signal_full(NULL, MAFW_PLAYLIST_PATH,
-				MAFW_PLAYLIST_INTERFACE,MAFW_PLAYLIST_SIGNAL_PLAYLIST_CREATED,
-						MAFW_DBUS_UINT32(2)));
+	mockbus_expect(mafw_dbus_signal_full(
+                               NULL, MAFW_PLAYLIST_PATH,
+                               MAFW_PLAYLIST_INTERFACE,
+                               MAFW_PLAYLIST_SIGNAL_PLAYLIST_CREATED,
+                               MAFW_DBUS_UINT32(2)));
 	mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_UINT32(5)));
-	
+
 	mockbus_deliver(NULL);
 	mockbus_finish();
 
@@ -301,10 +322,10 @@ START_TEST(test_import_source)
 	pls = g_tree_lookup(Playlists, GUINT_TO_POINTER(2));
 	fail_if(pls == NULL);
 	fail_if(pls->len != 0);
-	
-	
-	
-	
+
+
+
+
 	/* Test, when importing from a file... plfile not empty */
 	uril = test_uri_list;
 	mockbus_incoming(c = mafw_dbus_method_full(MAFW_PLAYLIST_SERVICE,
@@ -320,14 +341,16 @@ START_TEST(test_import_source)
 				MAFW_PLAYLIST_METHOD_PLAYLIST_IMPORTED,
 				MAFW_DBUS_UINT32(6),
 				MAFW_DBUS_UINT32(3)));
-	mockbus_expect(mafw_dbus_signal_full(NULL, MAFW_PLAYLIST_PATH,
-				MAFW_PLAYLIST_INTERFACE,MAFW_PLAYLIST_SIGNAL_PLAYLIST_CREATED,
-						MAFW_DBUS_UINT32(3)));
+	mockbus_expect(mafw_dbus_signal_full(
+                               NULL, MAFW_PLAYLIST_PATH,
+                               MAFW_PLAYLIST_INTERFACE,
+                               MAFW_PLAYLIST_SIGNAL_PLAYLIST_CREATED,
+                               MAFW_DBUS_UINT32(3)));
 	mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_UINT32(6)));
-	
+
 	mockbus_deliver(NULL);
 	mockbus_finish();
-	
+
 	/* Now check whether the new pl is correct */
 	pls = g_tree_lookup(Playlists, GUINT_TO_POINTER(3));
 	fail_if(pls == NULL);
@@ -354,7 +377,7 @@ START_TEST(test_import_source)
 	mockbus_expect(mafw_dbus_error(c, MAFW_PLAYLIST_ERROR,
 					MAFW_PLAYLIST_ERROR_INVALID_IMPORT_ID,
 					"ImportID not found"));
-	
+
 	mockbus_deliver(NULL);
 	mockbus_finish();
 	/* Parse failed*/
@@ -381,11 +404,12 @@ START_TEST(test_cancel_import)
 	GHashTable *metadata;
 	DBusMessage *replmsg;
 	DBusMessageIter iter_array, iter_msg;
-	
+
 	metadata = mockbus_mkmeta(MAFW_METADATA_KEY_URI, "http://test.test",
-			MAFW_METADATA_KEY_MIME, MAFW_METADATA_VALUE_MIME_CONTAINER,
+                                  MAFW_METADATA_KEY_MIME,
+                                  MAFW_METADATA_VALUE_MIME_CONTAINER,
 			NULL);
-	
+
 	mockbus_reset();
 	mockbus_expect(mafw_dbus_method_full(
 			       DBUS_SERVICE_DBUS,
@@ -415,7 +439,7 @@ START_TEST(test_cancel_import)
 	/* Lets register a fake-source */
 	mock_appearing_extension(FAKE_SOURCE_SERVICE, TRUE);
 	mock_empty_props(FAKE_SOURCE_SERVICE, FAKE_SOURCE_OBJECT);
-	
+
 	/* Cancel, before the get-metadata-res returns */
 	mockbus_incoming(c = mafw_dbus_method_full(MAFW_PLAYLIST_SERVICE,
 				  MAFW_PLAYLIST_PATH,
@@ -423,14 +447,18 @@ START_TEST(test_cancel_import)
 				  MAFW_PLAYLIST_METHOD_IMPORT_PLAYLIST,
 				  MAFW_DBUS_STRING(FAKE_SOURCE_NAME "::"),
 				  MAFW_DBUS_STRING("")));
-	
-	mockbus_expect(mdata = mafw_dbus_method_full(FAKE_SOURCE_SERVICE,
-					FAKE_SOURCE_OBJECT,
-					MAFW_SOURCE_INTERFACE,
-					MAFW_SOURCE_METHOD_GET_METADATA,
-					MAFW_DBUS_STRING(FAKE_SOURCE_NAME "::"),
-					MAFW_DBUS_STRVZ(MAFW_SOURCE_LIST(MAFW_METADATA_KEY_URI,
-					MAFW_METADATA_KEY_MIME))));
+
+	mockbus_expect(mdata =
+                       mafw_dbus_method_full(
+                               FAKE_SOURCE_SERVICE,
+                               FAKE_SOURCE_OBJECT,
+                               MAFW_SOURCE_INTERFACE,
+                               MAFW_SOURCE_METHOD_GET_METADATA,
+                               MAFW_DBUS_STRING(FAKE_SOURCE_NAME "::"),
+                               MAFW_DBUS_STRVZ(
+                                       MAFW_SOURCE_LIST(
+                                               MAFW_METADATA_KEY_URI,
+                                               MAFW_METADATA_KEY_MIME))));
 	mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_UINT32(1)));
 	mockbus_incoming(c = mafw_dbus_method_full(MAFW_PLAYLIST_SERVICE,
 				  MAFW_PLAYLIST_PATH,
@@ -445,7 +473,7 @@ START_TEST(test_cancel_import)
 	mockbus_reply_msg(mafw_dbus_reply(mdata, MAFW_DBUS_METADATA(metadata)));
 	mockbus_send_stored_reply();
 	mockbus_finish();
-	
+
 	/* Cancel, before the first browse-res returns */
 	mockbus_incoming(c = mafw_dbus_method_full(MAFW_PLAYLIST_SERVICE,
 				  MAFW_PLAYLIST_PATH,
@@ -453,14 +481,18 @@ START_TEST(test_cancel_import)
 				  MAFW_PLAYLIST_METHOD_IMPORT_PLAYLIST,
 				  MAFW_DBUS_STRING(FAKE_SOURCE_NAME "::"),
 				  MAFW_DBUS_STRING("")));
-	
-	mockbus_expect(mdata = mafw_dbus_method_full(FAKE_SOURCE_SERVICE,
-					      FAKE_SOURCE_OBJECT,
-					      MAFW_SOURCE_INTERFACE,
-					      MAFW_SOURCE_METHOD_GET_METADATA,
-					      MAFW_DBUS_STRING(FAKE_SOURCE_NAME "::"),
-					      MAFW_DBUS_STRVZ(MAFW_SOURCE_LIST(MAFW_METADATA_KEY_URI,
-					MAFW_METADATA_KEY_MIME))));
+
+	mockbus_expect(mdata =
+                       mafw_dbus_method_full(
+                               FAKE_SOURCE_SERVICE,
+                               FAKE_SOURCE_OBJECT,
+                               MAFW_SOURCE_INTERFACE,
+                               MAFW_SOURCE_METHOD_GET_METADATA,
+                               MAFW_DBUS_STRING(FAKE_SOURCE_NAME "::"),
+                               MAFW_DBUS_STRVZ(
+                                       MAFW_SOURCE_LIST(
+                                               MAFW_METADATA_KEY_URI,
+                                               MAFW_METADATA_KEY_MIME))));
 	mockbus_expect(browse = mafw_dbus_method_full(FAKE_SOURCE_SERVICE,
 				 FAKE_SOURCE_OBJECT,
 				 MAFW_SOURCE_INTERFACE,
@@ -483,12 +515,13 @@ START_TEST(test_cancel_import)
 				  MAFW_PLAYLIST_INTERFACE,
 				  MAFW_PLAYLIST_METHOD_CANCEL_IMPORT,
 				  MAFW_DBUS_UINT32(2)));
-	
-	mockbus_expect(cancel_browse = mafw_dbus_method_full(FAKE_SOURCE_SERVICE,
-				 FAKE_SOURCE_OBJECT,
-				 MAFW_SOURCE_INTERFACE,
-				 MAFW_SOURCE_METHOD_CANCEL_BROWSE,
-				 MAFW_DBUS_UINT32(4)));
+
+	mockbus_expect(cancel_browse =
+                       mafw_dbus_method_full(FAKE_SOURCE_SERVICE,
+                                             FAKE_SOURCE_OBJECT,
+                                             MAFW_SOURCE_INTERFACE,
+                                             MAFW_SOURCE_METHOD_CANCEL_BROWSE,
+                                             MAFW_DBUS_UINT32(4)));
 	mockbus_reply_msg(mafw_dbus_reply(cancel_browse));
 	mockbus_expect(mafw_dbus_reply(c));
 
@@ -496,13 +529,13 @@ START_TEST(test_cancel_import)
 	replmsg = append_browse_res(NULL, &iter_msg, &iter_array, 4, 1, 0,
 				"test::oid1", NULL, "", 0, "");
 	dbus_message_iter_close_container(&iter_msg, &iter_array);
-	
+
 	mockbus_incoming(replmsg);
 	mockbus_deliver(NULL);
 	mockbus_deliver(NULL);
 	mockbus_deliver(NULL);
 	mockbus_finish();
-	
+
 	/* Cancel, after the first browse-res returns */
 	mockbus_incoming(c = mafw_dbus_method_full(MAFW_PLAYLIST_SERVICE,
 				  MAFW_PLAYLIST_PATH,
@@ -510,14 +543,18 @@ START_TEST(test_cancel_import)
 				  MAFW_PLAYLIST_METHOD_IMPORT_PLAYLIST,
 				  MAFW_DBUS_STRING(FAKE_SOURCE_NAME "::"),
 				  MAFW_DBUS_STRING("")));
-	
-	mockbus_expect(mdata = mafw_dbus_method_full(FAKE_SOURCE_SERVICE,
-					      FAKE_SOURCE_OBJECT,
-					      MAFW_SOURCE_INTERFACE,
-					      MAFW_SOURCE_METHOD_GET_METADATA,
-					      MAFW_DBUS_STRING(FAKE_SOURCE_NAME "::"),
-					      MAFW_DBUS_STRVZ(MAFW_SOURCE_LIST(MAFW_METADATA_KEY_URI,
-					MAFW_METADATA_KEY_MIME))));
+
+	mockbus_expect(mdata =
+                       mafw_dbus_method_full(
+                               FAKE_SOURCE_SERVICE,
+                               FAKE_SOURCE_OBJECT,
+                               MAFW_SOURCE_INTERFACE,
+                               MAFW_SOURCE_METHOD_GET_METADATA,
+                               MAFW_DBUS_STRING(FAKE_SOURCE_NAME "::"),
+                               MAFW_DBUS_STRVZ(
+                                       MAFW_SOURCE_LIST(
+                                               MAFW_METADATA_KEY_URI,
+                                               MAFW_METADATA_KEY_MIME))));
 	mockbus_expect(browse = mafw_dbus_method_full(FAKE_SOURCE_SERVICE,
 				 FAKE_SOURCE_OBJECT,
 				 MAFW_SOURCE_INTERFACE,
@@ -534,39 +571,40 @@ START_TEST(test_cancel_import)
 	mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_UINT32(3)));
 	mockbus_deliver(NULL);
 	mockbus_deliver(NULL);
-	
+
 	/* First browse OK */
 	replmsg = append_browse_res(NULL, &iter_msg, &iter_array, 4, 2, 0,
 				"test::oid1", NULL, "", 0, "");
 	dbus_message_iter_close_container(&iter_msg, &iter_array);
 	mockbus_incoming(replmsg);
-	
+
 	mockbus_incoming(c = mafw_dbus_method_full(MAFW_PLAYLIST_SERVICE,
 				  MAFW_PLAYLIST_PATH,
 				  MAFW_PLAYLIST_INTERFACE,
 				  MAFW_PLAYLIST_METHOD_CANCEL_IMPORT,
 				  MAFW_DBUS_UINT32(3)));
-	
-	mockbus_expect(cancel_browse = mafw_dbus_method_full(FAKE_SOURCE_SERVICE,
-				 FAKE_SOURCE_OBJECT,
-				 MAFW_SOURCE_INTERFACE,
-				 MAFW_SOURCE_METHOD_CANCEL_BROWSE,
-				 MAFW_DBUS_UINT32(4)));
+
+	mockbus_expect(cancel_browse =
+                       mafw_dbus_method_full(FAKE_SOURCE_SERVICE,
+                                             FAKE_SOURCE_OBJECT,
+                                             MAFW_SOURCE_INTERFACE,
+                                             MAFW_SOURCE_METHOD_CANCEL_BROWSE,
+                                             MAFW_DBUS_UINT32(4)));
 	mockbus_reply_msg(mafw_dbus_reply(cancel_browse));
 	mockbus_expect(mafw_dbus_reply(c));
-	
+
 	replmsg = append_browse_res(NULL, &iter_msg, &iter_array, 4, 2, 1,
 				"test::oid2", NULL, "", 0, "");
 	dbus_message_iter_close_container(&iter_msg, &iter_array);
 	mockbus_incoming(replmsg);
-	
+
 	mockbus_deliver(NULL);
 	mockbus_deliver(NULL);
 	mockbus_deliver(NULL);
 	mockbus_deliver(NULL);
 	mafw_metadata_release(metadata);
 	mockbus_finish();
-	
+
 	return;
 }
 END_TEST
@@ -586,9 +624,9 @@ static Suite *pluginwrapper_suite(void)
 		tcase_set_timeout(tc_cancel_import, 60);
 	}
 	/*valgrind needs more time to execute*/
-	
-	
-	
+
+
+
 	return suite;
 }
 
