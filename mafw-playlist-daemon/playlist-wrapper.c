@@ -156,6 +156,12 @@ DBusHandlerResult handle_playlist_request(DBusConnection *conn,
 		gchar *name, *oldname;
 
 		mafw_dbus_parse(msg, DBUS_TYPE_STRING, &name);
+
+		if (g_tree_lookup(Playlists_by_name, name))
+		{
+			return DBUS_HANDLER_RESULT_HANDLED;
+		}
+		
 		oldname = g_strdup(pls->name);
 		if (pls_set_name(pls, name)) {
 			/* Name change invalidates $Playlist_by_name, thus we
