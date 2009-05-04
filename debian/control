@@ -1,7 +1,7 @@
 Source: mafw-shared
 Section: misc
 Priority: optional
-Maintainer: Mika Tapojärvi <ext-mika.tapojarvi@nokia.com>
+Maintainer: Juha Kellokoski <veitikka6@gmail.com>
 Build-Depends: debhelper (>= 5),
                libglib2.0-dev (>= 2.8.6),
                libdbus-1-dev (>= 0.61),
