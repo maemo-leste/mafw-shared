@@ -37,10 +37,17 @@ extern guint Settle_time;
  * Array based playlist storage.
  *
  * @id:          playlist identifier
+ * @name:        playlist name
+ * @repeat:      repeat mode
+ * @shuffled:    playlist is shuffled
+ * @use_count:   a reference count for the playlist
  * @len:         length of playlist
  * @alloc:       number of elements allocated (>= len)
+ * @poolst:      the first element of the pool (>= len if pool is empty)
  * @vidx:        array of object id:s
- * @pidx:        a permutation of [0..len]
+ * @pidx:        array containing both shuffled elements and un-shuffled ones
+ *               {0..poolst-1}: shuffled elements
+ *               {poolst..len-1}: pool with still unshuffled elements
  * @dirty:       set to 1 if a playlist is modified (cleared manually)
  * @dirty_timer: each time the playlist is dirtied, a timer is started (or
  *               elongated), and when it expires, triggers save_me().  This
@@ -54,6 +61,7 @@ typedef struct {
 	guint use_count;
 	guint len;
 	guint alloc;
+        guint poolst;
 	gchar **vidx;
 	guint *pidx;
 	gboolean dirty;

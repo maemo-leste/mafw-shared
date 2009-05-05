@@ -34,7 +34,7 @@
 
 #include "mpd-internal.h"
 
-#define APLAYLIST_VERSION "1"
+#define APLAYLIST_VERSION "2"
 
 extern gboolean initialize;
 
@@ -73,8 +73,9 @@ gboolean pls_check(Pls *pls)
 
 	isok = TRUE;
 	hist = g_new0(guint, pls->len);
-	for (i = 0; i < pls->len; ++i)
+	for (i = 0; i < pls->len; ++i) {
 		hist[pls->pidx[i]]++;
+        }
 	for (i = 0; i < pls->len; ++i) {
 		if (hist[i] == 0) {
 			g_critical("%u is missing from pidx", i);
@@ -101,11 +102,16 @@ void pls_dump(Pls *pls, gboolean items)
 		pls->alloc, pls->len,
 		(sizeof(*pls->vidx) + sizeof(*pls->pidx)) *
 		(pls->alloc - pls->len));
-	if (!items)
+
+	if (!items) {
 		return;
+        }
+
 	g_print("VI PL OID\n");
-	for (i = 0; i < pls->len; ++i)
+	for (i = 0; i < pls->len; ++i) {
 		g_print("%2u %2u %s\n", i, pls->pidx[i], pls->vidx[i]);
+        }
+
 	pls_check(pls);
 }
 
@@ -140,12 +146,48 @@ static gboolean ops_settled(Pls *pls)
 	return FALSE;
 }
 
+/* Look up where idx is in pidx */
+static guint lookup_pidx(Pls *pls, guint idx)
+{
+        gint i;
+
+        for (i = 0; i < pls->len; i++) {
+                if (pls->pidx[i] == idx) {
+                        return i;
+                }
+        }
+
+        return pls->len;
+}
+
+/* Inserts amount elements, randomly chosen, from pool */
+static void shuffle_elements(Pls *pls, gint amount)
+{
+        gint sidx, i;
+        guint temp;
+
+        /* Adjust amount to not overflow */
+        if (amount > (pls->len - pls->poolst)) {
+                amount = pls->len - pls->poolst;
+        }
+        for (i = 0; i < amount; i++) {
+                sidx = g_random_int_range(pls->poolst, pls->len);
+                temp = pls->pidx[pls->poolst];
+                pls->pidx[pls->poolst] = pls->pidx[sidx];
+                pls->pidx[sidx] = temp;
+                pls->poolst++;
+        }
+}
+
+/* Create a new playlist with id and name */
 Pls *pls_new(guint id, const gchar *name)
 {
 	Pls *p;
 
-	if (!name || !*name)
+	if (!name || !*name) {
 		return NULL;
+        }
+
 	p = g_new0(Pls, 1);
 	p->id = id;
 	p->dirty = TRUE;
@@ -155,40 +197,55 @@ Pls *pls_new(guint id, const gchar *name)
 	return p;
 }
 
+/* Change playlist name */
 gboolean pls_set_name(Pls *pls, const gchar *name)
 {
-	if (!name)
+	if (!name || !*name) {
 		return FALSE;
-	if (pls->name)
+        }
+
+	if (pls->name) {
 		g_free(pls->name);
+        }
 	pls->name = g_strdup(name);
-	if (!initialize)
+
+	if (!initialize) {
 		i_am_dirty(pls);
+        }
 
 	return TRUE;
 }
 
+/* Empties playlist */
 void pls_clear(Pls *pls)
 {
 	guint i;
 
-	for (i = 0; i < pls->len; ++i)
+	for (i = 0; i < pls->len; ++i) {
 		g_free(pls->vidx[i]);
+        }
+
 	g_free(pls->vidx);
 	g_free(pls->pidx);
 	pls->vidx = NULL;
 	pls->pidx = NULL;
-	pls->len = pls->alloc = 0;
+	pls->len = pls->poolst = pls->alloc = 0;
 	i_am_dirty(pls);
 }
 
+/* Remove completely playlist */
 void pls_free(Pls *pls)
 {
 	pls_clear(pls);
-	if (pls->dirty_timer)
+
+	if (pls->dirty_timer) {
 		g_source_remove(pls->dirty_timer);
-	if (pls->name)
+        }
+
+	if (pls->name) {
 		g_free(pls->name);
+        }
+
 	g_free(pls);
 }
 
@@ -210,157 +267,176 @@ static void maybe_realloc(Pls *pls, guint want_to_add)
 	Nreallocs++;
 }
 
+/* Insert oids array (len sized) in playlist, at idx-th position. Already
+ * existent elements are displaced. Returns @TRUE if elements have been
+ * inserted */
 gboolean pls_inserts(Pls *pls, guint idx, const gchar **oids, guint len)
 {
 	guint i;
 	/* The inserted item `steals' the playing index from the element whose
 	 * place it takes. */
 
-	/* this could either append or croak */
-	if (idx > pls->len)
-	{
+        if (!oids || !len) {
+                return FALSE;
+        }
+
+	/* This could either append or croak */
+	if (idx > pls->len) {
 		return FALSE;
 	}
 
 	maybe_realloc(pls, len);
-	/* push vidx up by one starting from idx, and pidx one starting
-	   from the random idx */
+
+	/* Push vidx up to alloc the new elements */
 	g_memmove(&pls->vidx[idx + len], &pls->vidx[idx],
 		  (pls->len - idx) * sizeof(pls->vidx[0]));
-	for (i = 0; i < len; i++)
+
+        /* Readjust references in pidx */
+        for (i = 0; i < pls->len; i++) {
+                if (pls->pidx[i] >= idx) {
+                        pls->pidx[i] += len;
+                }
+        }
+
+        /* Insert the new elements */
+	for (i = 0; i < len; i++) {
 		pls->vidx[idx+i] = g_strdup(oids[i]);
-	if (pls->shuffled)
-	{
-		g_debug("shuffled");
-		guint j, npx;
-
-		for (j = len; j > 0; j--)
-		{
-			if (pls->len)
-				npx = g_random_int_range(0, pls->len);
-			else
-				npx = idx;
-			g_memmove(&pls->pidx[npx + 1], &pls->pidx[npx],
-				(pls->len - npx) * sizeof(pls->pidx[0]));
-			pls->pidx[npx] = 0;
-			pls->len++;
-			/* increase all playing indexes above $opx item */
-			for (i = 0; i < pls->len; ++i) {
-				if (pls->pidx[i] >= idx)
-					pls->pidx[i]++;
-			}
-			pls->pidx[npx] = idx;
-			idx++;
-		}
-
-	}
-	else
-	{
-		g_memmove(&pls->pidx[idx + len], &pls->pidx[idx],
-		  (pls->len - idx) * sizeof(pls->pidx[0]));
-		pls->len += len;
-		for (i = idx; i <= pls->len; i++)
-			pls->pidx[i] = i;
-
-	}
-
-
+                pls->pidx[pls->len+i] = idx+i;
+        }
+        pls->len += len;
 
 	i_am_dirty(pls);
+
 	return TRUE;
 }
 
+/* Insert oid at idx-th position in playlist*/
 gboolean pls_insert(Pls *pls, guint idx, const gchar *oid)
 {
 	const gchar *oids[] = {oid};
 	return pls_inserts(pls, idx, oids, 1);
 }
 
+/* Append oid:s (len sized) in playlist */
 gboolean pls_appends(Pls *pls, const gchar **oid, guint len)
 {
 	return pls_inserts(pls, pls->len, oid, len);
 }
 
+/* Append oid in playlist */
 gboolean pls_append(Pls *pls, const gchar *oid)
 {
-	return pls_insert(pls, pls->len, oid);
+        const gchar *oids[] = {oid};
+	return pls_inserts(pls, pls->len, oids, 1);
 }
 
+/* Remove idx-th element from playlist. Returns @TRUE if removing was
+ * successful */
 gboolean pls_remove(Pls *pls, guint idx)
 {
 	guint opx, i;
 
-	if (idx >= pls->len)
+	if (idx >= pls->len) {
 		return FALSE;
-	g_assert(idx < pls->len);
+        }
+
 	g_free(pls->vidx[idx]);
-	opx = pls->pidx[idx];
-	/* push the rest downwards */
+	opx = lookup_pidx(pls, idx);
+
+	/* Push the rest downwards */
 	g_memmove(&pls->vidx[idx], &pls->vidx[idx + 1],
 		  (pls->len - idx - 1) * sizeof(pls->vidx[0]));
-	g_memmove(&pls->pidx[idx], &pls->pidx[idx + 1],
-		  (pls->len - idx - 1) * sizeof(pls->pidx[0]));
-	pls->len -= 1;
-	/* renumber pidxes to reflect removal */
-	for (i = 0; i < pls->len; ++i) {
-		if (pls->pidx[i] >= opx)
+
+	/* Renumber pidxes to reflect removal */
+	for (i = 0; i < pls->len; i++) {
+		if (pls->pidx[i] > idx)
 			pls->pidx[i]--;
 	}
+
+        /* If element is shuffled, push remaining downwards */
+        if (pls->shuffled && opx < pls->poolst) {
+                g_memmove(&pls->pidx[opx], &pls->pidx[opx+1],
+                          (pls->poolst - opx - 1) * sizeof(pls->pidx[0]));
+
+                /* Adjust pool */
+                pls->poolst--;
+                pls->pidx[pls->poolst] = pls->pidx[pls->len-1];
+        } else {
+                /* Overwrite removed element with latest */
+                pls->pidx[opx] = pls->pidx[pls->len-1];
+        }
+	pls->len--;
+
 	i_am_dirty(pls);
+
 	return TRUE;
 }
 
+/* Shuffle playlist */
 void pls_shuffle(Pls *pls)
 {
-	guint i;
 	pls->shuffled = TRUE;
+        pls->poolst = 0;
 
-	/* permute pls->pidx: swap each element with a randomly selected one */
-	for (i = pls->len; i > 1;) {
-		guint j, a, b;
-
-		j = g_random_int_range(0, --i);
-		a = pls->pidx[i];
-		b = pls->pidx[j];
-		pls->pidx[i] = b;
-		pls->pidx[j] = a;
-	}
 	i_am_dirty(pls);
 }
 
+/* Unshuffle playlist */
 void pls_unshuffle(Pls *pls)
 {
-	guint i;
-
 	pls->shuffled = FALSE;
 
-	for (i = 0; i < pls->len; ++i)
-		pls->pidx[i] = i;
 	i_am_dirty(pls);
 }
 
+/* Returns the idx:th clip of the playlist. Also, shuffle it if it is
+ * unshuffled */
 gchar *pls_get_item(Pls *pls, guint idx)
 {
-	if (idx >= pls->len)
+        guint tmpidx, opx;
+
+	if (idx >= pls->len) {
 		return NULL;
+        }
+
+        if (pls->shuffled) {
+                /* Look for the element in pidx */
+                opx = lookup_pidx(pls, idx);
+
+                /* If element is unshuffled, shuffle it */
+                if (opx >= pls->poolst) {
+                        tmpidx = pls->pidx[pls->poolst];
+                        pls->pidx[pls->poolst] = pls->pidx[opx];
+                        pls->pidx[opx] = tmpidx;
+                        pls->poolst++;
+                }
+        }
+
 	return g_strdup(pls->vidx[idx]);
 }
 
+/* Returns a chunk of elements from playlist, starting in fidx and ending in
+ * lidx (at most) */
 gchar **pls_get_items(Pls *pls, guint fidx, guint lidx)
 {
 	GPtrArray *oidarray = NULL;
 	gchar **oids;
 	guint i;
 
-	if (fidx >= pls->len || lidx < fidx)
+        /* Check range */
+	if (fidx >= pls->len || lidx < fidx) {
 		return NULL;
-	if (lidx > pls->len-1)
+        }
+
+        /* Adjust upper limit */
+	if (lidx > pls->len-1) {
 		lidx = pls->len-1;
+        }
 
 	oidarray = g_ptr_array_sized_new(lidx - fidx + 2);
 
-	for (i=fidx; i <= lidx; i++)
-	{
+        /* Copy chunk playlist */
+	for (i=fidx; i <= lidx; i++) {
 		g_ptr_array_add(oidarray, pls->vidx[i]);
 	}
 
@@ -376,111 +452,186 @@ gchar **pls_get_items(Pls *pls, guint fidx, guint lidx)
    empty */
 void pls_get_starting(Pls *pls, guint *index, gchar **oid)
 {
-	if (pls->len)
-	{
-		*index = pls->pidx[0];
-		*oid = g_strdup(pls->vidx[pls->pidx[0]]);
-	}
+	if (pls->len) {
+                if (!pls->shuffled) {
+                        *index = 0;
+                        *oid = g_strdup(pls->vidx[0]);
+                } else {
+                        /* If there are no shuffled elements, shuffle one */
+                        if (pls->poolst == 0) {
+                                shuffle_elements(pls, 1);
+                        }
+                        *index = pls->pidx[0];
+                        *oid = g_strdup(pls->vidx[*index]);
+                }
+        }
 }
 
 /* Sets the last playable item's visual index, and object id if the list is not
    empty */
 void pls_get_last(Pls *pls, guint *index, gchar **oid)
 {
-	if (pls->len)
-	{
-		*index = pls->pidx[pls->len-1];
-		*oid = g_strdup(pls->vidx[pls->pidx[pls->len-1]]);
+	if (pls->len) {
+                if (!pls->shuffled) {
+                        *index = pls->len-1;
+                        *oid = g_strdup(pls->vidx[pls->len-1]);
+                } else {
+                        /* Need to shuffle all elements */
+                        shuffle_elements(pls, pls->len);
+                        *index = pls->pidx[pls->len-1];
+                        *oid = g_strdup(pls->vidx[*index]);
+                }
 	}
 }
 
 
 /* Sets the next playable item's visual index, and object id if there is any,
-   according to the repeat setting */
+   according to the repeat setting. Returns @TRUE if clip found. */
 gboolean pls_get_next(Pls *pls, guint *index, gchar **oid)
 {
-	guint i;
-	if (pls->len)
-	{
-		for (i=0; i < pls->len; i++)
-		{
-			if (pls->pidx[i] == *index)
-			{
-				if (i < pls->len-1)
-				{
-					*index = pls->pidx[i+1];
-					*oid = g_strdup(
-                                                pls->vidx[pls->pidx[i+1]]);
-					return TRUE;
-				}
-				else
-				{
-					if (pls->repeat)
-					{
-						pls_get_starting(pls, index,
-								oid);
-						return TRUE;
-					}
-					return FALSE;
-				}
-			}
-		}
-	}
-	return FALSE;
+	guint i, tmpidx;
+
+        /* Check range */
+        if (*index >= pls->len) {
+                return FALSE;
+        }
+
+        if (!pls->shuffled) {
+                /* If current clip is the last, but repeat is on, returns the
+                 * first */
+                if (*index == pls->len-1 && pls->repeat) {
+                        *index = 0;
+                        *oid = g_strdup(pls->vidx[0]);
+                        return TRUE;
+                } else if (*index < pls->len-1) {
+                        (*index)++;
+                        *oid = g_strdup(pls->vidx[*index]);
+                        return TRUE;
+                } else {
+                        /* Out of range */
+                        return FALSE;
+                }
+        } else {
+                /* Lookup for element */
+                i = 0;
+                while (i < pls->len && pls->pidx[i] != *index) {
+                        i++;
+                }
+
+                /* Is the next element still shuffled? */
+                if ((i+1) < pls->poolst) {
+                        *index = pls->pidx[i+1];
+                        *oid = g_strdup(pls->vidx[*index]);
+                        return TRUE;
+                }
+
+                /* Is the element unshuffled? If so, shuffle it, and continue */
+                if (i >= pls->poolst) {
+                        tmpidx = pls->pidx[pls->poolst];
+                        pls->pidx[pls->poolst] = pls->pidx[i];
+                        pls->pidx[i] = tmpidx;
+                        pls->poolst++;
+                }
+
+                /* Shuffle a new element, if available. Else, if repeat is on
+                 * then use the first one */
+                if (pls->poolst < pls->len) {
+                        shuffle_elements(pls, 1);
+                        *index = pls->pidx[pls->poolst-1];
+                        *oid = g_strdup(pls->vidx[*index]);
+                        return TRUE;
+                } else if (pls->repeat) {
+                        *index = pls->pidx[0];
+                        *oid = g_strdup(pls->vidx[*index]);
+                        return TRUE;
+                } else {
+                        /* No more elements */
+                        return FALSE;
+                }
+        }
 }
 
 /* Sets the previous playable item's visual index, and object id if there is
-   any, according to the repeat setting */
+   any, according to the repeat setting. Returns @TRUE if clip is found */
 gboolean pls_get_prev(Pls *pls, guint *index, gchar **oid)
 {
-	guint i;
-	if (pls->len)
-	{
-		for (i=0; i < pls->len; i++)
-		{
-			if (pls->pidx[i] == *index)
-			{
-				if (i != 0)
-				{
-					*index = pls->pidx[i-1];
-					*oid = g_strdup(
-                                                pls->vidx[pls->pidx[i-1]]);
-					return TRUE;
-				}
-				else
-				{
-					if (pls->repeat)
-					{
-						*index = pls->pidx[pls->len-1];
-						*oid = g_strdup(pls->vidx[
-							pls->pidx[pls->len-1]]);
-						return TRUE;
-					}
-				}
-				return FALSE;
-			}
-		}
-	}
-	return FALSE;
+	guint i, tmpidx;
+
+        /* Check range */
+        if (*index >= pls->len) {
+                return FALSE;
+        }
+
+        if (!pls->shuffled) {
+                /* if current clip is the first, but repeat is on, returns the
+                 * last */
+                if (*index == 0 && pls->repeat) {
+                        *index = pls->len-1;
+                        *oid = g_strdup(pls->vidx[*index]);
+                        return TRUE;
+                } else if (*index > 0) {
+                        (*index)--;
+                        *oid = g_strdup(pls->vidx[*index]);
+                        return TRUE;
+                } else {
+                        /* No prev */
+                        return FALSE;
+                }
+        } else {
+                /* Look for element */
+                i = 0;
+                while (i < pls->len && pls->pidx[i] != *index) {
+                        i++;
+                }
+
+                /* Is the element unshuffled? If so, shuffle it and continue */
+                if (i >= pls->poolst) {
+                        tmpidx = pls->pidx[pls->poolst];
+                        pls->pidx[pls->poolst] = pls->pidx[i];
+                        pls->pidx[i] = tmpidx;
+                        pls->poolst++;
+                }
+
+                /* Is the prev element still shuffled */
+                if (i > 0) {
+                        *index=pls->pidx[i-1];
+                        *oid = g_strdup(pls->vidx[*index]);
+                        return TRUE;
+                }
+
+                /* Current element is the first playable; there is no prev
+                   unless repeat is on. NOTE: pls_get_last shuffle all elements
+                   in pool */
+                if (pls->repeat) {
+                        pls_get_last(pls, index, oid);
+                        return TRUE;
+                } else {
+                        return FALSE;
+                }
+        }
 }
 
+/* @TRUE if playlist is shuffled */
 gboolean pls_is_shuffled(Pls *pls)
 {
 	return pls->shuffled;
 }
 
+/* Change repeat mode */
 void pls_set_repeat(Pls *pls, gboolean repeat)
 {
 	pls->repeat = repeat;
 	i_am_dirty(pls);
 }
 
+/* Change the refcount */
 void pls_set_use_count(Pls *pls, guint use_count)
 {
 	pls->use_count = use_count;
 	i_am_dirty(pls);
 }
 
+/* Moves a clip from "from" to "to" */
 gboolean pls_move(Pls *pls, guint from, guint to)
 {
         gchar *aoid;
@@ -489,8 +640,9 @@ gboolean pls_move(Pls *pls, guint from, guint to)
         if (from == to)
                 return TRUE;
         /* XXX: this could clamp at pls->len... */
-        if (from >= pls->len || to >= pls->len)
+        if (from >= pls->len || to >= pls->len) {
                 return FALSE;
+        }
 /*
  * Move keeps (vidx, pidx) pairs, and only moves object ids around:
  *
@@ -512,15 +664,17 @@ gboolean pls_move(Pls *pls, guint from, guint to)
                 msrc = to;
                 mlen = from - to;
         }
+
         aoid = pls->vidx[from];
         g_memmove(&pls->vidx[mdest], &pls->vidx[msrc],
                   mlen * sizeof(pls->vidx[0]));
         pls->vidx[to] = aoid;
+
 	i_am_dirty(pls);
 	return TRUE;
 }
 
-/* key compare function (GCompareDataFunc).  keys are ids. */
+/* Key compare function (GCompareDataFunc).  keys are ids. */
 gint pls_cmpids(gconstpointer a, gconstpointer b, gpointer unused)
 {
 	if (a < b)
@@ -534,12 +688,13 @@ gint pls_cmpids(gconstpointer a, gconstpointer b, gpointer unused)
 /* Playlists are saved in flat text files.  First there is a five line header,
  * consisting of:
  *
- * version: "V" + an integer
+ * version: "V" + an integer (last version is 2)
  * id: integer > 0
  * name: string, everything until newline
  * repeat: integer, 0 or 1
- * use_count: integer >= 0
+ * shuffle: integer, 0 or 1
  * length: integer > 0
+ * pool start: integer > 0 && <= length
  *
  * Then items follow, one per line:
  *
@@ -559,32 +714,39 @@ gboolean pls_save(Pls *pls, const gchar *fn)
 	 * the requested filename. */
 	tmpok = isok = FALSE;
 	tmpf = g_strdup_printf("%s.tmp", fn);
-	if (!(f = fopen(tmpf, "w+")))
+	if (!(f = fopen(tmpf, "w+"))) {
 		goto out1;
+        }
 
 	if (fprintf(f,
 		    "V" APLAYLIST_VERSION "\n"
 		    "%u\n"
 		    "%s\n"
 		    "%d\n"
-		    "%d\n"
-		    "%u\n",
+                    "%d\n"
+		    "%u\n"
+                    "%u\n",
 		    pls->id,
 		    pls->name,
 		    pls->repeat,
 		    pls->shuffled,
-		    pls->len) < 0)
+		    pls->len,
+                    pls->poolst) < 0) {
 		goto out2;
+        }
 
 	for (i = 0; i < pls->len; ++i) {
-		if (fprintf(f, "%u,%s\n", pls->pidx[i], pls->vidx[i]) < 0)
+		if (fprintf(f, "%u,%s\n", pls->pidx[i], pls->vidx[i]) < 0) {
 			goto out2;
+                }
 	}
 	/* Try to minimize data loss. */
 	fflush(f);
 	fsync(fileno(f));
-	if (fclose(f) != 0)
+	if (fclose(f) != 0) {
 		goto out2;
+        }
+
 	/* tmpok == .tmp file written */
 	tmpok = TRUE;
 	if (rename(tmpf, fn) == -1) {
@@ -592,13 +754,17 @@ gboolean pls_save(Pls *pls, const gchar *fn)
 			   g_strerror(errno));
 		goto out2;
 	}
+
 	/* XXX: we might need to fsync() the fd of the containing
 	 * directory... See fsync(2). */
 	isok = TRUE;
+
 out2:	if (!tmpok) {
-		if (unlink(tmpf) == -1)
+		if (unlink(tmpf) == -1) {
 			g_warning("unlink: %s", g_strerror(errno));
+                }
 	}
+
 out1:	g_free(tmpf);
 	return isok;
 }
@@ -625,50 +791,87 @@ Pls *pls_load(const gchar *fn)
 	static char buf[2048+1];
 	Pls *p;
 	FILE *f;
-	gint version, id, repeat, shuffled, len;
+	gint version, id, repeat, shuffled, len, poolst;
 	gchar *name;
 	guint i;
 
 	p = NULL;
 	name = NULL;
-	if (!(f = fopen(fn, "r")))
+	if (!(f = fopen(fn, "r"))) {
 		return NULL;
+        }
 
 	/* Need to use fgets() because '\n' in fscanf() matches arbitrary
 	 * amount of whitespace. */
+
+        /* Read version */
 	if (!fgetsnl(buf, sizeof(buf), f) ||
 	    sscanf(buf, "V%d", &version) != 1 ||
-	    version < 0)
+            version < 0) {
 		goto out1;
-	/* We are version 1.  If format changes in the future, you'll need to
-	 * change this code, and care about backward compatibility. */
-	if (version != 1)
-		goto out1;
+        }
 
+	/* Latest version is 2, though this function is able to manage v1 too.
+	 * If format changes in the future, you'll need to change this code, and
+	 * care about backward compatibility. */
+	if (version != 1 && version != 2) {
+		goto out1;
+        }
+
+        /* Read id */
 	if (!fgetsnl(buf, sizeof(buf), f) ||
 	    sscanf(buf, "%d", &id) != 1 ||
-	    id < 0)
+	    id < 0) {
 		goto out1;
-	if (!fgetsnl(buf, sizeof(buf), f))
+        }
+
+        /* Read name */
+	if (!fgetsnl(buf, sizeof(buf), f)) {
 		goto out1;
+        }
 	name = strdup(buf);
+
+        /* Read repeat mode */
 	if (!fgetsnl(buf, sizeof(buf), f) ||
 	    (sscanf(buf, "%d", &repeat) != 1 &&
-	     (repeat != 0 || repeat != 1)))
+	     (repeat != 0 || repeat != 1))) {
 		goto out2;
+        }
+
+        /* Read shuffle mode */
 	if (!fgetsnl(buf, sizeof(buf), f) ||
 	    (sscanf(buf, "%d", &shuffled) != 1 &&
-	     (shuffled != 0 || shuffled != 1)))
+	     (shuffled != 0 || shuffled != 1))) {
 		goto out2;
+        }
+
+        /* Read length */
 	if (!fgetsnl(buf, sizeof(buf), f) ||
 	    sscanf(buf, "%d", &len) != 1 ||
-	    len < 0)
+	    len < 0) {
 		goto out2;
+        }
+
+        /* Read pool start; version >=2 */
+        if (version == 2) {
+                if (!fgetsnl(buf, sizeof(buf), f) ||
+                    sscanf(buf, "%d", &poolst) != 1 ||
+                    poolst < 0) {
+                        goto out2;
+                }
+        } else {
+                /* All elements are already shuffled */
+                poolst = len;
+
+        }
 
 	p = pls_new(id, name);
 	p->repeat = repeat;
 	p->shuffled = shuffled;
+        p->poolst = poolst;
 	maybe_realloc(p, len);
+
+        /* Read entries */
 	for (i = 0; i < len; ++i) {
 		guint pidx;
 		gchar *oid;
@@ -677,22 +880,27 @@ Pls *pls_load(const gchar *fn)
 		/* We do sanity check on pidx. */
 		if (!fgetsnl(buf, sizeof(buf), f) ||
 		    sscanf(buf, "%u,%a[^\n]", &pidx, &oid) != 2 ||
-		    pidx >= len)
-		{
-			if (oid)
+		    pidx >= len) {
+			if (oid) {
 				free(oid);
+                        }
+
 			pls_free(p);
 			p = NULL;
 			goto out2;
 		}
+
 		p->pidx[i] = pidx;
 		p->vidx[i] = oid;
 	}
 	/* We don't really want to detect if the file has more items than
 	 * $len... */
 	p->len = i;
+
 out2:   free(name);
+
 out1:   fclose(f);
+
 	return p;
 }
 

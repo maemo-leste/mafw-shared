@@ -679,6 +679,7 @@ static DBusHandlerResult request(DBusConnection *con, DBusMessage *req,
                 new_pls->shuffled = pls->shuffled;
                 new_pls->alloc = pls->alloc ;
                 new_pls->len = pls->len ;
+		new_pls->poolst = new_pls->poolst;
                 new_pls->vidx = g_realloc(new_pls->vidx, new_pls->alloc *
 		 				sizeof(*new_pls->vidx));
                 new_pls->pidx = g_realloc(new_pls->pidx, new_pls->alloc *
