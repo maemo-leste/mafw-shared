@@ -58,11 +58,23 @@ static Pls *mkpls(struct item items[])
 	Pls *p;
 	guint i;
 
-	p = pls_new(88, "playlist by mkpls");
-	for (i = 0; items[i].oid; ++i)
+        p = pls_new(88, "playlist by mkpls");
+        p->shuffled = FALSE;
+	for (i = 0; items[i].oid; ++i) {
 		pls_append(p, items[i].oid);
-	for (i = 0; items[i].oid; ++i)
+                if (items[i].pidx != i) {
+                        p->shuffled = TRUE;
+                }
+        }
+
+	for (i = 0; items[i].oid; ++i) {
 		p->pidx[i] = items[i].pidx;
+        }
+
+        if (p->shuffled) {
+                p->poolst = i;
+        }
+
 	return p;
 }
 
@@ -71,30 +83,46 @@ static void assert_pls(Pls *pls, struct item items[])
 {
 	guint i, len;
 
+        /* Get expected len */
 	for (len = 0; items[len].oid; ++len);
+
 	for (i = 0; items[i].oid; ++i) {
-		if (i >= pls->len)
+		if (i >= pls->len) {
 			break;
+                }
+                /* Check oid */
 		fail_if(strcmp(pls->vidx[i], items[i].oid),
 			"oid mismatch at %u. '%s' != '%s'",
 			i, items[i].oid, pls->vidx[i]);
 		/* -1 means, that should not be checked, as it is random */
-		if (items[i].pidx != -1)
-			fail_unless(items[i].pidx == pls->pidx[i],
-			    "pidx mismatch at %u: actual %u expected %u.",
-			    i, pls->pidx[i], items[i].pidx);
+		if (items[i].pidx != -1) {
+                        if (pls->shuffled) {
+                                fail_unless(items[i].pidx == pls->pidx[i],
+                                            "pidx mismatch at %u: actual %u expected %u.",
+                                            i, pls->pidx[i], items[i].pidx);
+                        } else {
+                                fail_unless(items[i].pidx == i,
+                                            "pidx mismatch at %u: actual %u expected %u.",
+                                            i, i, items[i].pidx);
+                        }
+                }
 	}
+
+        /* Less elements than expected */
 	if (i < len) {
-		for (; items[i].oid; ++i)
+		for (; items[i].oid; ++i) {
 			fprintf(stderr, "%u %u '%s'\n",
 				i, items[i].pidx, items[i].oid);
+                }
 		fail("expected more elements");
 	}
+        /* More elements than expected */
 	if (pls->len > len) {
 		g_assert(i == len);
-		for (; i < pls->len; ++i)
+		for (; i < pls->len; ++i) {
 			fprintf(stderr, "%u %u '%s'\n",
 				i, pls->pidx[i], pls->vidx[i]);
+                }
 		fail("expected less elements");
 	}
 }
@@ -146,8 +174,9 @@ START_TEST(test_append)
 	fail_unless(pls_append(p, "beta"));
 	assert_pls(p, APLS({0, "alpha"},
 			   {1, "beta"}));
-
+	fail_unless(pls_check(Playlist));
 	pls_free(p);
+
 	Playlist = p = mkpls(APLS({0, "eek"},
 				  {2, "a"},
 				  {1, "mouse"}));
@@ -156,6 +185,7 @@ START_TEST(test_append)
 			   {2, "a"},
 			   {1, "mouse"},
 			   {3, "blackbeard"}));
+	fail_unless(pls_check(Playlist));
 	pls_free(p);
 
 	Playlist = p = mkpls(APLS({0, "eek"},
@@ -307,8 +337,8 @@ START_TEST(test_remove)
 				  {2, "magic"}));
 	fail_unless(pls_remove(p, 2));
 	assert_pls(p, APLS({2, "xyzzy"},
-			   {0, "is"},
-			   {1, "magic"}));
+			   {1, "is"},
+			   {0, "magic"}));
 	fail_unless(pls_remove(p, 2));
 	assert_pls(p, APLS({1, "xyzzy"},
 			   {0, "is"}));

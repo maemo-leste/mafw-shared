@@ -779,8 +779,7 @@ static void test_shuffle_stress(guint nturns, guint nitems)
 			fail_if(not_shuffled > 1);
 		}
 
-		/* Check that a) exactly the same items are in the playlist
-		 * but b) all of them at a different playing position. */
+		/* Check that exactly the same items are in the playlist */
 		fail_if(mafw_playlist_get_size(g_playlist, NULL) != nitems);
 		mafw_playlist_get_starting_index(g_playlist, &next_id, &item,
                                                  NULL);
@@ -788,13 +787,11 @@ static void test_shuffle_stress(guint nturns, guint nitems)
 		do
 		{
 			gpointer oldpos;
-			
+
 			fail_if(item == NULL);
 
 			fail_if(!g_hash_table_lookup_extended(before, item,
 							      NULL, &oldpos));
-			fail_if(GPOINTER_TO_INT(oldpos) >= nitems);
-			fail_if(newpos == GPOINTER_TO_INT(oldpos));
 
 			g_hash_table_insert(after, item,
 					    GINT_TO_POINTER(newpos));
