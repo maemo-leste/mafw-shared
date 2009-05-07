@@ -127,6 +127,8 @@ static void emit_browse_result(MafwSource *self, guint browse_id,
 
 	if (!bdata->message_to_send)
 	{
+		if (!bdata->ecomp->object_path)
+			return;
 		bdata->message_to_send = dbus_message_new_method_call(
 				dbus_message_get_sender(info->msg),
 				bdata->ecomp->object_path,

@@ -237,6 +237,7 @@ static void wrapper_unexport(gpointer comp)
 	disconnect_sighandlers(ecomp);
 	g_free(ecomp->service_name);
 	g_free(ecomp->object_path);
+	ecomp->object_path = NULL;
 	g_free(ecomp->name);
 	g_free(ecomp->uuid);
 	g_free(ecomp);
