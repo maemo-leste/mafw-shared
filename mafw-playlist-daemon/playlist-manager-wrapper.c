@@ -380,8 +380,10 @@ static void browse_res_cb(MafwSource *self, guint browse_id,
 {
 	if (!error)
 	{
-		pl_data->urilist = g_list_append(pl_data->urilist,
-							g_strdup(object_id));
+		if (object_id) {
+			pl_data->urilist = g_list_append(pl_data->urilist,
+							 g_strdup(object_id));
+		}
 		if (remaining_count)
 		{
 			return;
