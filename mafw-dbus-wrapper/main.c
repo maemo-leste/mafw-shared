@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
 {
 	GError *err = NULL;
 	MafwRegistry *registry;
+	gint i;
 
 	if (argc < 2) {
 		g_print("use: mafw-dbus-wrapper <PLUGIN>\n");
@@ -55,11 +56,13 @@ int main(int argc, char *argv[])
 	mafw_log_init(NULL);
 	registry = mafw_registry_get_instance();
 	wrapper_init();
-	mafw_registry_load_plugin(registry, argv[1], &err);
-	if (err) {
-		g_critical("Error loading plugin: %s: %s",
-			   argv[1], err->message);
-		return 2;
+	for (i = 1; argv[i]; i++) {
+		mafw_registry_load_plugin(registry, argv[i], &err);
+		if (err) {
+			g_critical("Error loading plugin: %s: %s",
+				   argv[i], err->message);
+			return 2;
+		}
 	}
 	g_main_loop_run(g_main_loop_new(NULL, FALSE));
 	return 0;
