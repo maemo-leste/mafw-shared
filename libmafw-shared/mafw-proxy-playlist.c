@@ -1072,13 +1072,6 @@ static DBusHandlerResult dispatch_message(DBusConnection *conn,
 					  DBusMessage *msg,
 					  MafwProxyPlaylist *self)
 {
-	MafwProxyPlaylistPrivate *priv;
-
-	g_assert(conn != NULL);
-	g_assert(msg != NULL);
-
-	priv = MAFW_PROXY_PLAYLIST_GET_PRIVATE(self);
-
 	if (mafw_dbus_is_signal(msg, MAFW_PLAYLIST_CONTENTS_CHANGED)) {
 		mafw_proxy_playlist_handle_signal_contents_changed(self, msg);
 	} else if (mafw_dbus_is_signal(msg, MAFW_PLAYLIST_PROPERTY_CHANGED)) {
