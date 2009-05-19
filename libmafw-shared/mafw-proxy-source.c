@@ -916,7 +916,7 @@ GObject *mafw_proxy_source_new(const gchar *uuid, const gchar *plugin,
 					NULL);
 	MafwProxySource *source_obj;
 	DBusError err;
-	gchar *match_str = NULL, *path;
+	gchar *match_str = NULL, *path = NULL;
 	DBusObjectPathVTable path_vtable;
 
 	memset(&path_vtable, 0, sizeof(DBusObjectPathVTable));
