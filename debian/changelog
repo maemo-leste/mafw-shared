@@ -1,3 +1,11 @@
+mafw-shared (0.1.2009.21-4) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.21-4
+  * CID 15766
+  * CID 15778
+
+ -- Juha Kellokoski <veitikka6@gmail.com>  Wed, 20 May 2009 11:00:00 +0300
+
 mafw-shared (0.1.2009.21-3) unstable; urgency=low
 
   * MAFW Shared, pre-release 0.2009.21-3
