@@ -250,7 +250,6 @@ START_TEST(test_get_playlists)
 	     item->name; item++)
 		g_tree_insert(all, GUINT_TO_POINTER(item->id), item->name);
 	g_array_free(list, TRUE);
-
 	/* Add lots of playlists with random names. */
 	for (i = 0; i < 100; i++) {
 		MafwProxyPlaylist *playlist;
@@ -264,6 +263,7 @@ START_TEST(test_get_playlists)
 
 		g_ptr_array_add(mine, playlist);
 		g_tree_insert(all, GUINT_TO_POINTER(id), name);
+		g_object_unref(playlist);
 	}
 
 	/* Kill $manager to start another one with clear store to force

@@ -308,10 +308,17 @@ GObject *mafw_proxy_playlist_new(guint id)
 	}
 
 	self->priv->obj_path = g_strdup_printf("%s/%u",MAFW_PLAYLIST_PATH,id);
-	dbus_connection_register_object_path(self->priv->connection,
+
+	if (!dbus_connection_register_object_path(self->priv->connection,
 			self->priv->obj_path,
 			&path_vtable,
-			self);
+			self))
+	{
+		g_critical("Unable to register obejct-path ( %s )for "
+				"proxy-playlist", self->priv->obj_path);
+		g_object_unref(G_OBJECT(self));
+		return NULL;
+	}
 
 	return G_OBJECT(self);
 }
