@@ -173,15 +173,17 @@ static void load_playlists(void)
 		if ((dot = strrchr(fn, '.')) && dot != fn) {
 			gchar *nufn;
 			struct stat sb;
+			gint statret;
 
 			if (strcmp(dot, ".tmp"))
 				continue;
 			/* Minor sanity check: we accept only nonempty regular
 			 * files.  Otherwise we try to unlink the file, to avoid
 			 * future hassle. */
-			if (stat(fn, &sb) == -1 ||
-			    !S_ISREG(sb.st_mode) ||
-			    sb.st_size == 0)
+			statret = stat(fn, &sb);
+			if ( statret == -1 ||
+			    ( (statret != -1) && (!S_ISREG(sb.st_mode) ||
+			    				sb.st_size == 0)))
 			{
 				g_unlink(fn);
 				continue;
