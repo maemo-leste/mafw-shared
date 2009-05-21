@@ -154,8 +154,11 @@ static void emit_browse_result(MafwSource *self, guint browse_id,
 					&remaining_count);
 	dbus_message_iter_append_basic(&istr, DBUS_TYPE_UINT32, &index);
 	dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING, &object_id);
-	mafw_dbus_message_append_array(&istr, DBUS_TYPE_BYTE, ba->len,
-					ba->data);
+	if (!mafw_dbus_message_append_array(&istr, DBUS_TYPE_BYTE, ba->len,
+					ba->data))
+	{
+		g_error("Unable to append byte-array to the dbus-message");
+	}
 	g_byte_array_free(ba, TRUE);
 
 	if (error) {

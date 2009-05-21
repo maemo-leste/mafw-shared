@@ -251,7 +251,7 @@ static gboolean clever_append_more_valist(DBusMessageIter *iter,
 			GByteArray *ba;
 
 			ba = va_arg(*args, GByteArray *);
-			if (mafw_dbus_message_append_array(iter, DBUS_TYPE_BYTE,
+			if (!mafw_dbus_message_append_array(iter, DBUS_TYPE_BYTE,
 						ba->len, ba->data))
 				goto fail;
 		} else if (arg_t == MAFW_DBUS_TYPE_METADATA) {
