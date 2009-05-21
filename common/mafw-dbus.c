@@ -828,11 +828,9 @@ GError *mafw_dbus_is_error(DBusMessage *msg, GQuark domain)
 	GError *gle;
 	DBusError dbe;
 
-        if (dbus_message_get_type(msg) != DBUS_MESSAGE_TYPE_ERROR)
-		return NULL;
-
 	dbus_error_init(&dbe);
-	dbus_set_error_from_message(&dbe, msg);
+	if (!dbus_set_error_from_message(&dbe, msg))
+		return NULL;
 
 	gle = NULL;
 	mafw_dbus_error_to_gerror(domain, &gle, &dbe);
