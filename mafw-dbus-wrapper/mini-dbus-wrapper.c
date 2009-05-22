@@ -115,6 +115,8 @@ int main(int arch, const char *argv[])
 		DIR *hdir;
 		const struct dirent *dent;
 
+		if (strlen(argv[i]) > PATH_MAX)
+			continue;
 		hdir = opendir(argv[i]);
 		if (hdir != NULL) {
 			while ((dent = readdir(hdir)) != NULL) {
