@@ -48,6 +48,12 @@ extern guint Settle_time;
  * @pidx:        array containing both shuffled elements and un-shuffled ones
  *               {0..poolst-1}: shuffled elements
  *               {poolst..len-1}: pool with still unshuffled elements
+ *               Resolves the query "which element will be played at postion
+ *               i-th?"
+ * @iidx:        Relates both vidx and pidx. Resolves the query "in which
+ *               position will be played element i-th?". That is, it stores
+ *               where is placed in pidx each element of vidx. Only makes sense
+ *               when playlist is shuffled.
  * @dirty:       set to 1 if a playlist is modified (cleared manually)
  * @dirty_timer: each time the playlist is dirtied, a timer is started (or
  *               elongated), and when it expires, triggers save_me().  This
@@ -64,6 +70,7 @@ typedef struct {
         guint poolst;
 	gchar **vidx;
 	guint *pidx;
+        gint *iidx;
 	gboolean dirty;
 	guint dirty_timer;
 } Pls;

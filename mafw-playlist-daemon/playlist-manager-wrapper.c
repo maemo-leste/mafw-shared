@@ -685,12 +685,15 @@ static DBusHandlerResult request(DBusConnection *con, DBusMessage *req,
                 new_pls->len = pls->len ;
 		new_pls->poolst = new_pls->poolst;
                 new_pls->vidx = g_realloc(new_pls->vidx, new_pls->alloc *
-		 				sizeof(*new_pls->vidx));
+                                          sizeof(*new_pls->vidx));
                 new_pls->pidx = g_realloc(new_pls->pidx, new_pls->alloc *
-		 				sizeof(*new_pls->pidx));
+                                          sizeof(*new_pls->pidx));
+                new_pls->iidx = g_realloc(new_pls->iidx, new_pls->alloc *
+                                          sizeof(*new_pls->iidx));
                 for (i = 0; i < pls->len; ++i) {
                          new_pls->vidx[i] = g_strdup(pls->vidx[i]);
                          new_pls->pidx[i] = pls->pidx[i];
+                         new_pls->iidx[i] = pls->iidx[i];
 		 }
                 pls_set_repeat(new_pls, pls->repeat);
                 g_tree_insert(Playlists, GUINT_TO_POINTER(new_pls->id),
