@@ -57,22 +57,24 @@ static Pls *mkpls(struct item items[])
 {
 	Pls *p;
 	guint i;
+        gboolean shuffled;
 
         p = pls_new(88, "playlist by mkpls");
-        p->shuffled = FALSE;
+        shuffled = FALSE;
 	for (i = 0; items[i].oid; ++i) {
 		pls_append(p, items[i].oid);
                 if (items[i].pidx != i) {
-                        p->shuffled = TRUE;
+                        shuffled = TRUE;
                 }
         }
 
-	for (i = 0; items[i].oid; ++i) {
-		p->pidx[i] = items[i].pidx;
-                p->iidx[items[i].pidx] = i;
-        }
+        if (shuffled) {
+                pls_shuffle(p);
 
-        if (p->shuffled) {
+                for (i = 0; items[i].oid; ++i) {
+                        p->pidx[i] = items[i].pidx;
+                        p->iidx[items[i].pidx] = i;
+                }
                 p->poolst = i;
         }
 
@@ -123,9 +125,16 @@ static void assert_pls(Pls *pls, struct item items[])
         /* More elements than expected */
 	if (pls->len > len) {
 		g_assert(i == len);
-		for (; i < pls->len; ++i) {
-			fprintf(stderr, "%u %u '%s'\n",
-				i, pls->pidx[i], pls->vidx[i]);
+                if (pls->shuffled) {
+                        for (; i < pls->len; ++i) {
+                                fprintf(stderr, "%u %u '%s'\n",
+                                        i, pls->pidx[i], pls->vidx[i]);
+                        }
+                } else {
+                        for (; i < pls->len; ++i) {
+                                fprintf(stderr, "%u %u '%s'\n",
+                                        i, i, pls->vidx[i]);
+                        }
                 }
 		fail("expected less elements");
 	}
@@ -919,25 +928,25 @@ int main(void)
 	if (1) tcase_add_test(tc, test_create);
 	if (1) tcase_add_test(tc, test_dirty);
 	if (1) tcase_add_test(tc, test_save);
-	if (0) tcase_add_test(tc, stress_persist);
-	if (0) tcase_add_test(tc, fuzz_load);
+	if (1) tcase_add_test(tc, stress_persist);
+	if (1) tcase_add_test(tc, fuzz_load);
 	/* The following two tests take longer time. */
-	if (0) tcase_add_test(tc, test_dirty_timer);
-	if (0) tcase_add_test(tc, multi_dirty);
+	if (1) tcase_add_test(tc, test_dirty_timer);
+	if (1) tcase_add_test(tc, multi_dirty);
 	suite_add_tcase(suite, tc);
-	
+
 	tc = tcase_create("Operations");
 	if (1) tcase_add_test(tc, test_append);
 	if (1) tcase_add_test(tc, test_clear);
 	if (1) tcase_add_test(tc, test_insert);
 	if (1) tcase_add_test(tc, test_remove);
-	if (0) tcase_add_test(tc, test_move);
-	if (0) tcase_add_test(tc, test_iterator);
+	if (1) tcase_add_test(tc, test_move);
+	if (1) tcase_add_test(tc, test_iterator);
 	if (1) tcase_add_test(tc, test_shuffle_empty);
 	if (1) tcase_add_test(tc, test_shuffle);
 	tcase_add_checked_fixture(tc, setup_pls, teardown_pls);
 	suite_add_tcase(suite, tc);
-	
+
 	rv = checkmore_run(srunner_create(suite), TRUE);
 	/* This way valgrind has a chance to cry out. */
 	Playlist = NULL;
