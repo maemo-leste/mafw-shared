@@ -300,7 +300,13 @@ static MafwProxyPlaylist *register_playlist(
 
 	/* No more playlists, so add the new one. */
 	playlist = MAFW_PROXY_PLAYLIST(mafw_proxy_playlist_new(id));
-	g_ptr_array_add(playlists, playlist);
+
+        if (playlist) {
+                g_ptr_array_add(playlists, playlist);
+        } else {
+                g_critical ("Unable to register playlist %u", id);
+        }
+
 	return playlist;
 }
 
