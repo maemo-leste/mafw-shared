@@ -1,8 +1,13 @@
-mafw-shared (0.1.2009.22-4) unstable; urgency=low
+mafw-shared (0.1.2009.23-1) unstable; urgency=low
 
-  * MAFW Shared, pre-release 0.2009.22-4
+  * MAFW Shared, pre-release 0.2009.23-1
+  * Do not register NULL playlists.
+  * Fix unit tests.
+  * Don't duplicate pidx and iidx when duplicating an unshuffled playlist.
+  * Use an array of indexed to speed up looking for elements in playlist-order
+    array (pidx).
 
- -- Juha Kellokoski <veitikka6@gmail.com>  Wed, 27 May 2009 10:30:00 +0300
+ -- Juha Kellokoski <veitikka6@gmail.com>  Fri, 29 May 2009 10:30:00 +0300
 
 mafw-shared (0.1.2009.22-3) unstable; urgency=low
 
