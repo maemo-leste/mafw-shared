@@ -66,14 +66,15 @@
 #undef  G_LOG_DOMAIN
 #define G_LOG_DOMAIN		"mafw-playlist-daemon"
 
+
 /* Program code */
+gboolean done = FALSE;
+
 /* We got a signal, exit as soon as we can. */
 static void sigh(int unused)
 {
-	/* It may be inappropriate to exit() now if we're under fakeroot,
-	 * because it may be doing something right at the moment.  Let's hope
-	 * that this call is safe enough to call from the signal handler. */
-	g_idle_add((void *)g_main_loop_quit, Loop);
+	/* Cannot call glib main loop functions from a signal handler */
+	done = TRUE;
 }
 
 /* The main function */
@@ -130,7 +131,11 @@ int main(int argc, char *argv[])
 	dbus_connection_setup_with_g_main(dbus, NULL);
 	dbus_connection_unref(dbus);
 
-	g_main_loop_run(Loop = g_main_loop_new(NULL, FALSE));
+	Loop = g_main_loop_new(NULL, FALSE);
+	while (!done) {
+		g_main_context_iteration(g_main_loop_get_context(Loop), TRUE);
+	}
+	g_debug("terminating playlist daemon");
 	save_all_playlists();
 	return 0;
 }
