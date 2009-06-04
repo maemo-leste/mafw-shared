@@ -860,6 +860,99 @@ static void mafw_proxy_renderer_get_position(MafwRenderer *self,
 }
 
 /*----------------------------------------------------------------------------
+  Get metadata
+  ----------------------------------------------------------------------------*/
+
+/**
+ * mafw_proxy_renderer_get_current_metadata_cb:
+ * @pending_call: A DBusPendingCall that is the reply for a playback call
+ * @user_data:    AsyncParams*
+ *
+ * Receives the resulting DBus reply message for a get_current_metadata call and
+ * calls the assigned callback function to pass the actual result to the UI layer.
+ */
+static void mafw_proxy_renderer_get_current_metadata_cb(
+	DBusPendingCall *pending_call, gpointer user_data)
+{
+	AsyncParams *ap;
+	DBusMessage *reply;
+	GError *error;
+
+	ap = (AsyncParams*) user_data;
+	g_assert(ap != NULL);
+
+	reply = dbus_pending_call_steal_reply(pending_call);
+	error = mafw_dbus_is_error(reply, MAFW_RENDERER_ERROR);
+
+	if (error == NULL) {
+		GHashTable *metadata;
+		const gchar* object_id;
+
+		mafw_dbus_parse(reply,
+				DBUS_TYPE_STRING, &object_id,
+				MAFW_DBUS_TYPE_METADATA, &metadata);
+
+		if (object_id && object_id[0] == '\0')
+			object_id = NULL;
+
+		if (ap->callback)
+			((MafwRendererMetadataResultCB) ap->callback)
+				(ap->renderer, object_id,  metadata,
+				 ap->user_data,
+				 NULL);
+
+		mafw_metadata_release(metadata);
+	} else {
+		if (ap->callback)
+			((MafwRendererMetadataResultCB) ap->callback)
+				(ap->renderer, NULL, NULL, ap->user_data,
+				 error);
+		g_error_free(error);
+	}
+
+	dbus_message_unref(reply);
+	dbus_pending_call_unref(pending_call);
+}
+
+/**
+ * See #MafwRenderer for a description.
+ */
+static void mafw_proxy_renderer_get_current_metadata(
+	MafwRenderer *self,
+	MafwRendererMetadataResultCB callback,
+	gpointer user_data)
+{
+	AsyncParams *ap;
+	MafwProxyRenderer *proxy;
+	DBusPendingCall *pending_call = NULL;
+
+	g_return_if_fail(self != NULL);
+	proxy = MAFW_PROXY_RENDERER(self);
+
+	g_return_if_fail(connection != NULL);
+	g_return_if_fail(callback != NULL);
+
+	ap = g_new0(AsyncParams, 1);
+	ap->renderer = g_object_ref(self);
+	ap->callback = callback;
+	ap->user_data = user_data;
+
+	mafw_dbus_send_async(
+                connection, &pending_call,
+                mafw_dbus_method_full(
+			proxy_extension_return_service(proxy),
+			proxy_extension_return_path(proxy),
+			MAFW_RENDERER_INTERFACE,
+			MAFW_RENDERER_METHOD_GET_CURRENT_METADATA));
+
+	dbus_pending_call_set_notify(
+		pending_call,
+		mafw_proxy_renderer_get_current_metadata_cb,
+		ap,
+		mafw_proxy_renderer_async_free);
+}
+
+/*----------------------------------------------------------------------------
   GObject necessities
   ----------------------------------------------------------------------------*/
 
@@ -903,6 +996,11 @@ static void mafw_proxy_renderer_class_init(MafwProxyRendererClass *klass)
 
 	renderer_class->set_position = mafw_proxy_renderer_set_position;
 	renderer_class->get_position = mafw_proxy_renderer_get_position;
+
+	/* Metadata */
+
+	renderer_class->get_current_metadata =
+		mafw_proxy_renderer_get_current_metadata;
 }
 
 static void mafw_proxy_renderer_init(MafwProxyRenderer *self)

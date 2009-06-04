@@ -233,13 +233,23 @@
 #define MAFW_RENDERER_METHOD_SET_POSITION "set_position"
 
 /**
- * set_position:
+ * get_position:
  *
  * Requests the renderer's current playback position within the current media.
  *
  * Returns: The current playback position in seconds (%DBUS_TYPE_UINT32)
  */
 #define MAFW_RENDERER_METHOD_GET_POSITION "get_position"
+
+/**
+ * get_current_metadata:
+ *
+ * Requests the renderer's current media's objectid and metadata
+ *
+ * Returns:  Current object ID (%DBUS_TYPE_STRING)
+ *           Current metadata (%MAFW_DBUS_TYPE_METADATA)
+ */
+#define MAFW_RENDERER_METHOD_GET_CURRENT_METADATA "get_current_metadata"
 
 #define MAFW_RENDERER_SIGNAL_STATE_CHANGED "state_changed"
 #define MAFW_RENDERER_SIGNAL_PLAYLIST_CHANGED "playlist_changed"

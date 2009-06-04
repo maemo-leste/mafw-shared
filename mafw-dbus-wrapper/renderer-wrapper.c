@@ -133,6 +133,35 @@ static void set_get_position_cb(MafwRenderer *renderer, gint seconds,
 }
 
 /*----------------------------------------------------------------------------
+  Get current metadata
+  ----------------------------------------------------------------------------*/
+
+static void get_current_metadata_cb(MafwRenderer *renderer,
+				    const gchar *object_id,
+				    GHashTable *metadata,
+				    gpointer user_data,
+				    const GError *error)
+{
+	MafwDBusOpCompletedInfo* oci;
+
+	oci = (MafwDBusOpCompletedInfo*) user_data;
+	g_assert(oci != NULL);
+	g_assert(oci->con != NULL);
+	g_assert(oci->msg != NULL);
+
+	if (error == NULL)
+		mafw_dbus_send(oci->con,
+			       mafw_dbus_reply(oci->msg,
+					       MAFW_DBUS_STRING(
+						       object_id ? object_id : ""),
+					       MAFW_DBUS_METADATA(metadata)));
+	else
+		mafw_dbus_send(oci->con, mafw_dbus_gerror(oci->msg, error));
+
+	mafw_dbus_oci_free(oci);
+}
+
+/*----------------------------------------------------------------------------
   Dispatch incoming renderer messages.
   ----------------------------------------------------------------------------*/
 
@@ -288,6 +317,19 @@ DBusHandlerResult handle_renderer_msg(DBusConnection *conn,
 		MafwDBusOpCompletedInfo *oci;
 		oci = mafw_dbus_oci_new(conn, msg);
 		mafw_renderer_get_position(renderer, set_get_position_cb, oci);
+		return DBUS_HANDLER_RESULT_HANDLED;
+
+	} else if (dbus_message_has_member(
+			   msg,
+			   MAFW_RENDERER_METHOD_GET_CURRENT_METADATA)) {
+
+		MafwDBusOpCompletedInfo *oci;
+		oci = mafw_dbus_oci_new(conn, msg);
+
+		mafw_renderer_get_current_metadata(renderer,
+						   get_current_metadata_cb,
+						   oci);
+
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
 
