@@ -1,8 +1,10 @@
-mafw-shared (0.1.2009.23-3) unstable; urgency=low
+mafw-shared (0.1.2009.24-1) unstable; urgency=low
 
-  * MAFW Shared, pre-release 0.2009.23-3
+  * MAFW Shared, pre-release 0.2009.24-1
+  * Fixes: NB#119594 - Memory corruption code in mafw-shared
+  * Do not call glib main loop functions from signal handler.
 
- -- Juha Kellokoski <veitikka6@gmail.com>  Tue, 02 Jun 2009 12:00:00 +0300
+ -- Juha Kellokoski <veitikka6@gmail.com>  Thu, 04 Jun 2009 10:00:00 +0300
 
 mafw-shared (0.1.2009.23-2) unstable; urgency=low
 
