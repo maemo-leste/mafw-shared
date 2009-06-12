@@ -303,6 +303,10 @@ START_TEST(test_source_wrapper)
 				MAFW_DBUS_STRING("testobj")));
 	g_signal_emit_by_name(source, "container-changed", "testobj");
 
+        mockbus_expect(mafw_dbus_signal(MAFW_SOURCE_SIGNAL_UPDATING,
+                                        MAFW_DBUS_INT32(25)));
+        g_signal_emit_by_name(source, "updating", 25);
+
 	mockbus_finish();
 	mafw_metadata_release(metadata);
 }

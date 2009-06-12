@@ -839,11 +839,11 @@ START_TEST(test_object_destruction)
 }
 END_TEST
 
-static gboolean mdata_chd, cont_chd;
+static gboolean mdata_chd, cont_chd, updt_chd;
 
 static void check_signals(void)
 {
-	if (mdata_chd && cont_chd)
+	if (mdata_chd && cont_chd && updt_chd)
 	{
 		g_main_loop_quit(mainloop_test);
 	}
@@ -862,6 +862,13 @@ static void sp_container_changed(MafwSource *self, const gchar *object_id)
 	fail_if(strcmp(object_id, "str_oid") != 0, "Wrong object_id");
 	cont_chd = TRUE;
 	check_signals();
+}
+
+static void sp_updating(MafwSource *self, gint progress)
+{
+        fail_if(progress != 25, "Wrong updating progress");
+        updt_chd = TRUE;
+        check_signals();
 }
 
 START_TEST(test_source_signals)
@@ -885,11 +892,16 @@ START_TEST(test_source_signals)
 			 G_CALLBACK(sp_metadata_changed), NULL);
 	g_signal_connect(sp, "container-changed",
 			 G_CALLBACK(sp_container_changed), NULL);
+        g_signal_connect(sp, "updating",
+                         G_CALLBACK(sp_updating), NULL);
 
 	mockbus_incoming(mafw_dbus_signal(MAFW_SOURCE_SIGNAL_METADATA_CHANGED,
 					MAFW_DBUS_STRING("str")));
 	mockbus_incoming(mafw_dbus_signal(MAFW_SOURCE_SIGNAL_CONTAINER_CHANGED,
 				MAFW_DBUS_STRING("str_oid")));
+        mockbus_incoming(mafw_dbus_signal(MAFW_SOURCE_SIGNAL_UPDATING,
+                                          MAFW_DBUS_INT32(25)));
+
 	g_main_loop_run(mainloop_test);
 
 	mafw_metadata_release(metadata);
