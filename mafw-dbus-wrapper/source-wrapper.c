@@ -579,34 +579,49 @@ DBusHandlerResult handle_source_msg(DBusConnection *conn,
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
+static void updating(MafwSource *source, gint progress,
+                     gpointer userdata)
+{
+        ExportedComponent *ecomp;
+
+        ecomp = (ExportedComponent *) userdata;
+        mafw_dbus_send(ecomp->connection,
+                       mafw_dbus_signal_full(
+                               NULL,
+                               ecomp->object_path,
+                               MAFW_SOURCE_INTERFACE,
+                               MAFW_SOURCE_SIGNAL_UPDATING,
+                               MAFW_DBUS_INT32(progress)));
+}
+
 static void container_changed(MafwSource *source, const gchar *object_id,
-				gpointer userdata)
+                              gpointer userdata)
 {
 	ExportedComponent *ecomp;
 
 	ecomp = (ExportedComponent *) userdata;
 	mafw_dbus_send(ecomp->connection,
-			mafw_dbus_signal_full(
-					NULL,
-					ecomp->object_path,
-					MAFW_SOURCE_INTERFACE,
-					MAFW_SOURCE_SIGNAL_CONTAINER_CHANGED,
-					MAFW_DBUS_STRING(object_id)));
+                       mafw_dbus_signal_full(
+                               NULL,
+                               ecomp->object_path,
+                               MAFW_SOURCE_INTERFACE,
+                               MAFW_SOURCE_SIGNAL_CONTAINER_CHANGED,
+                               MAFW_DBUS_STRING(object_id)));
 }
 
 static void metadata_changed(MafwSource *source, const gchar *object_id,
-				gpointer userdata)
+                             gpointer userdata)
 {
 	ExportedComponent *ecomp;
 
 	ecomp = (ExportedComponent *) userdata;
 	mafw_dbus_send(ecomp->connection,
-			mafw_dbus_signal_full(
-					NULL,
-					ecomp->object_path,
-					MAFW_SOURCE_INTERFACE,
-					MAFW_SOURCE_SIGNAL_METADATA_CHANGED,
-					MAFW_DBUS_STRING(object_id)));
+                       mafw_dbus_signal_full(
+                               NULL,
+                               ecomp->object_path,
+                               MAFW_SOURCE_INTERFACE,
+                               MAFW_SOURCE_SIGNAL_METADATA_CHANGED,
+                               MAFW_DBUS_STRING(object_id)));
 
 }
 
@@ -614,5 +629,6 @@ void connect_to_source_signals(gpointer ecomp)
 {
 	connect_signal(ecomp, "metadata-changed", metadata_changed);
 	connect_signal(ecomp, "container-changed", container_changed);
+        connect_signal(ecomp, "updating", updating);
 }
 /* vi: set noexpandtab ts=8 sw=8 cino=t0,(0: */

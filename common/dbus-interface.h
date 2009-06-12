@@ -391,10 +391,19 @@
 #define MAFW_SOURCE_METHOD_DESTROY_OBJECT "destroy_object"
 
 /**
+ * updating:
+ * @progress: percentage of completation (%DBUS_TYPE_INT32).
+ *
+ * Updating signal
+ */
+
+#define MAFW_SOURCE_SIGNAL_UPDATING "updating"
+
+/**
  * metadata_changed:
  * @object_id: object id (%DBUS_TYPE_STRING).
  *
- * Metdata changed signal
+ * Metadata changed signal
  */
 #define MAFW_SOURCE_SIGNAL_METADATA_CHANGED "metadata_changed"
 

@@ -116,6 +116,19 @@ static DBusHandlerResult handle_metadata_changed_signal(MafwProxySource *self,
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
+static DBusHandlerResult handle_updating_signal(MafwProxySource *self,
+                                                DBusMessage *msg)
+{
+	gint progress;
+
+	/* Read the message and signal the values */
+	mafw_dbus_parse(msg,
+			DBUS_TYPE_INT32, &progress);
+	g_signal_emit_by_name(self, "updating", progress);
+
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
 
 /**
  * SECTION:mafw-proxy-source
@@ -233,7 +246,10 @@ mafw_proxy_source_dispatch_message(DBusConnection *conn,
 	} else if (mafw_dbus_is_signal(msg,
                                        MAFW_SOURCE_SIGNAL_CONTAINER_CHANGED)) {
 		return handle_container_changed_signal(self, msg);
-	}
+	} else if (mafw_dbus_is_signal(msg,
+                                       MAFW_SOURCE_SIGNAL_UPDATING)) {
+                return handle_updating_signal(self, msg);
+        }
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
