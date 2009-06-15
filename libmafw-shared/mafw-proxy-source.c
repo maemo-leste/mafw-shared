@@ -448,6 +448,31 @@ static void free_reply_info_and_oid(RequestReplyInfo *info)
 	free_request_reply_info(info);
 }
 
+static gint mafw_proxy_source_get_update_progress(MafwSource * self)
+{
+        gint progress = 100;
+        MafwProxySource *proxy;
+        DBusMessage *reply;
+        GError *error = NULL;
+
+	proxy = MAFW_PROXY_SOURCE(self);
+
+        reply = mafw_dbus_call(connection,
+                               mafw_dbus_method_full(
+                                       proxy_extension_return_service(proxy),
+                                       proxy_extension_return_path(proxy),
+                                       MAFW_SOURCE_INTERFACE,
+                                       MAFW_SOURCE_METHOD_GET_UPDATE_PROGRESS),
+                               MAFW_SOURCE_ERROR, &error);
+
+        if (reply) {
+                mafw_dbus_parse(reply, DBUS_TYPE_INT32, &progress);
+                dbus_message_unref(reply);
+        }
+
+        return progress;
+}
+
 /* MafwSource::get_metadata */
 static void got_metadata(DBusPendingCall *pendelum, RequestReplyInfo *info)
 {
@@ -899,6 +924,8 @@ static void mafw_proxy_source_class_init(MafwProxySourceClass *klass)
                 (gpointer)proxy_extension_set_extension_property;
 	source_class->browse = mafw_proxy_source_browse;
 	source_class->cancel_browse = mafw_proxy_source_cancel_browse;
+        source_class->get_update_progress =
+                mafw_proxy_source_get_update_progress;
 	source_class->get_metadata = mafw_proxy_source_get_metadata;
 	source_class->get_metadatas = mafw_proxy_source_get_metadatas;
 	source_class->set_metadata = mafw_proxy_source_set_metadata;

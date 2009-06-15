@@ -313,6 +313,16 @@
 #define MAFW_SOURCE_METHOD_CANCEL_BROWSE "cancel_browse"
 
 /**
+ * get_update_progress:
+ *
+ * Returns the progress of updating source.
+ *
+ * Returns: the percentage of progress; 100% if source is already updated
+ * (%DBUS_TYPE_INT32).
+ */
+#define MAFW_SOURCE_METHOD_GET_UPDATE_PROGRESS "get_update_progress"
+
+/**
  * get_metadata:
  * @object_ids: the list of object id:s to query (array of
  *              %DBUS_TYPE_STRING).

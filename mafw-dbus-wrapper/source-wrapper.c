@@ -497,6 +497,18 @@ DBusHandlerResult handle_source_msg(DBusConnection *conn,
 		mafw_dbus_ack_or_error(conn, msg, error);
 		return DBUS_HANDLER_RESULT_HANDLED;
 
+        } else if (dbus_message_has_member(
+                           msg,
+                           MAFW_SOURCE_METHOD_GET_UPDATE_PROGRESS)) {
+                gint progress;
+
+                progress = mafw_source_get_update_progress(source);
+                /* Send the progress */
+                mafw_dbus_send(conn,
+                               mafw_dbus_reply(msg,
+                                               MAFW_DBUS_INT32(progress)));
+                return DBUS_HANDLER_RESULT_HANDLED;
+
 	} else if (dbus_message_has_member(msg,
 					   MAFW_SOURCE_METHOD_GET_METADATA)) {
 		const gchar *objectid;
