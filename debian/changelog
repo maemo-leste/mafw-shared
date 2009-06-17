@@ -1,3 +1,17 @@
+mafw-shared (0.1.2009.25-3) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.25-3
+
+ -- Juha Kellokoski <veitikka6@gmail.com>  Mon, 15 Jun 2009 14:00:00 +0300
+
+mafw-shared (0.1.2009.25-2) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.25-2
+  * Added unit tests for updating signal.
+  * Handle update signal in mafw-shared component.
+
+ -- Juha Kellokoski <veitikka6@gmail.com>  Mon, 15 Jun 2009 14:00:00 +0300
+
 mafw-shared (0.1.2009.25-1) unstable; urgency=low
 
   * MAFW Shared, pre-release 0.2009.25-1
