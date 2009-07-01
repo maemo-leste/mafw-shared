@@ -274,9 +274,13 @@ static void _append_ob_mdata(gchar *key, GHashTable *metadata,
 	ba = mafw_metadata_freeze_bary(metadata);
 	dbus_message_iter_append_basic(&istr, DBUS_TYPE_STRING,
 						&key);
-	mafw_dbus_message_append_array(&istr, DBUS_TYPE_BYTE,
-					ba->len,
-					ba->data);
+
+	if (!mafw_dbus_message_append_array(&istr, DBUS_TYPE_BYTE,
+					    ba->len,
+					    ba->data)) {
+	       	g_error("Unable to append byte-array to the dbus-message");
+	}
+
 	dbus_message_iter_close_container(iter_array,
 						&istr);
 	g_byte_array_free(ba, TRUE);
