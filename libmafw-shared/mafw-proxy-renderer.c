@@ -553,6 +553,8 @@ static void mafw_proxy_renderer_get_status_cb(DBusPendingCall *pending_call,
 							 state, object_id,
 							 params->user_data,
 							 NULL);
+		if (playlist)
+			g_object_unref(playlist);
 	} else {
 		if (params->callback)
 			((MafwRendererStatusCB) (params->callback))(params->renderer,

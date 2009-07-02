@@ -285,6 +285,8 @@ DBusHandlerResult handle_renderer_msg(DBusConnection *conn,
 								    &errp));
 		}
 
+		if (playlist)
+			g_object_unref(playlist);
 		if (errp) {
 			g_critical("Could not get playlist instance: %s",
 				   errp->message);

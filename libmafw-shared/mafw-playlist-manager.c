@@ -448,12 +448,10 @@ static DBusHandlerResult dbus_handler(DBusConnection *con, DBusMessage *msg,
 		 * we'd have it too.
 		 */
 		if (playlist) {
-			if (G_OBJECT(playlist)->ref_count > 1)
-				g_signal_emit(self,
+			g_signal_emit(self,
                                               Signal_list_destruction_failed.id,
                                               0,
 					      playlist);
-			g_object_unref(playlist);
 		}
 	} else if (!strcmp(member, MAFW_PLAYLIST_METHOD_PLAYLIST_IMPORTED)) {
 		guint new_id, import_id;
