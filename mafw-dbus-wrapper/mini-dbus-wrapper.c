@@ -113,11 +113,16 @@ int main(int arch, const char *argv[])
 		g_warning("inotify_init: %m");
 	for (i = 1; argv[i]; i++) {
 		DIR *hdir;
+		gchar entry[PATH_MAX];
 		const struct dirent *dent;
 
-		if (strlen(argv[i]) > PATH_MAX)
+		strncpy(entry, argv[i], PATH_MAX);
+		if (entry[PATH_MAX - 1] != '\0') {
+			g_warning("Argument %d is too long, skipping", i-1);
 			continue;
-		hdir = opendir(argv[i]);
+		}
+
+		hdir = opendir(entry);
 		if (hdir != NULL) {
 			while ((dent = readdir(hdir)) != NULL) {
 				gchar *path;
@@ -126,21 +131,21 @@ int main(int arch, const char *argv[])
 				if (!g_str_has_suffix(dent->d_name, ".so")
 				    && !strstr(dent->d_name, ".so."))
 					continue;
-				path = g_strjoin("/", argv[i], dent->d_name,
+				path = g_strjoin("/", entry, dent->d_name,
 						 NULL);
 				if (load(regi, path))
 					watch(ifd, path);
 				g_free(path);
 			} /* while */
 			closedir(hdir);
-			watch(ifd, argv[i]);
+			watch(ifd, entry);
 		} else if (errno == ENOTDIR) {
-			if (load(regi, argv[i]))
-				watch(ifd, argv[i]);
+			if (load(regi, entry))
+				watch(ifd, entry);
 		} else if (errno == ENOENT)
-			load(regi, argv[i]);
+			load(regi, entry);
 		else
-			g_error("%s: %m", argv[i]);
+			g_error("%s: %m", entry);
 	} /* for */
 
 	/* Watch $ifd. */
