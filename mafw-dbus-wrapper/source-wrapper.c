@@ -505,12 +505,23 @@ DBusHandlerResult handle_source_msg(DBusConnection *conn,
                            msg,
                            MAFW_SOURCE_METHOD_GET_UPDATE_PROGRESS)) {
                 gint progress;
+                gint processed_items;
+                gint remaining_items;
+                gint remaining_time;
 
-                progress = mafw_source_get_update_progress(source);
+                progress = mafw_source_get_update_progress(source,
+                                                           &processed_items,
+                                                           &remaining_items,
+                                                           &remaining_time);
                 /* Send the progress */
                 mafw_dbus_send(conn,
-                               mafw_dbus_reply(msg,
-                                               MAFW_DBUS_INT32(progress)));
+                               mafw_dbus_reply(
+                                       msg,
+                                       MAFW_DBUS_INT32(progress),
+                                       MAFW_DBUS_INT32(processed_items),
+                                       MAFW_DBUS_INT32(remaining_items),
+                                       MAFW_DBUS_INT32(remaining_time)));
+
                 return DBUS_HANDLER_RESULT_HANDLED;
 
 	} else if (dbus_message_has_member(msg,
@@ -595,7 +606,8 @@ DBusHandlerResult handle_source_msg(DBusConnection *conn,
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
-static void updating(MafwSource *source, gint progress,
+static void updating(MafwSource *source, gint progress, gint processed_items,
+                     gint remaining_items, gint remaining_time,
                      gpointer userdata)
 {
         ExportedComponent *ecomp;
@@ -607,7 +619,10 @@ static void updating(MafwSource *source, gint progress,
                                ecomp->object_path,
                                MAFW_SOURCE_INTERFACE,
                                MAFW_SOURCE_SIGNAL_UPDATING,
-                               MAFW_DBUS_INT32(progress)));
+                               MAFW_DBUS_INT32(progress),
+                               MAFW_DBUS_INT32(processed_items),
+                               MAFW_DBUS_INT32(remaining_items),
+                               MAFW_DBUS_INT32(remaining_time)));
 }
 
 static void container_changed(MafwSource *source, const gchar *object_id,

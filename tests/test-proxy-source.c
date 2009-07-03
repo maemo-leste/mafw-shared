@@ -864,9 +864,13 @@ static void sp_container_changed(MafwSource *self, const gchar *object_id)
 	check_signals();
 }
 
-static void sp_updating(MafwSource *self, gint progress)
+static void sp_updating(MafwSource *self, gint progress, gint processed_items,
+                        gint remaining_items, gint remaining_time)
 {
         fail_if(progress != 25, "Wrong updating progress");
+        fail_if(processed_items != 4, "Wrong updating processed items");
+        fail_if(remaining_items != 6, "Wrong updating remaining items");
+        fail_if(remaining_time != 12, "Wrong updating remaining time");
         updt_chd = TRUE;
         check_signals();
 }
@@ -900,7 +904,10 @@ START_TEST(test_source_signals)
 	mockbus_incoming(mafw_dbus_signal(MAFW_SOURCE_SIGNAL_CONTAINER_CHANGED,
 				MAFW_DBUS_STRING("str_oid")));
         mockbus_incoming(mafw_dbus_signal(MAFW_SOURCE_SIGNAL_UPDATING,
-                                          MAFW_DBUS_INT32(25)));
+                                          MAFW_DBUS_INT32(25),
+                                          MAFW_DBUS_INT32(4),
+                                          MAFW_DBUS_INT32(6),
+                                          MAFW_DBUS_INT32(12)));
 
 	g_main_loop_run(mainloop_test);
 

@@ -314,11 +314,16 @@
 
 /**
  * get_update_progress:
- *
- * Returns the progress of updating source.
+
+ * Returns the progress of updating source, as well as updates the parameters
+ * with the right values.
  *
  * Returns: the percentage of progress; 100% if source is already updated
  * (%DBUS_TYPE_INT32).
+ * @processed_items: how many elements has been processed so far.
+ * @remaining_items: how many items remain to be processed.
+ * @remaining_time: estimated time (in seconds) to finish the update.
+ *
  */
 #define MAFW_SOURCE_METHOD_GET_UPDATE_PROGRESS "get_update_progress"
 
@@ -403,10 +408,14 @@
 /**
  * updating:
  * @progress: percentage of completation (%DBUS_TYPE_INT32).
+ * @processed_items: how many elements has been processed so far
+ * (%DBUS_TYPE_INT32).
+ * @remaining_items: how many items remain to be processed (%DBUS_TYPE_INT32).
+ * @remaining_time: estimated time (in seconds) to finish the update
+ * (%DBUS_TYPE_INT32).
  *
  * Updating signal
  */
-
 #define MAFW_SOURCE_SIGNAL_UPDATING "updating"
 
 /**

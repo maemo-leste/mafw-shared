@@ -120,11 +120,18 @@ static DBusHandlerResult handle_updating_signal(MafwProxySource *self,
                                                 DBusMessage *msg)
 {
 	gint progress;
+        gint processed_items;
+        gint remaining_items;
+        gint remaining_time;
 
 	/* Read the message and signal the values */
 	mafw_dbus_parse(msg,
-			DBUS_TYPE_INT32, &progress);
-	g_signal_emit_by_name(self, "updating", progress);
+			DBUS_TYPE_INT32, &progress,
+                        DBUS_TYPE_INT32, &processed_items,
+                        DBUS_TYPE_INT32, &remaining_items,
+                        DBUS_TYPE_INT32, &remaining_time);
+	g_signal_emit_by_name(self, "updating", progress, processed_items,
+                              remaining_items, remaining_time);
 
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
@@ -448,9 +455,15 @@ static void free_reply_info_and_oid(RequestReplyInfo *info)
 	free_request_reply_info(info);
 }
 
-static gint mafw_proxy_source_get_update_progress(MafwSource * self)
+static gint mafw_proxy_source_get_update_progress(MafwSource * self,
+                                                  gint *processed_items,
+                                                  gint *remaining_items,
+                                                  gint *remaining_time)
 {
         gint progress = 100;
+        gint rec_processed_items = -1;
+        gint rec_remaining_items = 0;
+        gint rec_remaining_time = 0;
         MafwProxySource *proxy;
         DBusMessage *reply;
         GError *error = NULL;
@@ -466,8 +479,24 @@ static gint mafw_proxy_source_get_update_progress(MafwSource * self)
                                MAFW_SOURCE_ERROR, &error);
 
         if (reply) {
-                mafw_dbus_parse(reply, DBUS_TYPE_INT32, &progress);
+                mafw_dbus_parse(reply,
+                                DBUS_TYPE_INT32, &progress,
+                                DBUS_TYPE_INT32, &rec_processed_items,
+                                DBUS_TYPE_INT32, &rec_remaining_items,
+                                DBUS_TYPE_INT32, &rec_remaining_time);
                 dbus_message_unref(reply);
+        }
+
+        if (processed_items) {
+                *processed_items = rec_processed_items;
+        }
+
+        if (remaining_items) {
+                *remaining_items = rec_remaining_items;
+        }
+
+        if (remaining_time) {
+                *remaining_time = rec_remaining_time;
         }
 
         return progress;
