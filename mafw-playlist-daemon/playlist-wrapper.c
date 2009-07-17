@@ -127,6 +127,164 @@ static void send_property_changed(guint32 plid, const gchar *property)
 	g_free(path);
 }
 
+#define MATCH_STR "type='signal',interface='org.freedesktop.DBus'," \
+			"member='NameOwnerChanged',arg0='%s',arg2=''"
+/** Hash table to store which client increased the use-count */
+static GHashTable *_usecount_holders;
+
+/**
+ * Removes a dbus-match registered for a client, and removes it's list from
+ * the _usecount_holders hash-table
+ */
+static void _unregister_requestor(DBusConnection *conn, const gchar *requestor)
+{
+	gchar *matchstr = NULL;
+	
+	if (!_usecount_holders)
+		return;
+
+	matchstr = g_strdup_printf(MATCH_STR, requestor);
+	dbus_bus_remove_match(conn, matchstr, NULL);
+	g_hash_table_remove(_usecount_holders, requestor);
+	g_free(matchstr);
+	return;
+}
+
+/**
+ * Removes a Pls pointer from the client's list, and unregisters the client
+ * if the list is empty after this
+ */
+static void _remove_usecount_holder(DBusConnection *connection,
+					const gchar *requestor, Pls *pls)
+{
+	GList *pllist = NULL;
+
+	if (!_usecount_holders)
+		return;
+
+	pllist = g_hash_table_lookup(_usecount_holders, requestor);
+	pllist = g_list_remove(pllist, pls);
+	
+	if (!pllist)
+	{
+		_unregister_requestor(connection, requestor);
+		return;
+	}
+	
+	g_hash_table_replace(_usecount_holders, g_strdup(requestor), pllist);
+}
+
+/**
+ * Extracts the client from the message, and removes the Pls pointer from it's
+ * list
+ */
+static void _remove_usecount_holder_by_msg(DBusConnection *connection,
+						DBusMessage *msg, Pls *pls)
+{
+	const gchar *requestor = dbus_message_get_sender(msg);
+
+	_remove_usecount_holder(connection, requestor, pls);
+}
+
+/**
+ * Handles the NameOwnerChanged signals, and unregisters a client if needed.
+ * This will decrease the use-count, if a registered client disappears.
+ */
+static DBusHandlerResult
+handle_usecount_holder_msgs(DBusConnection *conn,
+                                     DBusMessage *msg,
+                                     gpointer data)
+{
+	gchar *name, *oldname, *newname;
+
+	if (!_usecount_holders)
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	if (!dbus_message_is_signal(msg, DBUS_INTERFACE_DBUS,
+				   "NameOwnerChanged"))
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	
+
+	name = oldname = newname = NULL;
+	mafw_dbus_parse(msg,
+			 DBUS_TYPE_STRING, &name,
+			 DBUS_TYPE_STRING, &oldname,
+			 DBUS_TYPE_STRING, &newname);
+	if (*newname && *oldname)
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+
+	if (*newname) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	} else if (*oldname) {
+		GList *pllist = g_hash_table_lookup(_usecount_holders, oldname);
+		
+		if (pllist)
+		{
+			while(pllist)
+			{
+				Pls *pls = pllist->data;
+
+				pls->use_count--;
+				pls_set_use_count(pls, pls->use_count);
+				pllist = g_list_next(pllist);
+			}
+			_unregister_requestor(conn, oldname);
+		}
+	}
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+/**
+ * Add a dbus-filter
+ */
+void init_pl_wrapper(DBusConnection *connection)
+{	
+	if (!dbus_connection_add_filter(connection,
+                                        handle_usecount_holder_msgs,
+                                        NULL, NULL))
+		g_assert_not_reached();
+}
+
+/**
+ * If a client has increased a playlist's use-count, this will store the client's
+ * request in the _usecount_holders hash-table.
+ */
+static void _store_usecount_holder(DBusConnection *connection, DBusMessage *msg,
+					Pls *pls)
+{
+	GList *pllist = NULL;
+	gchar *requestor = g_strdup(dbus_message_get_sender(msg));
+
+	if (!_usecount_holders)
+	{
+		_usecount_holders = g_hash_table_new_full(g_str_hash,
+							g_str_equal,
+							(GDestroyNotify)g_free,
+							NULL);
+	}
+	else
+		pllist = g_hash_table_lookup(_usecount_holders, requestor);
+
+	if (!pllist)
+	{/* Adding match */
+		gchar *match_str = g_strdup_printf(MATCH_STR, requestor);
+		DBusError err;
+
+		dbus_error_init(&err);
+		
+		dbus_bus_add_match(connection, match_str, &err);
+		if (dbus_error_is_set(&err))
+		{
+                	g_critical("Unable to add match: %s", match_str);
+			dbus_error_free(&err);
+		}
+		g_free(match_str);
+	}
+	
+	pllist = g_list_prepend(pllist, pls);
+	
+	g_hash_table_replace(_usecount_holders, requestor, pllist);
+}
+
 DBusHandlerResult handle_playlist_request(DBusConnection *conn,
                                           DBusMessage *msg,
                                           const gchar *path)
@@ -215,11 +373,13 @@ DBusHandlerResult handle_playlist_request(DBusConnection *conn,
 	} else if (!strcmp(member, MAFW_PLAYLIST_METHOD_INCREMENT_USE_COUNT)) {
 		pls->use_count++;
 		pls_set_use_count(pls, pls->use_count);
+		_store_usecount_holder(conn, msg, pls);
 		mafw_dbus_ack_or_error(conn, msg, NULL);
 		return DBUS_HANDLER_RESULT_HANDLED;
 	} else if (!strcmp(member, MAFW_PLAYLIST_METHOD_DECREMENT_USE_COUNT)) {
 		pls->use_count--;
 		pls_set_use_count(pls, pls->use_count);
+		_remove_usecount_holder_by_msg(conn, msg, pls);
 		mafw_dbus_ack_or_error(conn, msg, NULL);
 		return DBUS_HANDLER_RESULT_HANDLED;
 	} else if (!strcmp(member, MAFW_PLAYLIST_METHOD_INSERT_ITEM)) {

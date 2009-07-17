@@ -130,6 +130,7 @@ int main(int argc, char *argv[])
 
 	dbus_connection_setup_with_g_main(dbus, NULL);
 	dbus_connection_unref(dbus);
+	init_pl_wrapper(dbus);
 
 	Loop = g_main_loop_new(NULL, FALSE);
 	while (!done) {

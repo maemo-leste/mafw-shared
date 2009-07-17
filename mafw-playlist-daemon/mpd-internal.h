@@ -102,6 +102,8 @@ extern gint pls_cmpids(gconstpointer a, gconstpointer b, gpointer unused);
 extern gboolean pls_save(Pls *pls, const gchar *fn);
 extern Pls *pls_load(const gchar *fn);
 
+extern void init_pl_wrapper(DBusConnection *connection);
+
 /* From mafw-playlist-daemon.c: */
 extern void save_me(Pls *pls);
 

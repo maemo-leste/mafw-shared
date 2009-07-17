@@ -27,6 +27,7 @@
 #include <glib.h>
 #include <checkmore.h>
 #include "libmafw-shared/mafw-playlist-manager.h"
+#include "common/mafw-dbus.h"
 
 /* Definitions */
 /* Playlists will be stored in PLS_DIR. */
@@ -115,6 +116,45 @@ START_TEST(test_basic_persistence)
 	checkmore_spin_loop(500);
 	fail_if(!pl_dest_called);
 	pl_dest_called = FALSE;
+	destr_failed_called = FALSE;
+
+	checkmore_stop();
+}
+END_TEST
+
+START_TEST(test_auto_decrement)
+{
+	gpointer plm, pls;
+	DBusConnection *conn = mafw_dbus_session(NULL);
+	const gchar *unique_name;
+	
+	system("test -d '" PLS_DIR "' && rm -rf '" PLS_DIR "'");
+	start_daemon();
+	plm = mafw_playlist_manager_get();
+	fail_unless(plm != NULL);
+	pls = mafw_playlist_manager_create_playlist(plm, "pl", NULL);
+	fail_unless(pls != NULL);
+	g_signal_connect(plm, "playlist-destruction-failed",
+			 G_CALLBACK(pls_destr_failed), pls);
+	g_signal_connect(plm, "playlist-destroyed",
+			 G_CALLBACK(pls_destroyed), pls);
+	mafw_playlist_insert_item(pls, 0, "alfa", NULL);
+	mafw_playlist_increment_use_count(pls, NULL);
+	g_object_ref(pls);
+	mafw_playlist_manager_destroy_playlist(plm, pls, NULL);
+	g_object_ref(pls);
+	checkmore_spin_loop(500);
+	fail_if(!destr_failed_called);
+	unique_name = dbus_bus_get_unique_name(conn);
+	mafw_dbus_send(conn, mafw_dbus_signal_full("com.nokia.mafw.playlist", DBUS_PATH_DBUS,
+				      DBUS_INTERFACE_DBUS,
+				      "NameOwnerChanged",
+				      MAFW_DBUS_STRING(unique_name),
+				      MAFW_DBUS_STRING(unique_name),
+				      MAFW_DBUS_STRING("")));
+	mafw_playlist_manager_destroy_playlist(plm, pls, NULL);
+	checkmore_spin_loop(1500);
+	fail_if(!pl_dest_called);
 	checkmore_stop();
 }
 END_TEST
@@ -183,6 +223,7 @@ int main(void)
 	tcase_set_timeout(tc, 0);
 if (1)	tcase_add_test(tc, test_basic_persistence);
 if (1)	tcase_add_test(tc, test_diskfull);
+if (1)	tcase_add_test(tc, test_auto_decrement);
 	suite_add_tcase(suite, tc);
 
 	return checkmore_run(srunner_create(suite), FALSE);
