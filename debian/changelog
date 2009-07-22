@@ -1,8 +1,9 @@
-mafw-shared (0.1.2009.28-3) unstable; urgency=low
+mafw-shared (0.1.2009.30-1) unstable; urgency=low
 
-  * MAFW Shared, pre-release 0.2009.28-3
+  * MAFW Shared, pre-release 0.2009.30-1
+  * Fixes: NB#128630 - Cannot remove playlist on renderer crash
 
- -- Juha Kellokoski <veitikka6@gmail.com>  Tue, 07 Jul 2009 14:00:00 +0300
+ -- Juha Kellokoski <veitikka6@gmail.com>  Fri, 17 Jul 2009 14:00:00 +0300
 
 mafw-shared (0.1.2009.28-2) unstable; urgency=low
 
