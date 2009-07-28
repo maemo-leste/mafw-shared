@@ -92,6 +92,11 @@ AS_IF([test "x$enable_debug" = xyes],
 
 dnl Tests.
 DISABLED_BY_DEFAULT([tests], [disable unit tests])
+if test "x${SBOX_DPKG_INST_ARCH}" = "xarmel"; then
+   AC_MSG_WARN([Tests are disabled for compilation in armel])
+   enable_tests="no"
+fi
+
 if test "x$enable_tests" = xyes; then
 	PKG_CHECK_MODULES(CHECKMORE, [checkmore, check >= 0.9.4])
 	if test -z "$CHECKMORE_LIBS"; then
