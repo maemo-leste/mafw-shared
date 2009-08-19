@@ -1,3 +1,8 @@
 #!/bin/sh
 
 #DEBHELPER#
+
+set -e
+
+update-sudoers || true
+

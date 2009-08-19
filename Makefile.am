@@ -31,6 +31,9 @@ backuppost_SCRIPTS		= mafw-db.restore.sh mafw-playlists.restore.sh
 cuddir				= /etc/osso-cud-scripts/
 cud_SCRIPTS			= mafw-db-cud.sh mafw-playlists-cud.sh
 
+sudoersdir			= /etc/sudoers.d/
+sudoers_DATA 			= mafw-dbus-daemon.sudoers
+
 DISTCHECK_CONFIGURE_FLAGS	= --enable-gtk-doc
 
 MAINTAINERCLEANFILES 		= aclocal.m4 compile config.guess config.sub \
