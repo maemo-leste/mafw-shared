@@ -1086,6 +1086,7 @@ renderer_new_error:
 	if (connection)
 		dbus_connection_unref(connection);
 
+        g_free(path);
 	g_object_unref(new_obj);
 	return NULL;
 }
