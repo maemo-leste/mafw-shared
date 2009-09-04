@@ -24,6 +24,7 @@
 #include "config.h"
 #endif
 #include <string.h>
+#include <stdlib.h>
 #include <glib.h>
 #include <dbus/dbus.h>
 #include <dbus/dbus-glib-lowlevel.h>
@@ -273,10 +274,10 @@ void wrapper_init(void)
 	dbus_error_init(&err);
 	Session_bus = dbus_bus_get(DBUS_BUS_SESSION, &err);
 	if (dbus_error_is_set(&err)) {
-		g_error("wrapper_init(): %s",
-			dbus_error_is_set(&err) ? err.message : "error");
+		g_critical("wrapper_init(): %s",
+                           dbus_error_is_set(&err) ? err.message : "error");
 		dbus_error_free(&err);
-		g_assert_not_reached();
+                exit(2);
 	}
 	dbus_connection_setup_with_g_main(Session_bus, NULL);
 
