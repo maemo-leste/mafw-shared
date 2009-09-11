@@ -167,6 +167,10 @@ static void got_extension_property(DBusPendingCall *pending, void *udata)
 				MAFW_DBUS_TYPE_GVALUE, val);
 	}
 	info->cb(info->extension, prop, val, info->data, err);
+	if (val) {
+		g_value_unset(val);
+		g_free(val);
+	}
 	if (err) g_error_free(err);
 	dbus_message_unref(msg);
 	dbus_pending_call_unref(pending);

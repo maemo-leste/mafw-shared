@@ -1079,6 +1079,8 @@ GObject *mafw_proxy_renderer_new(const gchar *uuid, const gchar *plugin,
 	dbus_connection_setup_with_g_main(connection, NULL);
 	proxy_extension_attach(G_OBJECT(new_obj), connection, plugin, registry);
 
+	g_free(path);
+
 	return new_obj;
 
 renderer_new_error:
