@@ -1,3 +1,11 @@
+mafw-shared (0.1.2009.39-1) unstable; urgency=low
+
+  * MAFW Shared, pre-release 0.2009.39-1
+  * Fixed small memory leaks.
+    * Patch by Juan Suárez Romero.
+
+ -- Juha Kellokoski <veitikka6@gmail.com>  Fri, 18 Sep 2009 14:21:32 +0300
+
 mafw-shared (0.1.2009.37-1) unstable; urgency=low
 
   * MAFW Shared, pre-release 0.2009.37-1
