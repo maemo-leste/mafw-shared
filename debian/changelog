@@ -1,20 +1,11 @@
-mafw-shared (0.1.2009.39-1) unstable; urgency=low
-
-  * Version increased.
-
- -- Juha Kellokoski <veitikka6@gmail.com>  Fri, 11 Sep 2009 14:00:00 +0300
-
-mafw-shared (0.1.2009.37-2) unstable; urgency=low
-
-  * MAFW Sales RC8.
-
- -- Juha Kellokoski <veitikka6@gmail.com>  Fri, 11 Sep 2009 14:00:00 +0300
-
 mafw-shared (0.1.2009.37-1) unstable; urgency=low
 
-  * MAFW Sales RC6.
+  * MAFW Shared, pre-release 0.2009.37-1
+  * Fixes: NB#134715 - [PR1.1 proposal] mafw-upnp-source shouldn't make a coredump when dbus isn't available
+  * Fixes: NB#134799 - [PR1.1 proposal] <MemLeak> mafw-shared-0.1.2009.33/mafw-playlist-daemon playlist-wrapper.c
+  * Fixes: NB#134807 - [PR1.1 proposal] <MemLeak> mafw-shared-0.1.2009.33/libmafw-shared/ mafw-proxy-renderer.c
 
- -- Juha Kellokoski <veitikka6@gmail.com>  Thu, 10 Sep 2009 12:30:00 +0300
+ -- Juha Kellokoski <veitikka6@gmail.com>  Fri, 04 Sep 2009 12:00:00 +0300
 
 mafw-shared (0.1.2009.35-3) unstable; urgency=low
 
