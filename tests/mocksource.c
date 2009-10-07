@@ -26,7 +26,7 @@
 #include "common/mafw-dbus.h"
 #include "common/dbus-interface.h"
 #include <libmafw/mafw-metadata-serializer.h>
-
+#include <string.h>
 #define MAFW_DBUS_PATH MAFW_SOURCE_OBJECT "/mocksource"
 
 /* Mocked renderer
@@ -189,6 +189,18 @@ static void destroy_object(MafwSource *self, const gchar *object_id,
 	quit_main_loop(self, G_STRFUNC);
 }
 
+static void set_property(MafwExtension *self, const gchar *name,
+				  const GValue *value)
+{
+	MockedSource* ms = MOCKED_SOURCE(self);
+
+	g_assert(strcmp(name, MAFW_PROPERTY_EXTENSION_ACTIVATE) == 0);
+	g_assert(G_VALUE_TYPE(value) == G_TYPE_BOOLEAN);
+	
+	ms->activate_state = g_value_get_boolean(value);
+	quit_main_loop(MAFW_SOURCE(ms), G_STRFUNC);
+}
+
 /*----------------------------------------------------------------------------
   Mocked source construction
   ----------------------------------------------------------------------------*/
@@ -208,11 +220,12 @@ static void mocked_source_class_init(MockedSourceClass *klass)
 
 	sclass->create_object = create_object;
 	sclass->destroy_object = destroy_object;
+	MAFW_EXTENSION_CLASS(sclass)->set_extension_property = set_property;
 }
 
 static void mocked_source_init(MockedSource *source)
 {
-	/* NOP */
+	MAFW_EXTENSION_SUPPORTS_ACTIVATE(MAFW_EXTENSION(source));	
 }
 
 gpointer mocked_source_new(const gchar *name, const gchar *uuid,

@@ -46,6 +46,7 @@ typedef struct {
 	gboolean dont_quit;
 	guint repeat_browse;
 	gboolean dont_send_last;
+	gboolean activate_state;
 } MockedSource;
 
 extern GType mocked_source_get_type(void);

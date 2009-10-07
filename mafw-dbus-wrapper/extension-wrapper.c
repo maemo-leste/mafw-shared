@@ -34,6 +34,203 @@
 #define MAFW_DBUS_PATH MAFW_OBJECT
 #define MAFW_DBUS_INTERFACE MAFW_EXTENSION_INTERFACE
 
+static GHashTable *source_activators;
+static DBusConnection *conn;
+
+#define SOURCE_REFDATA_NAME "mafw-refcount"
+
+static void _increase_mafwcount(gpointer object)
+{
+	gint count = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(object),
+					SOURCE_REFDATA_NAME));
+
+	count++;
+	g_object_set_data(G_OBJECT(object), SOURCE_REFDATA_NAME,
+				GINT_TO_POINTER(count));
+}
+
+static void _decrease_mafwcount(gpointer object)
+{
+	gint count = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(object),
+					SOURCE_REFDATA_NAME));
+
+	if (count)
+	{
+		count--;
+		g_object_set_data(G_OBJECT(object), SOURCE_REFDATA_NAME,
+				GINT_TO_POINTER(count));
+	
+		if (count == 0)
+		{
+			mafw_extension_set_property_boolean(MAFW_EXTENSION(object),
+						MAFW_PROPERTY_EXTENSION_ACTIVATE,
+						FALSE);
+			
+		}
+		
+	}
+	
+}
+
+static void _unregister_client(gpointer object, const gchar *name);
+
+#define MATCH_STR "type='signal',interface='org.freedesktop.DBus'," \
+			"member='NameOwnerChanged',arg0='%s',arg2=''"
+
+static DBusHandlerResult
+_handle_client_exits(DBusConnection *connection,
+                                     DBusMessage *msg,
+                                     gpointer data)
+{
+	gchar *name, *oldname, *newname;
+
+	if (!source_activators || g_hash_table_size(source_activators) == 0)
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	if (!dbus_message_is_signal(msg, DBUS_INTERFACE_DBUS,
+				   "NameOwnerChanged"))
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	
+
+	name = oldname = newname = NULL;
+	mafw_dbus_parse(msg,
+			 DBUS_TYPE_STRING, &name,
+			 DBUS_TYPE_STRING, &oldname,
+			 DBUS_TYPE_STRING, &newname);
+	if (*newname && *oldname)
+	{
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+
+	if (*newname) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	} else if (*oldname) {
+		GList *object_list = g_hash_table_lookup(source_activators,
+								name);
+		while(object_list)
+		{
+			gpointer object = object_list->data;
+			_unregister_client(object, name);
+			object_list = g_hash_table_lookup(source_activators,
+								name);
+		}
+	}
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+/**
+ * Registers a watch for a client, to get the crash/exit signals
+ */
+static void _register_watch(const gchar *name)
+{
+	gchar *match_str = g_strdup_printf(MATCH_STR, name);
+	DBusError err;
+
+	dbus_error_init(&err);
+
+	dbus_bus_add_match(conn, match_str, &err);
+	if (dbus_error_is_set(&err))
+	{
+               	g_critical("Unable to add match: %s", match_str);
+		dbus_error_free(&err);
+	}
+	g_free(match_str);
+}
+
+/**
+ * Deregisters a watch on dbus, for the given name
+ */
+static void _deregister_watch(const gchar *name)
+{
+	gchar *matchstr = NULL;
+	matchstr = g_strdup_printf(MATCH_STR, name);
+	dbus_bus_remove_match(conn, matchstr, NULL);
+	g_free(matchstr);
+}
+
+/**
+ * Registers a client. Registers a watch if needed, and stores the request for
+ * the given object if needed.
+ */
+static gboolean _register_client(gpointer object, const gchar *name)
+{
+	GList *object_list;
+
+	if (!source_activators)
+	{
+		source_activators = g_hash_table_new_full(g_str_hash,
+						g_str_equal,
+						g_free,
+						NULL);
+	}
+	object_list = g_hash_table_lookup(source_activators, name);
+	
+	if (!object_list)
+	{
+		_register_watch(name);
+	}
+	else
+	{
+		if (g_list_find(object_list, object))
+		{// this UI already requested activity
+			return FALSE;
+		}
+	}
+	
+	object_list = g_list_prepend(object_list, object);
+	g_hash_table_insert(source_activators, g_strdup(name), object_list);
+
+	return TRUE;
+}
+
+/**
+ * Removes an object from the given list. If needed, deregisters the watch for
+ * the client. It removes or updates only the new list for the client
+ */
+static void _remove_object_from_list(GList *object_list,
+					gpointer object, const gchar *name)
+{
+	object_list = g_list_remove(object_list, object);
+	if (!object_list)
+	{// There isn't any source, what should be active because of this UI
+		_deregister_watch(name);
+		g_hash_table_remove(source_activators, name);
+	}
+	else
+	{
+		g_hash_table_insert(source_activators, g_strdup(name),
+					object_list);
+	}
+}
+
+/**
+ * Unregisters a client for the object.
+ */ 
+static void _unregister_client(gpointer object, const gchar *name)
+{
+	GList *object_list;
+
+	if (!source_activators || g_hash_table_size(source_activators) == 0)
+	{
+		return;
+	}
+	object_list = g_hash_table_lookup(source_activators, name);
+
+	if (!object_list)
+	{
+		return;
+	}
+	else
+	{
+		if (!g_list_find(object_list, object))
+		{// this UI never requested activity
+			return;
+		}
+		
+		_remove_object_from_list(object_list, object, name);
+	}
+	_decrease_mafwcount(object);
+}
+
 static DBusHandlerResult handle_set_property(DBusConnection *conn,
 					     DBusMessage *msg,
 					     ExportedComponent *ecomp)
@@ -43,9 +240,83 @@ static DBusHandlerResult handle_set_property(DBusConnection *conn,
 
 	mafw_dbus_parse(msg, DBUS_TYPE_STRING, &prop,
 			MAFW_DBUS_TYPE_GVALUE, &val);
-	mafw_extension_set_property(MAFW_EXTENSION(ecomp->comp), prop, &val);
+	
+	if (G_VALUE_TYPE(&val) == G_TYPE_BOOLEAN &&
+				!strcmp(prop, MAFW_PROPERTY_EXTENSION_ACTIVATE))
+	{/* Activate handling */
+		if (g_value_get_boolean(&val))
+		{/* activating */
+			if (mafw_extension_set_property(MAFW_EXTENSION(ecomp->comp), prop, &val))
+			{
+				const gchar *client_id = dbus_message_get_sender(msg);
+
+				if (_register_client(ecomp->comp, client_id))
+				{
+					_increase_mafwcount(ecomp->comp);
+				}
+				
+			}
+		}
+		else
+		{/* deactivating */
+			const gchar *client_id = dbus_message_get_sender(msg);
+			_unregister_client(ecomp->comp, client_id);
+		}
+	}
+	else
+	{
+		mafw_extension_set_property(MAFW_EXTENSION(ecomp->comp), prop, &val);
+	}
+
 	g_value_unset(&val);
 	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+struct _oblist_finder_data {
+	gpointer extension;
+	GPtrArray *ui_ids;
+};
+
+/**
+ * Collects the UIs, which has requested activity from the given extension
+ */
+static void _find_ext(const gchar *ui_id, GList *ext_list,
+			struct _oblist_finder_data *obl_finder_data)
+{
+	if (g_list_find(ext_list, obl_finder_data->extension))
+	{
+		g_ptr_array_add(obl_finder_data->ui_ids, (gpointer)ui_id);
+		
+	}
+}
+
+/**
+ * Removes the given extension, reffed by the given UI
+ */
+static void _ext_remover(const gchar *ui_id, gpointer comp)
+{
+	GList *ext_list = g_hash_table_lookup(source_activators, ui_id);
+	_remove_object_from_list(ext_list, comp, ui_id);
+}
+
+/**
+ * Called if the extension has removed from the registry
+ */
+void extension_deregister(gpointer comp)
+{
+	struct _oblist_finder_data obl_finder_data = {0};
+	
+	obl_finder_data.extension = comp;
+	obl_finder_data.ui_ids = g_ptr_array_new();
+
+	if (source_activators)
+	{
+		g_hash_table_foreach(source_activators, (GHFunc)_find_ext,
+						&obl_finder_data);
+		g_ptr_array_foreach(obl_finder_data.ui_ids, (GFunc)_ext_remover,
+					comp);
+	}
+	g_ptr_array_free(obl_finder_data.ui_ids, TRUE);
 }
 
 static void get_property_reply(MafwExtension *self, const gchar *prop,
@@ -201,5 +472,14 @@ void connect_to_extension_signals(gpointer ecomp)
 	connect_signal(ecomp, "notify::name", name_changed);
 	connect_signal(ecomp, "error", error);
 	connect_signal(ecomp, "property-changed", prop_changed);
+}
+
+void extension_init(DBusConnection *connection)
+{
+	conn = connection;
+	if (!dbus_connection_add_filter(connection,
+                                        _handle_client_exits,
+                                        NULL, NULL))
+		g_assert_not_reached();
 }
 /* vi: set noexpandtab ts=8 sw=8 cino=t0,(0: */

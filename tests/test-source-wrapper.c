@@ -47,6 +47,8 @@
 #define FAKE_SOURCE_NAME "mocksource"
 #define FAKE_SOURCE_SERVICE MAFW_SOURCE_SERVICE ".mockland." FAKE_SOURCE_NAME
 
+extern const char *msg_sender_id;
+
 static GMainLoop *Loop = NULL;
 
 static gboolean quit_mainloop_on_tout(gpointer user_data)
@@ -315,6 +317,474 @@ START_TEST(test_source_wrapper)
 }
 END_TEST
 
+#define MATCH_STR "type='signal',interface='org.freedesktop.DBus'," \
+			"member='NameOwnerChanged',arg0='%s',arg2=''"
+
+START_TEST(test_activate_settings)
+{
+	MockedSource *source;
+	MafwRegistry *registry;
+	DBusMessage *c;
+	GValue v = {0};
+	gchar *matchstr;
+
+	registry = mafw_registry_get_instance();
+	mockbus_reset();
+	wrapper_init();
+
+	source = mocked_source_new("mocksource", "mocksource", Loop);
+
+	mock_appearing_extension(FAKE_SOURCE_SERVICE, FALSE);
+	mafw_registry_add_extension(MAFW_REGISTRY(registry),
+                                    MAFW_EXTENSION(source));
+	g_value_init(&v, G_TYPE_BOOLEAN);
+
+	// asking deactivity	
+	g_value_set_boolean(&v, FALSE);
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == TRUE);
+
+	// asking activity twice, and then deactivate it
+	g_value_set_boolean(&v, TRUE);
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+
+	g_value_set_boolean(&v, FALSE);
+
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	matchstr = g_strdup_printf(MATCH_STR, msg_sender_id);
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS,
+						     DBUS_PATH_DBUS,
+						     DBUS_INTERFACE_DBUS,
+						     "RemoveMatch",
+						     MAFW_DBUS_STRING(matchstr)));
+	g_free(matchstr);
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == TRUE);
+
+	// asking activity, then activating by other one, deactivate by first one, deact by second one
+	g_value_set_boolean(&v, TRUE);
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+
+	msg_sender_id = ":1.104";
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+
+	g_value_set_boolean(&v, FALSE);
+	msg_sender_id = ":1.103";
+	mockbus_incoming(c =
+	mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	matchstr = g_strdup_printf(MATCH_STR, msg_sender_id);
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS,
+						     DBUS_PATH_DBUS,
+						     DBUS_INTERFACE_DBUS,
+						     "RemoveMatch",
+						     MAFW_DBUS_STRING(matchstr)));
+	g_free(matchstr);
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	msg_sender_id = ":1.104";
+	mockbus_incoming(c =
+	mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	matchstr = g_strdup_printf(MATCH_STR, msg_sender_id);
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS,
+						     DBUS_PATH_DBUS,
+						     DBUS_INTERFACE_DBUS,
+						     "RemoveMatch",
+						     MAFW_DBUS_STRING(matchstr)));
+	g_free(matchstr);
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == TRUE);
+
+	// asking activity, then activating by other one, disconnect by first one, deact by second one
+	msg_sender_id = ":1.103";
+	g_value_set_boolean(&v, TRUE);
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+
+	msg_sender_id = ":1.104";
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+
+	g_value_set_boolean(&v, FALSE);
+	msg_sender_id = ":1.103";
+	mockbus_incoming(c =
+	mafw_dbus_signal_full(NULL, DBUS_PATH_DBUS,
+					      DBUS_INTERFACE_DBUS,
+					      "NameOwnerChanged",
+					      MAFW_DBUS_STRING(msg_sender_id),
+					      MAFW_DBUS_STRING(msg_sender_id),
+					      MAFW_DBUS_STRING("")));
+	matchstr = g_strdup_printf(MATCH_STR, msg_sender_id);
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS,
+						     DBUS_PATH_DBUS,
+						     DBUS_INTERFACE_DBUS,
+						     "RemoveMatch",
+						     MAFW_DBUS_STRING(matchstr)));
+	g_free(matchstr);
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	msg_sender_id = ":1.104";
+	mockbus_incoming(c =
+	mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	matchstr = g_strdup_printf(MATCH_STR, msg_sender_id);
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS,
+						     DBUS_PATH_DBUS,
+						     DBUS_INTERFACE_DBUS,
+						     "RemoveMatch",
+						     MAFW_DBUS_STRING(matchstr)));
+	g_free(matchstr);
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == TRUE);
+	
+	// asking activity, then deactivating by other one, disconnect by first one
+	msg_sender_id = ":1.103";
+	g_value_set_boolean(&v, TRUE);
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+
+	g_value_set_boolean(&v, FALSE);
+	msg_sender_id = ":1.104";
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+
+	msg_sender_id = ":1.103";
+	mockbus_incoming(c =
+	mafw_dbus_signal_full(NULL, DBUS_PATH_DBUS,
+					      DBUS_INTERFACE_DBUS,
+					      "NameOwnerChanged",
+					      MAFW_DBUS_STRING(msg_sender_id),
+					      MAFW_DBUS_STRING(msg_sender_id),
+					      MAFW_DBUS_STRING("")));
+	matchstr = g_strdup_printf(MATCH_STR, msg_sender_id);
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS,
+						     DBUS_PATH_DBUS,
+						     DBUS_INTERFACE_DBUS,
+						     "RemoveMatch",
+						     MAFW_DBUS_STRING(matchstr)));
+	g_free(matchstr);
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == TRUE);
+
+	/* Creating another source. Reffing both of them, and reffing one of
+	them by another UIs, closing the first UI*/
+	MockedSource *source2;
+	source2 = mocked_source_new("mocksource2", "mocksource2", Loop);
+
+	mock_appearing_extension(MAFW_SOURCE_SERVICE ".mockland." FAKE_SOURCE_NAME "2", FALSE);
+	mafw_registry_add_extension(MAFW_REGISTRY(registry),
+                                    MAFW_EXTENSION(source2));
+
+	msg_sender_id = ":1.103";
+	g_value_set_boolean(&v, TRUE);
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH "2",
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source2)->activate_state == FALSE);
+
+	msg_sender_id = ":1.104";
+	g_value_set_boolean(&v, TRUE);
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+
+	msg_sender_id = ":1.103";
+	mockbus_incoming(c =
+	mafw_dbus_signal_full(NULL, DBUS_PATH_DBUS,
+					      DBUS_INTERFACE_DBUS,
+					      "NameOwnerChanged",
+					      MAFW_DBUS_STRING(msg_sender_id),
+					      MAFW_DBUS_STRING(msg_sender_id),
+					      MAFW_DBUS_STRING("")));
+	matchstr = g_strdup_printf(MATCH_STR, msg_sender_id);
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS,
+						     DBUS_PATH_DBUS,
+						     DBUS_INTERFACE_DBUS,
+						     "RemoveMatch",
+						     MAFW_DBUS_STRING(matchstr)));
+	g_free(matchstr);
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	fail_if(MOCKED_SOURCE(source2)->activate_state == TRUE);
+
+	msg_sender_id = ":1.104";
+	g_value_set_boolean(&v, FALSE);
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	matchstr = g_strdup_printf(MATCH_STR, msg_sender_id);
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS,
+						     DBUS_PATH_DBUS,
+						     DBUS_INTERFACE_DBUS,
+						     "RemoveMatch",
+						     MAFW_DBUS_STRING(matchstr)));
+	g_free(matchstr);
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == TRUE);
+
+	/* Reffing both sources, and reffing one of
+	them by another UIs, closing the last UI. Unreffing the first source,
+	closing UI*/
+	msg_sender_id = ":1.103";
+	g_value_set_boolean(&v, TRUE);
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	fail_if(MOCKED_SOURCE(source2)->activate_state == TRUE);
+
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH "2",
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source2)->activate_state == FALSE);
+	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+
+	msg_sender_id = ":1.104";
+	g_value_set_boolean(&v, TRUE);
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	fail_if(MOCKED_SOURCE(source2)->activate_state == FALSE);
+
+	msg_sender_id = ":1.104";
+	mockbus_incoming(c =
+	mafw_dbus_signal_full(NULL, DBUS_PATH_DBUS,
+					      DBUS_INTERFACE_DBUS,
+					      "NameOwnerChanged",
+					      MAFW_DBUS_STRING(msg_sender_id),
+					      MAFW_DBUS_STRING(msg_sender_id),
+					      MAFW_DBUS_STRING("")));
+	matchstr = g_strdup_printf(MATCH_STR, msg_sender_id);
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS,
+						     DBUS_PATH_DBUS,
+						     DBUS_INTERFACE_DBUS,
+						     "RemoveMatch",
+						     MAFW_DBUS_STRING(matchstr)));
+	g_free(matchstr);
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	fail_if(MOCKED_SOURCE(source2)->activate_state == FALSE);
+
+	msg_sender_id = ":1.103";
+	g_value_set_boolean(&v, FALSE);
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == TRUE);
+	fail_if(MOCKED_SOURCE(source2)->activate_state == FALSE);
+
+	mockbus_incoming(c =
+	mafw_dbus_signal_full(NULL, DBUS_PATH_DBUS,
+					      DBUS_INTERFACE_DBUS,
+					      "NameOwnerChanged",
+					      MAFW_DBUS_STRING(msg_sender_id),
+					      MAFW_DBUS_STRING(msg_sender_id),
+					      MAFW_DBUS_STRING("")));
+	matchstr = g_strdup_printf(MATCH_STR, msg_sender_id);
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS,
+						     DBUS_PATH_DBUS,
+						     DBUS_INTERFACE_DBUS,
+						     "RemoveMatch",
+						     MAFW_DBUS_STRING(matchstr)));
+	g_free(matchstr);
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == TRUE);
+	fail_if(MOCKED_SOURCE(source2)->activate_state == TRUE);
+
+
+	/* Reffing both sources by a UI, reffing one of them by another UI,
+	destroying this source */
+	msg_sender_id = ":1.103";
+	g_value_set_boolean(&v, TRUE);
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	fail_if(MOCKED_SOURCE(source2)->activate_state == TRUE);
+
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH "2",
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source2)->activate_state == FALSE);
+	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+
+	msg_sender_id = ":1.104";
+	g_value_set_boolean(&v, TRUE);
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	fail_if(MOCKED_SOURCE(source2)->activate_state == FALSE);
+
+	mockbus_expect(mafw_dbus_method_full(
+		DBUS_SERVICE_DBUS,
+		DBUS_PATH_DBUS,
+		DBUS_INTERFACE_DBUS,
+		"ReleaseName",
+		MAFW_DBUS_STRING("com.nokia.mafw.source.mockland.mocksource")
+		));
+	mockbus_reply(MAFW_DBUS_UINT32(4));
+	matchstr = g_strdup_printf(MATCH_STR, msg_sender_id);
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS,
+						     DBUS_PATH_DBUS,
+						     DBUS_INTERFACE_DBUS,
+						     "RemoveMatch",
+						     MAFW_DBUS_STRING(matchstr)));
+	g_free(matchstr);
+	mafw_registry_remove_extension(mafw_registry_get_instance(),
+					MAFW_EXTENSION(source));
+
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source2)->activate_state == FALSE);
+	
+	msg_sender_id = ":1.103";
+	g_value_set_boolean(&v, FALSE);
+	mockbus_incoming(c =
+		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH "2",
+				      MAFW_EXTENSION_INTERFACE,
+				      MAFW_EXTENSION_METHOD_SET_PROPERTY,
+				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
+				      MAFW_DBUS_GVALUE(&v)));
+	matchstr = g_strdup_printf(MATCH_STR, msg_sender_id);
+	mockbus_expect(mafw_dbus_method_full(DBUS_SERVICE_DBUS,
+						     DBUS_PATH_DBUS,
+						     DBUS_INTERFACE_DBUS,
+						     "RemoveMatch",
+						     MAFW_DBUS_STRING(matchstr)));
+	g_free(matchstr);
+	mockbus_deliver(NULL);
+	fail_if(MOCKED_SOURCE(source2)->activate_state == TRUE);
+
+
+	mockbus_finish();
+}
+END_TEST
+
 START_TEST(test_source_errors)
 {
 	ErrorSource *source;
@@ -414,7 +884,7 @@ END_TEST
 static Suite *source_wrapper_suite(void)
 {
 	Suite *suite;
-	TCase *tc_export_unexport, *tc_source_wrapper, * tc_source_errors;
+	TCase *tc_export_unexport, *tc_source_wrapper, *tc_activate, *tc_source_errors;
 
 	suite = suite_create("Source Wrapper");
 if(1) {	tc_export_unexport = checkmore_add_tcase(suite,
@@ -424,6 +894,10 @@ if(1) {	tc_export_unexport = checkmore_add_tcase(suite,
 if(1) {	tc_source_wrapper = checkmore_add_tcase(suite, "Source wrapper",
                                                 test_source_wrapper);
 	tcase_set_timeout(tc_source_wrapper, 60); }
+if(1) {	tc_activate = checkmore_add_tcase(suite, "Extension activate settings",
+                                                test_activate_settings);
+	tcase_set_timeout(tc_activate, 60); }
+
 if(1) {	tc_source_errors = checkmore_add_tcase(suite, "Source errors",
 			    test_source_errors);
 	tcase_set_timeout(tc_source_errors, 60); }

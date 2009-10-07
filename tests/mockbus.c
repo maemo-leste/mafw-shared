@@ -520,7 +520,7 @@ static void ckmsg(DBusMessage *m)
 
  	emsg = g_queue_pop_head(&Expected_messages);
 
-	fail_if(emsg == NULL, "MOCKBUS: this message was unexpected");
+	fail_if(emsg == NULL, "MOCKBUS: this message was unexpected: %s", dbus_message_get_member(m));
 	fail_unless(
 		dbus_message_get_type(m) == dbus_message_get_type(emsg),
 		"MOCKBUS: expected different message type");
@@ -542,7 +542,7 @@ static void ckmsg(DBusMessage *m)
 		"MOCKBUS: expected different signature");
 	fail_unless(compare_msgs(emsg, m),
 		    "MOCKBUS: message contents are not according to "
-		    "expectations");
+		    "expectations\n%s\nvs\n%s", msginfo(emsg), msginfo(m));
 	dbus_message_unref(emsg);
 }
 
@@ -979,4 +979,11 @@ dbus_uint32_t dbus_message_get_serial(DBusMessage *message)
 	 * so let's satisfy it.  NOTE that there may be some other
 	 * requirements wrt serials... */
 	return (dbus_uint32_t)message;
+}
+
+const char *msg_sender_id = ":1.103";
+
+const char *dbus_message_get_sender(DBusMessage *message)
+{
+	return msg_sender_id;
 }
