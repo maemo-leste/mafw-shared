@@ -38,6 +38,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include <locale.h>
 #include <glib.h>
 #include <libmafw/mafw.h>
 #include "wrapper.h"
@@ -52,6 +53,7 @@ int main(int argc, char *argv[])
 		g_print("use: mafw-dbus-wrapper <PLUGIN>\n");
 		return 1;
 	}
+	setlocale(LC_ALL, "");
 	g_type_init();
 	mafw_log_init(NULL);
 	registry = mafw_registry_get_instance();
