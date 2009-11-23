@@ -81,6 +81,8 @@ struct _MafwProxySourceMetadataReq {
 
 struct _MafwProxySourceBrowseReq {
 	MafwSourceBrowseResultCb browse_cb;
+	gboolean emitting;
+	gboolean stop_emitting;
 	gpointer user_data;
 };
 
@@ -212,10 +214,13 @@ mafw_proxy_source_dispatch_message(DBusConnection *conn,
 			dbus_message_iter_next(&iary);
 
 			if (!new_req)
+			{
 				new_req = g_hash_table_lookup(
 					priv->browse_requests,
 					GUINT_TO_POINTER(browse_id));
-
+				if (new_req)
+					new_req->emitting = TRUE;
+			}
 			if (new_req) {
 				new_req->browse_cb(MAFW_SOURCE(self),
 						   browse_id,
@@ -227,10 +232,15 @@ mafw_proxy_source_dispatch_message(DBusConnection *conn,
 						   metadata,
 						   new_req->user_data,
 						   error);
-				if (remaining_count == 0 )
+				if (remaining_count == 0 || new_req->stop_emitting)
+				{
 					g_hash_table_remove(
 						priv->browse_requests,
 						GUINT_TO_POINTER(browse_id));
+					g_clear_error(&error);
+					mafw_metadata_release(metadata);
+					break;
+				}
 			}
 			else
 			{
@@ -242,7 +252,9 @@ mafw_proxy_source_dispatch_message(DBusConnection *conn,
 			g_clear_error(&error);
 			mafw_metadata_release(metadata);
 		}
-
+		if (new_req) {
+			new_req->emitting = FALSE;
+		}
 		return DBUS_HANDLER_RESULT_HANDLED;
 	} else if (!dbus_message_has_path(msg,
                                           proxy_extension_return_path(self))) {
@@ -385,14 +397,22 @@ static gboolean mafw_proxy_source_cancel_browse(MafwSource * self,
 
 	req = g_hash_table_lookup(priv->browse_requests,
 				  GUINT_TO_POINTER(browse_id));
+	
 	if (req != NULL) {
 		DBusMessage *reply;
 		/* The request is still in progress. */
 
-		/* $req doesn't contain dynamically allocated data
-		 * we care about. */
-		g_hash_table_remove(priv->browse_requests,
+		if (req->emitting)
+		{
+			req->stop_emitting = TRUE;
+		}
+		else
+		{
+			/* $req doesn't contain dynamically allocated data
+		 	* we care about. */
+			g_hash_table_remove(priv->browse_requests,
 				    GUINT_TO_POINTER(browse_id));
+		}
 
 		/* Tell our mate to cancel. */
 		reply = mafw_dbus_call(

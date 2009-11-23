@@ -454,6 +454,8 @@ START_TEST(test_cancel_browse)
 				"testobject::item1", NULL, "", 0, "");
 	replmsg = append_browse_res(replmsg, &iter_msg, &iter_array, 4444, 3, 0,
 				"testobject::item2", NULL, "", 0, "");
+	replmsg = append_browse_res(replmsg, &iter_msg, &iter_array, 4444, 3, 0,
+				"testobject::item3", NULL, "", 0, "");
 	dbus_message_iter_close_container(&iter_msg, &iter_array);
 
 	mockbus_incoming(replmsg);
