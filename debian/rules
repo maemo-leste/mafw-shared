@@ -87,8 +87,6 @@ binary-arch: build install
 	dh_installdirs
 	dh_install --sourcedir=debian/tmp
 	dh_installchangelogs -a
-	install debian/mafw-dbus-daemon.mafw.xsession \
-		debian/mafw-dbus-daemon/etc/X11/Xsession.post/32mafw
 	dh_installdocs
 	dh_strip -plibmafw-shared0 -plibmafw-shared0-dev \
 		--dbg-package=libmafw-shared0-dbg
