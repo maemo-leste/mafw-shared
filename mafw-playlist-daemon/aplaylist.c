@@ -444,14 +444,6 @@ gchar *pls_get_item(Pls *pls, guint idx)
 		return NULL;
         }
 
-        if (pls->shuffled) {
-                /* If element is unshuffled, shuffle it */
-                if (pls->iidx[idx] >= pls->poolst) {
-                        swap_elements(pls, pls->poolst, pls->iidx[idx]);
-                        pls->poolst++;
-                }
-        }
-
 	return g_strdup(pls->vidx[idx]);
 }
 
