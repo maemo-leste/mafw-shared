@@ -97,7 +97,7 @@ binary-arch: build install
 	dh_link
 	dh_compress
 	dh_fixperms
-	dh_makeshlibs -V
+	dh_makeshlibs -plibmafw-shared0 -V"libmafw-shared0 (>= 0.1.2009.38)"
 	dh_shlibdeps -L libmafw-shared0
 	dh_installdeb
 	dh_gencontrol
