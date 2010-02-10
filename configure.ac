@@ -6,7 +6,7 @@
 # Copyright (C) 2007, 2008, 2009 Nokia. All rights reserved.
 
 AC_PREREQ([2.53])
-AC_INIT([mafw-shared], [0.2.2010.05-1])
+AC_INIT([mafw-shared], [0.2.2010.06-1])
 
 AC_CONFIG_SRCDIR([mafw-dbus-wrapper/wrapper.c])
 AC_CONFIG_HEADERS([config.h])
