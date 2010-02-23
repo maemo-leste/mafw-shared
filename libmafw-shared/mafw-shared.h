@@ -31,8 +31,11 @@
 #include <libmafw/mafw.h>
 #include <libmafw-shared/mafw-playlist-manager.h>
 
+G_BEGIN_DECLS
+
 extern gboolean mafw_shared_init(MafwRegistry *reg, GError **error);
 extern void mafw_shared_deinit(void);
 
+G_END_DECLS
 #endif /* ! __MAFW_SHARED_H__ */
 /* vi: set noexpandtab ts=8 sw=8 cino=t0,(0: */
