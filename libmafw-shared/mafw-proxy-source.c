@@ -237,6 +237,7 @@ mafw_proxy_source_dispatch_message(DBusConnection *conn,
 					g_hash_table_remove(
 						priv->browse_requests,
 						GUINT_TO_POINTER(browse_id));
+					new_req = NULL;
 					g_clear_error(&error);
 					mafw_metadata_release(metadata);
 					break;
