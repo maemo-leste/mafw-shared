@@ -1,3 +1,9 @@
+mafw-shared (0.2.2010.09-1) unstable; urgency=low
+
+  * Fixes: NB#189290 -  mediaplayer-ECD3-11-2203: Segfaults on m3u playlist with more than 32 mp3 files
+
+ -- Pekka Rönkkö <ext-pekka.1.ronkko@nokia.com>  Wed, 08 Sep 2010 13:06:44 +0200
+
 mafw-shared (0.2.2010.06-1) unstable; urgency=low
 
   * Fixes: NB#155331 - Backwards compatibility problems with strict version dependency in libmafw-shared0
