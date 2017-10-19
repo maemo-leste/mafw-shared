@@ -1,3 +1,9 @@
+mafw-shared (0.3.2010.36-2) unstable; urgency=low
+
+  * Bump version number so its not the same as the stock package
+
+ -- Pekka Rönkkö <ext-pekka.1.ronkko@nokia.com>  Wed, 18 Oct 2017 20:20:05 -0400
+
 mafw-shared (0.2.2010.09-1) unstable; urgency=low
 
   * Fixes: NB#189290 -  mediaplayer-ECD3-11-2203: Segfaults on m3u playlist with more than 32 mp3 files
