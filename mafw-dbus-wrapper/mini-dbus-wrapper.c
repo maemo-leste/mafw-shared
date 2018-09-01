@@ -103,7 +103,9 @@ int main(int arch, const char *argv[])
 	mafw_log_init(":warning");
 
 	/* Init wrapping */
+#if !GLIB_CHECK_VERSION(2,35,0)
 	g_type_init();
+#endif
 	regi = MAFW_REGISTRY(mafw_registry_get_instance());
 	mafw_shared_init(regi, NULL);
 	wrapper_init();

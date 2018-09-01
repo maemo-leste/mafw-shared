@@ -890,8 +890,9 @@ void init_playlist_wrapper(DBusConnection *dbus, gboolean opt_stayalive,
 	if (!dbus_connection_register_fallback(dbus, MAFW_PLAYLIST_PATH,
                                                &path_vtable, NULL))
 		g_error("dbus_connection_register_fallback: failed");
-
+#if !GLIB_CHECK_VERSION(2,35,0)
 	g_type_init();
+#endif
 	Reg = mafw_registry_get_instance();
 	g_signal_connect(Reg, "renderer-added", (GCallback)renderer_added_cb,
                          NULL);

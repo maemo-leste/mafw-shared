@@ -14,7 +14,8 @@ AM_CPPFLAGS = \
 	$(GOBJECT_CFLAGS) \
 	$(DBUS_CFLAGS) \
 	$(MAFW_CFLAGS) \
-	-DLOCALSTATEDIR="\"$(localstatedir)\""
+	-DLOCALSTATEDIR="\"$(localstatedir)\"" \
+	-DGLIB_DISABLE_DEPRECATION_WARNINGS
 
 AM_LDFLAGS = $(_LDFLAGS)
 libcommon_la_LIBADD = \

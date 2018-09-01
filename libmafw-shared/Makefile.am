@@ -14,7 +14,8 @@ AM_CPPFLAGS 			= $(GOBJECT_CFLAGS) \
 				  $(MAFW_CFLAGS) \
 				  -I$(top_srcdir)/common \
 				  -I$(top_srcdir) -I. \
-				  -DLOCALSTATEDIR="\"$(localstatedir)\""
+				  -DLOCALSTATEDIR="\"$(localstatedir)\""\
+				  -DGLIB_DISABLE_DEPRECATION_WARNINGS
 libmafw_shared_la_LIBADD 	= $(GOBJECT_LIBS) $(DBUS_LIBS) $(MAFW_LIBS) \
 				  $(top_builddir)/common/libcommon.la
 BUILT_SOURCES 			= mafw-marshal.c \

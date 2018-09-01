@@ -75,26 +75,6 @@ static __attribute__((noreturn)) void _die(char const *cry, DBusError *err)
 	g_assert_not_reached();
 }
 
-/* Stolen from D-Bus internals. */
-typedef union
-{
-	dbus_int16_t  i16;
-	dbus_uint16_t u16;
-	dbus_int32_t  i32;
-	dbus_uint32_t u32;
-#ifdef DBUS_HAVE_INT64
-	dbus_int64_t  i64;
-	dbus_uint64_t u64;
-#else
-	struct {
-		char eightbytes[8];
-	};
-#endif
-	double dbl;
-	unsigned char byt;
-	char *str;
-} DBusBasicValue;
-
 /*
  * Appends an array (@values) of length @nelem consisting of @eltype
  * typed elements to @iter.  Handles arrays of basic types and and
@@ -369,12 +349,12 @@ fail:
  * 	MAFW_DBUS_INT(remaining_count));
  */
 static gboolean clever_append_valist(DBusMessage *msg,
-				     int first_arg_t, va_list args)
+				     int first_arg_t, va_list *args)
 {
 	DBusMessageIter iter;
 
 	dbus_message_iter_init_append(msg, &iter);
-	return clever_append_more_valist(&iter, first_arg_t, &args);
+	return clever_append_more_valist(&iter, first_arg_t, args);
 }
 
 static gboolean clever_parse_strvz(DBusMessageIter *iter, char ***values)
@@ -626,16 +606,16 @@ static gboolean clever_parse_gvaluearray(DBusMessageIter *iter,
  * extended later with other MAFW-specific types.
  */
 static gboolean clever_parse_valist(DBusMessage *msg,
-				    int first_arg_t, va_list args)
+				    int first_arg_t, va_list *args)
 {
 	DBusMessageIter iter;
 	int arg_t;
 
 	dbus_message_iter_init(msg, &iter);
 	for (arg_t = first_arg_t; arg_t != DBUS_TYPE_INVALID;
-	     arg_t = va_arg(args, int)) {
+	     arg_t = va_arg(*args, int)) {
 		if (arg_t == MAFW_DBUS_TYPE_SAVEPOINT) {
-			*va_arg(args, DBusMessageIter *) = iter;
+			*va_arg(*args, DBusMessageIter *) = iter;
 			continue;
 		}
 
@@ -645,33 +625,33 @@ static gboolean clever_parse_valist(DBusMessage *msg,
 		}
 
 		if (arg_t == MAFW_DBUS_TYPE_STRVZ) {
-			if (!clever_parse_strvz(&iter, va_arg(args, char ***)))
+			if (!clever_parse_strvz(&iter, va_arg(*args, char ***)))
 			       	goto fail;
 		} else if (arg_t == MAFW_DBUS_TYPE_GBYTEARRAY) {
 			if (!clever_parse_gbytearray(&iter,
-                                                     va_arg(args,
+						     va_arg(*args,
                                                             GByteArray **)))
 			       	goto fail;
 		} else if (arg_t == MAFW_DBUS_TYPE_METADATA) {
 			if (!mafw_dbus_message_parse_metadata(
-                                    &iter, va_arg(args, GHashTable **)))
+				    &iter, va_arg(*args, GHashTable **)))
 			       	goto fail;
 		} else if (arg_t == MAFW_DBUS_TYPE_GVALUE) {
-			if (!clever_parse_gvalue(&iter, va_arg(args, GValue *)))
+			if (!clever_parse_gvalue(&iter, va_arg(*args, GValue *)))
 			       	goto fail;
 		} else if (arg_t == MAFW_DBUS_TYPE_GVALUEARRAY) {
 			if (!clever_parse_gvaluearray(&iter,
-                                                      va_arg(args,
+						      va_arg(*args,
                                                              GValueArray **)))
 			       	goto fail;
 		} else if (arg_t == MAFW_DBUS_TYPE_IGNORE) {
 			/* NOP */
 		} else if (dbus_type_is_basic(arg_t)) {
-			if (!clever_parse_basic(&iter, arg_t, va_arg(args,
+			if (!clever_parse_basic(&iter, arg_t, va_arg(*args,
                                                                      void *)))
 			       	goto fail;
 		} else if (arg_t == DBUS_TYPE_ARRAY) {
-			if (!clever_parse_array(&iter, &args))
+			if (!clever_parse_array(&iter, args))
 			       	goto fail;
 		} else {
 			g_warning("Unhandled type: %d", arg_t);
@@ -708,7 +688,7 @@ DBusMessage *mafw_dbus_reply_v(DBusMessage *call,
 
 	msg = dbus_message_new_method_return(call);
 	va_start(args, first_arg_type);
-	r = clever_append_valist(msg, first_arg_type, args);
+	r = clever_append_valist(msg, first_arg_type, &args);
 	va_end(args);
 	if (!r) _die("error appending message arguments", NULL);
 	return msg;
@@ -878,7 +858,7 @@ DBusMessage *mafw_dbus_msg(int type, int noreply, char const *destination,
 		dbus_message_set_no_reply(t, TRUE);
 
 	va_start(args, first_arg_t);
-	r = clever_append_valist(t, first_arg_t, args);
+	r = clever_append_valist(t, first_arg_t, &args);
 	va_end(args);
 	if (!r) _die("error appending message arguments", NULL);
 	return t;
@@ -1032,7 +1012,7 @@ void mafw_dbus_parse_message_v(DBusMessage *msg,
 #endif
 	dbus_error_init(&err);
 	va_start(args, first_arg_type);
-	r = clever_parse_valist(msg, first_arg_type, args);
+	r = clever_parse_valist(msg, first_arg_type, &args);
 	va_end(args);
 	if (!r) _die("error while parsing message", &err);
 }

@@ -98,7 +98,7 @@ void pls_dump(Pls *pls, gboolean items)
 		"-- name : %s\n"
 		"-- alloc: %u\n"
 		"-- len  : %u\n"
-		"-- waste: %u bytes\n", pls->id, pls->name,
+		"-- waste: %zu bytes\n", pls->id, pls->name,
 		pls->alloc, pls->len,
 		(sizeof(*pls->vidx) + sizeof(*pls->pidx)) *
 		(pls->alloc - pls->len));
@@ -167,14 +167,14 @@ static void swap_elements(Pls *pls, gint index1, gint index2)
 /* Randomize amount elements from pool */
 static void shuffle_elements(Pls *pls, gint amount)
 {
-        gint sidx, i;
+	gint i;
 
         /* Adjust amount to not overflow */
         if (amount > (pls->len - pls->poolst)) {
                 amount = pls->len - pls->poolst;
         }
         for (i = 0; i < amount; i++) {
-                sidx = g_random_int_range(pls->poolst, pls->len);
+		g_random_int_range(pls->poolst, pls->len);
                 swap_elements(pls,
                               pls->poolst,g_random_int_range(pls->poolst,
                                                              pls->len));
@@ -900,7 +900,7 @@ Pls *pls_load(const gchar *fn)
                 oid = NULL;
                 /* We do sanity check on pidx. */
                 if (!fgetsnl(buf, sizeof(buf), f) ||
-                    sscanf(buf, "%u,%a[^\n]", &pidx, &oid) != 2 ||
+		    sscanf(buf, "%u,%ms[^\n]", &pidx, &oid) != 2 ||
                     pidx >= len) {
                         if (oid) {
                                 free(oid);
