@@ -109,6 +109,7 @@
 #include <dbus/dbus.h>
 #include <dbus/dbus-glib-lowlevel.h>
 #include <glib.h>
+#include <inttypes.h>
 
 #include <libmafw/mafw-metadata.h>
 #include <libmafw/mafw-metadata-serializer.h>
@@ -472,8 +473,8 @@ static gboolean cmpmsgs(DBusMessageIter *ia, DBusMessageIter *ib)
 			case DBUS_TYPE_UINT64:
 			case DBUS_TYPE_DOUBLE:
 				if (aval.uint64 != bval.uint64) {
-					g_debug("%llu != %llu", aval.uint64,
-                                                bval.uint64);
+					g_debug("%" PRIu64 " != %" PRIu64,
+						aval.uint64, bval.uint64);
 					return FALSE;
 				}
 				break;

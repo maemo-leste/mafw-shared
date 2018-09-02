@@ -336,18 +336,18 @@ int main(void)
 	Suite *suite;
 
 	suite = suite_create("MafwExtensionProxy");
-if (1)	checkmore_add_tcase(suite, "Extension properties: list",
-			    test_extension_properties_list);
-if (1)	checkmore_add_tcase(suite, "Extension properties: get/set",
-			    test_extension_properties_get_set);
-if (1)	checkmore_add_tcase(suite, "Gee properties",
-			    test_gee_properties);
-if (1)	checkmore_add_tcase(suite, "Error cases",
-			    test_errors);
-if (1)	checkmore_add_tcase(suite, "Signals",
-			    test_signals);
-if (1)	checkmore_add_tcase(suite, "Source exists",
-			    test_exists);
+	if (1)	checkmore_add_tcase(suite, "Extension properties: list",
+				    test_extension_properties_list);
+	if (1)	checkmore_add_tcase(suite, "Extension properties: get/set",
+				    test_extension_properties_get_set);
+	if (1)	checkmore_add_tcase(suite, "Gee properties",
+				    test_gee_properties);
+	if (1)	checkmore_add_tcase(suite, "Error cases",
+				    test_errors);
+	if (1)	checkmore_add_tcase(suite, "Signals",
+				    test_signals);
+	if (1)	checkmore_add_tcase(suite, "Source exists",
+				    test_exists);
 
 	return checkmore_run(srunner_create(suite), FALSE);
 }
