@@ -978,7 +978,7 @@ dbus_uint32_t dbus_message_get_serial(DBusMessage *message)
 	/* dbus_message_new_error() fails if serial is zero,
 	 * so let's satisfy it.  NOTE that there may be some other
 	 * requirements wrt serials... */
-	return (dbus_uint32_t)message;
+	return GPOINTER_TO_UINT(message);
 }
 
 const char *msg_sender_id = ":1.103";

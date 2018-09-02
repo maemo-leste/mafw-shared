@@ -758,7 +758,7 @@ static GMainLoop *TheLoop;
 static guint Times_saved;
 /* Playlist pointers passed to save_me() ORed together, functioning as a very
  * primitive set.  Used to verify that all expected playlists were saved. */
-static guint Playlists_saved;
+static gsize Playlists_saved;
 
 void save_me(Pls *pls)
 {
@@ -768,7 +768,7 @@ void save_me(Pls *pls)
 
 	fail_unless(pls->dirty);
 	Times_saved++;
-	Playlists_saved |= (guint)pls;
+	Playlists_saved |= GPOINTER_TO_SIZE(pls);
 	pls->dirty = FALSE;
 }
 
@@ -879,7 +879,7 @@ START_TEST(test_dirty_timer)
 	quit_after(3 + Settle_time);
 	g_main_loop_run(TheLoop);
 	fail_unless(Times_saved >= 1);
-	fail_unless(Playlists_saved == (0|(guint)p));
+	fail_unless(Playlists_saved == (0|GPOINTER_TO_SIZE(p)));
 
 	/* See if destroying a playlist removes the dirty timer. */
 	Playlists_saved = Times_saved = 0;
@@ -909,7 +909,8 @@ START_TEST(multi_dirty)
 	quit_after(3 + Settle_time);
 	g_main_loop_run(TheLoop);
 	fail_unless(Times_saved >= 2);
-	fail_unless(Playlists_saved == (0|(guint)a|(guint)b));
+	fail_unless(Playlists_saved ==
+		    (0|GPOINTER_TO_SIZE(a)|GPOINTER_TO_SIZE(b)));
 	pls_free(a);
 	pls_free(b);
 }

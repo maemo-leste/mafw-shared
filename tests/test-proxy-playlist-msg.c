@@ -617,14 +617,17 @@ static Suite *mafw_proxy_playlist_suite_new(void)
 	Suite *suite;
 
 	suite = suite_create("MafwProxyPlaylist-msg");
-if (1)	checkmore_add_tcase(suite, "Set/Get name", test_set_get_name);
-if (1)	checkmore_add_tcase(suite, "Set/Get repeat", test_set_get_repeat);
-if (1)	checkmore_add_tcase(suite, "Shuffle", test_shuffle);
-if (1)	checkmore_add_tcase(suite, "Playlist manipulation", test_manipulation);
-if (1)	checkmore_add_tcase(suite, "State functions", test_state_functions);
-if (1)	checkmore_add_tcase(suite, "Signals", test_signals);
-if (1)	checkmore_add_tcase(suite, "Iterator", test_iterator);
-if (1)	checkmore_add_tcase(suite, "Use count", test_usecount);
+	if (1)	checkmore_add_tcase(suite, "Set/Get name", test_set_get_name);
+	if (1)	checkmore_add_tcase(suite, "Set/Get repeat",
+				    test_set_get_repeat);
+	if (1)	checkmore_add_tcase(suite, "Shuffle", test_shuffle);
+	if (1)	checkmore_add_tcase(suite, "Playlist manipulation",
+				    test_manipulation);
+	if (1)	checkmore_add_tcase(suite, "State functions",
+				    test_state_functions);
+	if (1)	checkmore_add_tcase(suite, "Signals", test_signals);
+	if (1)	checkmore_add_tcase(suite, "Iterator", test_iterator);
+	if (1)	checkmore_add_tcase(suite, "Use count", test_usecount);
 
 	return suite;
 }

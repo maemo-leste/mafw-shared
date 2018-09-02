@@ -31,7 +31,8 @@ AM_CPPFLAGS 			= $(GOBJECT_CFLAGS) \
 				  $(MAFW_CFLAGS) \
 				  $(CHECKMORE_CFLAGS) \
 				  -I$(top_srcdir) \
-				  -I$(top_srcdir)/common
+				  -I$(top_srcdir)/common \
+				  -DGLIB_DISABLE_DEPRECATION_WARNINGS
 AM_LDFLAGS			= $(_LDFLAGS)
 # Beware to add libcommon.la at the end, because you'll
 # get undefined references when linking.
