@@ -84,6 +84,14 @@ START_TEST(test_export_unexport)
 }
 END_TEST
 
+static void
+add_metadatas_object(gpointer key, gpointer value, gpointer user_data)
+{
+	gchar ***objs = user_data;
+	**objs = (gchar *)key;
+	(*objs)++;
+}
+
 START_TEST(test_source_wrapper)
 {
 	MockedSource *source;
@@ -255,16 +263,29 @@ START_TEST(test_source_wrapper)
 	fail_unless(source->get_metadata_called == 1);
 
 	/* Get metadatas */
+	GHashTable *objshash = g_hash_table_new_full(g_str_hash, g_str_equal,
+						     NULL, NULL);
+	i = 0;
+	while (objlist[i])
+		g_hash_table_insert(objshash, (gpointer)objlist[i++], NULL);
+
+	const gchar **objs = g_new0(const gchar *, i);
+	const gchar **tmp = objs;
+
+	g_hash_table_foreach (objshash, add_metadatas_object, &tmp);
+	g_hash_table_destroy(objshash);
+
 	mockbus_incoming(c =
                          mafw_dbus_method(
                                  MAFW_SOURCE_METHOD_GET_METADATAS,
                                  MAFW_DBUS_C_STRVZ("testobject", "testobject2"),
                                  MAFW_DBUS_C_STRVZ("title", "artist")));
 
-	mockbus_expect(mdatas_repl(c, objlist, metadata, FALSE));
+	mockbus_expect(mdatas_repl(c, objs, metadata, FALSE));
 
 	mockbus_deliver(NULL);
-	fail_unless(source->get_metadata_called == 1);
+	fail_unless(source->get_metadatas_called == 1);
+	g_free(objs);
 
 	/* Set metadata */
 	mockbus_incoming(c = mafw_dbus_method(MAFW_SOURCE_METHOD_SET_METADATA,
