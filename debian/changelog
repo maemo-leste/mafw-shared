@@ -1,3 +1,9 @@
+mafw-shared (0.4.0) unstable; urgency=low
+
+  * port to maemo-leste and debhelper 9
+
+ -- Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>  Sat, 01 Sep 2018 19:46:42 +0300
+
 mafw-shared (0.3.2010.36-2) unstable; urgency=low
 
   * Bump version number so its not the same as the stock package
