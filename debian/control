@@ -1,8 +1,8 @@
 Source: mafw-shared
 Section: misc
 Priority: optional
-Maintainer: Mika Tapojarvi <mika.tapojarvi@sse.fi>
-Build-Depends: debhelper (>= 5),
+Maintainer: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+Build-Depends: debhelper (>= 9),
                libglib2.0-dev (>= 2.8.6),
                libdbus-1-dev (>= 0.61),
                libdbus-glib-1-dev (>= 0.61),
@@ -13,6 +13,7 @@ Standards-Version: 3.7.2
 Package: libmafw-shared0
 Section: libs
 Architecture: any
+Multi-Arch: same
 Depends: ${shlibs:Depends}
 Description: MAFW UI library
  Media Application framework UI library.
@@ -27,15 +28,9 @@ Depends: libmafw-shared0 (= ${binary:Version}), ${shlibs:Depends},
 Description: Development files for application developers
  Development files for Media Application framework.
 
-Package: libmafw-shared0-dbg
-Architecture: any
-Depends: libmafw-shared0 (= ${binary:Version})
-Priority: extra
-Description: Debug symbols for libmafw-shared0
- Makes debugging a pleasure.
-
 Package: libmafw-shared-doc
 Architecture: all
+Multi-Arch: foreign
 Section: doc
 Suggests: libmafw-shared0
 Description: Documentation for libmafw-shared
@@ -48,13 +43,6 @@ Depends: ${shlibs:Depends}
 Description: MAFW UI library
  Media Application framework UI library.
 
-Package: mafw-dbus-daemon-dbg
-Architecture: any
-Depends: mafw-dbus-daemon (= ${binary:Version})
-Priority: extra
-Description: Debug symbols for mafw-dbus-daemon
- Makes debugging a pleasure.
-
 Package: mafw-playlist-daemon
 Section: libs
 Architecture: any
@@ -63,9 +51,3 @@ Description: MAFW Playlist daemon
  MAFW Playlist daemon makes the possibility to share
  playlists through applications
 
-Package: mafw-playlist-daemon-dbg
-Architecture: any
-Depends: mafw-playlist-daemon (= ${binary:Version})
-Priority: extra
-Description: Debug symbols for mafw-playlist-daemon
- Makes debugging a pleasure.

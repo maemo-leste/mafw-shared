@@ -1,4 +1,4 @@
-usr/lib/*.so
-usr/lib/pkgconfig/*
+usr/lib/*/*.so
+usr/lib/*/pkgconfig/*
 usr/include/mafw-1.0/*
 usr/bin/mini-dbus-wrapper

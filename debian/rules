@@ -1,117 +1,24 @@
 #!/usr/bin/make -f
 
-#export DH_OPTIONS=-v
-
-.SILENT:
-
-# Set $(DESTDIR) (on command line preferably) if you want to see the
-# .deb packages in another directory than `..'.
-DESTDIR := ..
-
-# DEB_BUILD_OPTIONS handling:
-
-# noopt
-CFLAGS += $(if $(findstring noopt,$(DEB_BUILD_OPTIONS)),-O0,-O2)
-
-# debug
-CFLAGS += $(if $(findstring debug,$(DEB_BUILD_OPTIONS)),-ggdb3 -Wall -O0 -finstrument-functions)
+#export DH_VERBOSE=1
 
 # thumb
 CFLAGS += $(if $(findstring thumb,$(DEB_BUILD_OPTIONS)),-mthumb,)
 
-# nostrip
-ifeq ($(findstring nostrip,$(DEB_BUILD_OPTIONS)),)
-INSTALL_PROGRAM += -s
-endif
+CFG_OPTS += $(if $(filter debug,$(DEB_BUILD_OPTIONS)),--enable-debug,--disable-debug)
+CFG_OPTS += $(if $(filter nocheck,$(DEB_BUILD_OPTIONS)),--disable-tests,--enable-tests)
+CFG_OPTS += $(if $(filter nodoc,$(DEB_BUILD_OPTIONS)),--disable-gtk-doc,--enable-gtk-doc)
+CFG_OPTS += $(if $(filter lcov,$(DEB_BUILD_OPTIONS)),--enable-coverage)
 
-maybe_coverage := $(if $(filter lcov,$(DEB_BUILD_OPTIONS)),--enable-coverage,)
+%:
+	dh $@ --with autoreconf
 
-# TODO parallel
-# ?TODO nodocs (maybe we shouldn't build docs at all)
-# ?TODO vfp (guess it's not applicable now)
-# ?TODO nolauncher (neither is this)
-# ?TODO log (since we don't use {d,u}log_* ...)
+ override_dh_autoreconf:
+	dh_autoreconf "NOCONFIGURE=1 ./autogen.sh"
 
-# Do nothing by default.
-.PHONY: all
-all:;
+override_dh_auto_configure:
+	dh_auto_configure -- --prefix=/usr $(CFG_OPTS) CFLAGS="$(CFLAGS)"
 
-configure: debian/stamp-autogen
-debian/stamp-autogen:
-	./autogen.sh \
-		--prefix=/usr \
-		--disable-dependency-tracking \
-		$(maybe_coverage) \
-		CFLAGS="$(CFLAGS)"
-	touch $@
-
-config.status: configure
-
-build: debian/stamp-build
-debian/stamp-build: config.status
-	dh_testdir
-
-	$(MAKE)
-
-ifeq ($(findstring nocheck,$(DEB_BUILD_OPTIONS)),)
-	$(MAKE) check
-endif
-	touch $@
-
-clean:
-	dh_testdir
-	dh_testroot
-
-	-rm -f debian/stamp-*
-
-	[ ! -f Makefile ] || $(MAKE) distclean
-
-	dh_clean
-
-install: debian/stamp-install
-debian/stamp-install: debian/stamp-build
-
-	dh_testdir
-	dh_testroot
-	dh_clean -k
-
-	$(MAKE) install DESTDIR="$(CURDIR)/debian/tmp"
-
-	touch $@
-
-binary-indep: build install
-
-binary-arch: build install
-	dh_testdir
-	dh_testroot
-	dh_installdirs
-	dh_install --sourcedir=debian/tmp
-	dh_installchangelogs -a
-	dh_installdocs
-	dh_strip -plibmafw-shared0 -plibmafw-shared0-dev \
-		--dbg-package=libmafw-shared0-dbg
-	dh_strip -pmafw-dbus-daemon --dbg-package=mafw-dbus-daemon-dbg
-	dh_strip -pmafw-playlist-daemon \
-		--dbg-package=mafw-playlist-daemon-dbg
-	dh_strip -Nmafw-dbus-daemon -Nmafw-playlist-daemon -Nlibmafw-shared0
-	dh_link
-	dh_compress
-	dh_fixperms
+override_dh_makeshlibs:
 	dh_makeshlibs -plibmafw-shared0 -V"libmafw-shared0 (>= 0.1.2009.38)"
-	dh_shlibdeps -L libmafw-shared0
-	dh_installdeb
-	dh_gencontrol
-	dh_md5sums
-	dh_builddeb --destdir="$(DESTDIR)"
 
-binary: binary-indep binary-arch
-
-distcheck: build
-	dh_testdir
-	$(MAKE) distcheck
-
-vg:
-	dh_testdir
-	$(MAKE) -C "$(CURDIR)/tests" vg
-
-.PHONY: build clean binary-indep binary-arch binary-common binary install distcheck vg
