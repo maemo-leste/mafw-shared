@@ -92,6 +92,9 @@ static gboolean renaissance(GIOChannel *chnl, GIOCondition cond,
 	return FALSE;
 }
 
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+
 /* The main function */
 int main(int arch, const char *argv[])
 {
