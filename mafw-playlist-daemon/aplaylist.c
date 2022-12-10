@@ -296,8 +296,8 @@ gboolean pls_inserts(Pls *pls, guint idx, const gchar **oids, guint len)
 	maybe_realloc(pls, len);
 
 	/* Push vidx up to alloc the new elements */
-	g_memmove(&pls->vidx[idx + len], &pls->vidx[idx],
-		  (pls->len - idx) * sizeof(pls->vidx[0]));
+	memmove(&pls->vidx[idx + len], &pls->vidx[idx],
+		(pls->len - idx) * sizeof(pls->vidx[0]));
 
         /* Insert the new elements */
         for (i = 0; i < len; i++) {
@@ -360,8 +360,8 @@ gboolean pls_remove(Pls *pls, guint idx)
 	g_free(pls->vidx[idx]);
 
 	/* Push the rest downwards */
-	g_memmove(&pls->vidx[idx], &pls->vidx[idx + 1],
-		  (pls->len - idx - 1) * sizeof(pls->vidx[0]));
+	memmove(&pls->vidx[idx], &pls->vidx[idx + 1],
+		(pls->len - idx - 1) * sizeof(pls->vidx[0]));
 
         if (pls->shuffled) {
                 opx = pls->iidx[idx];
@@ -375,8 +375,8 @@ gboolean pls_remove(Pls *pls, guint idx)
 
                 /* If element was shuffled, push remaining downwards */
                 if (opx < pls->poolst) {
-                        g_memmove(&pls->pidx[opx], &pls->pidx[opx+1],
-                                  (pls->poolst - opx - 1)*sizeof(pls->pidx[0]));
+			memmove(&pls->pidx[opx], &pls->pidx[opx+1],
+				(pls->poolst - opx - 1)*sizeof(pls->pidx[0]));
 
                         /* Adjust pool index */
                         pls->poolst--;
@@ -678,8 +678,8 @@ gboolean pls_move(Pls *pls, guint from, guint to)
         }
 
         aoid = pls->vidx[from];
-        g_memmove(&pls->vidx[mdest], &pls->vidx[msrc],
-                  mlen * sizeof(pls->vidx[0]));
+	memmove(&pls->vidx[mdest], &pls->vidx[msrc],
+		mlen * sizeof(pls->vidx[0]));
         pls->vidx[to] = aoid;
 
 	i_am_dirty(pls);
