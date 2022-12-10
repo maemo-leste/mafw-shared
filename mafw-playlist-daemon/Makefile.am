@@ -19,13 +19,14 @@ AM_CPPFLAGS 			= $(GOBJECT_CFLAGS) \
 				  -I$(top_srcdir)/common \
 				  -I$(top_srcdir)
 
-mafw_playlist_daemon_LDADD 	= $(GOBJECT_LIBS) \
+mafw_playlist_daemon_LDADD 	= libmafw-playlist-daemon.a \
+				  $(GOBJECT_LIBS) \
 				  $(DBUS_LIBS) \
 				  $(MAFW_LIBS) \
 				  $(TOTEMPL_LIBS) \
 				  $(top_builddir)/common/libcommon.la \
-				  $(top_builddir)/libmafw-shared/libmafw-shared.la \
-				  libmafw-playlist-daemon.a
+				  $(top_builddir)/libmafw-shared/libmafw-shared.la
+
 
 mafw_playlist_daemon_SOURCES 	= mafw-playlist-daemon.c
 

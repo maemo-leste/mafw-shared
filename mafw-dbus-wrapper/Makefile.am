@@ -16,15 +16,17 @@ AM_CPPFLAGS 			= $(GOBJECT_CFLAGS) \
 				  $(MAFW_CFLAGS) \
 				  -I$(top_srcdir) \
 				  -I$(top_srcdir)/common
-mafw_dbus_wrapper_LDADD	= $(GOBJECT_LIBS) \
+
+mafw_dbus_wrapper_LDADD		= libmafw-dbus-wrapper.a \
+				  $(GOBJECT_LIBS) \
 				  $(DBUS_LIBS) \
 				  $(MAFW_LIBS) \
 				  $(top_builddir)/common/libcommon.la \
-				  $(top_builddir)/libmafw-shared/libmafw-shared.la \
-				  libmafw-dbus-wrapper.a
+				  $(top_builddir)/libmafw-shared/libmafw-shared.la
+
 mini_dbus_wrapper_LDADD		= $(mafw_dbus_wrapper_LDADD)
 
-libmafw_dbus_wrapper_a_SOURCES = wrapper.h \
+libmafw_dbus_wrapper_a_SOURCES 	= wrapper.h \
 				  wrapper.c \
 				  source-wrapper.c \
 				  renderer-wrapper.c \
