@@ -181,15 +181,15 @@ START_TEST(test_import_source)
 
 	/* Now check whether the new pl is correct */
 	pls = g_tree_lookup(Playlists, GUINT_TO_POINTER(1));
-	fail_if(pls == NULL);
-	fail_if(pls->len != 2);
+	ck_assert(pls);
+	ck_assert_int_eq(pls->len, 2);
 	oid = pls_get_item(pls, 0);
-	fail_if(oid == NULL);
-	fail_if(strcmp(oid, "test::oid1") != 0);
+	ck_assert(oid);
+	ck_assert(!strcmp(oid, "test::oid1"));
 	g_free(oid);
 	oid = pls_get_item(pls, 1);
-	fail_if(oid == NULL);
-	fail_if(strcmp(oid, "test::oid2") != 0);
+	ck_assert(oid);
+	ck_assert(!strcmp(oid, "test::oid2"));
 	g_free(oid);
 	mockbus_finish();
 
@@ -320,8 +320,8 @@ START_TEST(test_import_source)
 
 	/* Now check whether the new pl is correct */
 	pls = g_tree_lookup(Playlists, GUINT_TO_POINTER(2));
-	fail_if(pls == NULL);
-	fail_if(pls->len != 0);
+	ck_assert(pls);
+	ck_assert_int_eq(pls->len, 0);
 
 
 
@@ -353,19 +353,19 @@ START_TEST(test_import_source)
 
 	/* Now check whether the new pl is correct */
 	pls = g_tree_lookup(Playlists, GUINT_TO_POINTER(3));
-	fail_if(pls == NULL);
-	fail_if(pls->len != 3);
+	ck_assert(pls);
+	ck_assert_int_eq(pls->len, 3);
 	oid = pls_get_item(pls, 0);
-	fail_if(oid == NULL);
-	fail_if(strcmp(oid, "urisource::file://test1/test1.pls") != 0);
+	ck_assert(oid);
+	ck_assert(!strcmp(oid, "urisource::file://test1/test1.pls"));
 	g_free(oid);
 	oid = pls_get_item(pls, 1);
-	fail_if(oid == NULL);
-	fail_if(strcmp(oid, "urisource::file://test2/test2.pls") != 0);
+	ck_assert(oid);
+	ck_assert(!strcmp(oid, "urisource::file://test2/test2.pls"));
 	g_free(oid);
 	oid = pls_get_item(pls, 2);
-	fail_if(oid == NULL);
-	fail_if(strcmp(oid, "urisource::file://test3/test3.pls") != 0);
+	ck_assert(oid);
+	ck_assert(!strcmp(oid, "urisource::file://test3/test3.pls"));
 	g_free(oid);
 
 	/* Cancel a non-existing request */

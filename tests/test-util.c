@@ -34,25 +34,25 @@ START_TEST(test_a2l)
 	GList *l;
 
 	l = mafw_util_array_to_glist((void **)arr);
-	fail_unless(g_list_length(l) == 4);
-	fail_unless(GPOINTER_TO_INT(g_list_nth_data(l, 0)) == 1);
-	fail_unless(GPOINTER_TO_INT(g_list_nth_data(l, 1)) == 2);
-	fail_unless(GPOINTER_TO_INT(g_list_nth_data(l, 2)) == 3);
-	fail_unless(GPOINTER_TO_INT(g_list_nth_data(l, 3)) == 4);
+	ck_assert(g_list_length(l) == 4);
+	ck_assert(GPOINTER_TO_INT(g_list_nth_data(l, 0)) == 1);
+	ck_assert(GPOINTER_TO_INT(g_list_nth_data(l, 1)) == 2);
+	ck_assert(GPOINTER_TO_INT(g_list_nth_data(l, 2)) == 3);
+	ck_assert(GPOINTER_TO_INT(g_list_nth_data(l, 3)) == 4);
 	g_list_free(l);
 
 	l = mafw_util_array_to_glist_n((void **)arr, 4);
-	fail_unless(g_list_length(l) == 4);
-	fail_unless(GPOINTER_TO_INT(g_list_nth_data(l, 0)) == 1);
-	fail_unless(GPOINTER_TO_INT(g_list_nth_data(l, 1)) == 2);
-	fail_unless(GPOINTER_TO_INT(g_list_nth_data(l, 2)) == 3);
-	fail_unless(GPOINTER_TO_INT(g_list_nth_data(l, 3)) == 4);
+	ck_assert(g_list_length(l) == 4);
+	ck_assert(GPOINTER_TO_INT(g_list_nth_data(l, 0)) == 1);
+	ck_assert(GPOINTER_TO_INT(g_list_nth_data(l, 1)) == 2);
+	ck_assert(GPOINTER_TO_INT(g_list_nth_data(l, 2)) == 3);
+	ck_assert(GPOINTER_TO_INT(g_list_nth_data(l, 3)) == 4);
 	g_list_free(l);
 
 	/* Test with zero length. */
 	l = mafw_util_array_to_glist_n((void **)arr, 0);
-	fail_unless(g_list_length(l) == 0);
-	fail_unless(l == NULL);
+	ck_assert(g_list_length(l) == 0);
+	ck_assert(l == NULL);
 	g_list_free(l);
 }
 END_TEST
@@ -67,9 +67,9 @@ START_TEST(test_l2a)
 	l = g_list_append(l, GINT_TO_POINTER(333));
 	l = g_list_append(l, GINT_TO_POINTER(444));
 	arr = mafw_util_glist_to_array(l, &len);
-	fail_unless(len == 2);
-	fail_unless(GPOINTER_TO_INT(arr[0]) == 333);
-	fail_unless(GPOINTER_TO_INT(arr[1]) == 444);
+	ck_assert(len == 2);
+	ck_assert(GPOINTER_TO_INT(arr[0]) == 333);
+	ck_assert(GPOINTER_TO_INT(arr[1]) == 444);
 	g_free(arr);
 	g_list_free(l);
 }

@@ -50,8 +50,8 @@ static void assert_item(gpointer pls, guint idx, const gchar *expected)
 	gchar *oid;
 
 	oid = mafw_playlist_get_item(pls, idx, NULL);
-	fail_if(oid == NULL);
-	fail_if(strcmp(oid, expected));
+	ck_assert(oid);
+	ck_assert(!strcmp(oid, expected));
 	g_free(oid);
 }
 
@@ -68,7 +68,7 @@ static void pls_destroyed(MafwPlaylistManager *plm,
 			  MafwPlaylist *pls, gpointer ourpls)
 {
 	/* Assure that the correct playlist was destroyed. */
-	fail_unless(pls == ourpls);
+	ck_assert(pls == ourpls);
 	pl_dest_called = TRUE;
 }
 
@@ -81,9 +81,9 @@ START_TEST(test_basic_persistence)
 	system("test -d '" PLS_DIR "' && rm -rf '" PLS_DIR "'");
 	start_daemon();
 	plm = mafw_playlist_manager_get();
-	fail_unless(plm != NULL);
+	ck_assert(plm != NULL);
 	pls = mafw_playlist_manager_create_playlist(plm, "lofasz", NULL);
-	fail_unless(pls != NULL);
+	ck_assert(pls != NULL);
 	g_signal_connect(plm, "playlist-destruction-failed",
 			 G_CALLBACK(pls_destr_failed), pls);
 	g_signal_connect(plm, "playlist-destroyed",
@@ -98,8 +98,8 @@ START_TEST(test_basic_persistence)
 
 	start_daemon();
 	pls2 = mafw_playlist_manager_create_playlist(plm, "lofasz", NULL);
-	fail_unless(mafw_playlist_get_size(pls2, NULL) == 5);
-	fail_unless(mafw_playlist_get_repeat(pls2) == FALSE);
+	ck_assert(mafw_playlist_get_size(pls2, NULL) == 5);
+	ck_assert(mafw_playlist_get_repeat(pls2) == FALSE);
 	assert_item(pls2, 0, "alfa");
 	assert_item(pls2, 1, "bravo");
 	assert_item(pls2, 2, "charlie");
@@ -110,11 +110,11 @@ START_TEST(test_basic_persistence)
 	mafw_playlist_manager_destroy_playlist(plm, pls2, NULL);
 	g_object_ref(pls2);
 	checkmore_spin_loop(500);
-	fail_if(!destr_failed_called);
+	ck_assert(destr_failed_called);
 	mafw_playlist_decrement_use_count(pls2, NULL);
 	mafw_playlist_manager_destroy_playlist(plm, pls2, NULL);
 	checkmore_spin_loop(500);
-	fail_if(!pl_dest_called);
+	ck_assert(pl_dest_called);
 	pl_dest_called = FALSE;
 	destr_failed_called = FALSE;
 
@@ -131,9 +131,9 @@ START_TEST(test_auto_decrement)
 	system("test -d '" PLS_DIR "' && rm -rf '" PLS_DIR "'");
 	start_daemon();
 	plm = mafw_playlist_manager_get();
-	fail_unless(plm != NULL);
+	ck_assert(plm != NULL);
 	pls = mafw_playlist_manager_create_playlist(plm, "pl", NULL);
-	fail_unless(pls != NULL);
+	ck_assert(pls != NULL);
 	g_signal_connect(plm, "playlist-destruction-failed",
 			 G_CALLBACK(pls_destr_failed), pls);
 	g_signal_connect(plm, "playlist-destroyed",
@@ -144,7 +144,7 @@ START_TEST(test_auto_decrement)
 	mafw_playlist_manager_destroy_playlist(plm, pls, NULL);
 	g_object_ref(pls);
 	checkmore_spin_loop(500);
-	fail_if(!destr_failed_called);
+	ck_assert(destr_failed_called);
 	unique_name = dbus_bus_get_unique_name(conn);
 	mafw_dbus_send(conn, mafw_dbus_signal_full("com.nokia.mafw.playlist", DBUS_PATH_DBUS,
 				      DBUS_INTERFACE_DBUS,
@@ -154,7 +154,7 @@ START_TEST(test_auto_decrement)
 				      MAFW_DBUS_STRING("")));
 	mafw_playlist_manager_destroy_playlist(plm, pls, NULL);
 	checkmore_spin_loop(1500);
-	fail_if(!pl_dest_called);
+	ck_assert(pl_dest_called);
 	checkmore_stop();
 }
 END_TEST
@@ -179,9 +179,9 @@ START_TEST(test_diskfull)
 	umask(oldmask);
 	start_daemon();
 	plm = mafw_playlist_manager_get();
-	fail_unless(plm != NULL);
+	ck_assert(plm != NULL);
 	pls = mafw_playlist_manager_create_playlist(plm, "lofasz", NULL);
-	fail_unless(pls != NULL);
+	ck_assert(pls != NULL);
 	id = mafw_proxy_playlist_get_id(pls);
 	mafw_playlist_insert_item(pls, 0, "alfa", NULL);
 	mafw_playlist_insert_item(pls, 1, "bravo", NULL);
@@ -201,9 +201,9 @@ START_TEST(test_diskfull)
 	/* We expect the playlist to be nonexistent.  And also that a
 	 * playlist-destroyed signal is emitted. */
 	pls = mafw_playlist_manager_get_playlist(plm, id, NULL);
-	fail_unless(pls == NULL);
+	ck_assert(pls == NULL);
 	checkmore_stop();
-	fail_if(!pl_dest_called);
+	ck_assert(pl_dest_called);
 }
 END_TEST
 

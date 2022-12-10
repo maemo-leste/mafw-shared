@@ -101,7 +101,7 @@ START_TEST(test_rendererwrapper)
 	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_PLAY));
 	mockbus_expect(mafw_dbus_reply(c));
 	g_main_loop_run(Loop);
-	fail_unless(renderer->play_called == 1);
+	ck_assert(renderer->play_called == 1);
 
 	mockbus_expect(mafw_dbus_signal(MAFW_RENDERER_SIGNAL_STATE_CHANGED,
 				MAFW_DBUS_INT32(2)));
@@ -133,7 +133,7 @@ START_TEST(test_rendererwrapper)
 					       MAFW_DBUS_INT32(Paused),
 					       MAFW_DBUS_STRING("bar")));
 	mockbus_deliver(NULL);
-	fail_unless(renderer->get_status_called == 1);
+	ck_assert(renderer->get_status_called == 1);
 
 	renderer->get_stat_pl = NULL;
 	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_GET_STATUS));
@@ -144,14 +144,14 @@ START_TEST(test_rendererwrapper)
                                MAFW_DBUS_INT32(Paused),
                                MAFW_DBUS_STRING("bar")));
 	mockbus_deliver(NULL);
-	fail_unless(renderer->get_status_called == 2);
+	ck_assert(renderer->get_status_called == 2);
 
 	mockbus_incoming(c = mafw_dbus_method(
                                  MAFW_RENDERER_METHOD_ASSIGN_PLAYLIST,
                                  MAFW_DBUS_UINT32(0)));
 	mockbus_expect(mafw_dbus_reply(c));
 	mockbus_deliver(NULL);
-	fail_unless(renderer->assign_playlist_called == 1);
+	ck_assert(renderer->assign_playlist_called == 1);
 
 	mockbus_incoming(c = mafw_dbus_method(
                                  MAFW_RENDERER_METHOD_ASSIGN_PLAYLIST,
@@ -176,7 +176,7 @@ START_TEST(test_rendererwrapper)
 			MAFW_DBUS_STRING("Entyem-pentyem"))));
 	mockbus_expect(mafw_dbus_reply(c));
 	mockbus_deliver(NULL);
-	fail_unless(renderer->assign_playlist_called == 2);
+	ck_assert(renderer->assign_playlist_called == 2);
 
 	mockbus_incoming(c =
                          mafw_dbus_method(MAFW_RENDERER_METHOD_ASSIGN_PLAYLIST,
@@ -196,7 +196,7 @@ START_TEST(test_rendererwrapper)
 					MAFW_PLAYLIST_ERROR_PLAYLIST_NOT_FOUND,
 					"Hihi"));
 	mockbus_deliver(NULL);
-	fail_unless(renderer->assign_playlist_called == 2);
+	ck_assert(renderer->assign_playlist_called == 2);
 	/* TODO mockbus_expect(UNAVAILABLE) */
 //	g_object_unref(reg);
 	g_value_array_free(value);
@@ -229,68 +229,68 @@ START_TEST(test_renderer_errors)
 	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_PLAY));
 	mockbus_expect(mafw_dbus_gerror(c, eerr));
 	g_main_loop_run(Loop);
-	fail_unless(renderer->play_called == 1);
+	ck_assert(renderer->play_called == 1);
 
 	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_PLAY_OBJECT,
 				MAFW_DBUS_STRING("BLA")));
 	mockbus_expect(mafw_dbus_gerror(c, eerr));
 	g_main_loop_run(Loop);
-	fail_unless(renderer->play_object_called == 1);
+	ck_assert(renderer->play_object_called == 1);
 
 	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_PLAY_URI,
 				MAFW_DBUS_STRING("BLA")));
 	mockbus_expect(mafw_dbus_gerror(c, eerr));
 	g_main_loop_run(Loop);
-	fail_unless(renderer->play_uri_called == 1);
+	ck_assert(renderer->play_uri_called == 1);
 
 	mockbus_incoming(mafw_dbus_method(MAFW_RENDERER_METHOD_STOP));
 	mockbus_expect(mafw_dbus_gerror(c, eerr));
 	g_main_loop_run(Loop);
-	fail_unless(renderer->stop_called == 1);
+	ck_assert(renderer->stop_called == 1);
 
 	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_PAUSE));
 	mockbus_expect(mafw_dbus_gerror(c, eerr));
 	g_main_loop_run(Loop);
-	fail_unless(renderer->pause_called == 1);
+	ck_assert(renderer->pause_called == 1);
 
 	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_RESUME));
 	mockbus_expect(mafw_dbus_gerror(c, eerr));
 	g_main_loop_run(Loop);
-	fail_unless(renderer->resume_called == 1);
+	ck_assert(renderer->resume_called == 1);
 
 	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_NEXT));
 	mockbus_expect(mafw_dbus_gerror(c, eerr));
 	g_main_loop_run(Loop);
-	fail_unless(renderer->next_called == 1);
+	ck_assert(renderer->next_called == 1);
 
 	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_PREVIOUS));
 	mockbus_expect(mafw_dbus_gerror(c, eerr));
 	g_main_loop_run(Loop);
-	fail_unless(renderer->previous_called == 1);
+	ck_assert(renderer->previous_called == 1);
 
 	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_GOTO_INDEX,
 					      MAFW_DBUS_UINT32(1)));
 	mockbus_expect(mafw_dbus_gerror(c, eerr));
 	g_main_loop_run(Loop);
-	fail_unless(renderer->goto_index_called == 1);
+	ck_assert(renderer->goto_index_called == 1);
 
 	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_SET_POSITION,
 					       MAFW_DBUS_INT32(SeekAbsolute),
 					       MAFW_DBUS_INT32(1337)));
 	mockbus_expect(mafw_dbus_gerror(c, eerr));
 	g_main_loop_run(Loop);
-	fail_unless(renderer->set_position_called == 1);
+	ck_assert(renderer->set_position_called == 1);
 
 	mockbus_incoming(c =
                          mafw_dbus_method(MAFW_RENDERER_METHOD_GET_POSITION));
 	mockbus_expect(mafw_dbus_gerror(c, eerr));
 	g_main_loop_run(Loop);
-	fail_unless(renderer->get_position_called == 1);
+	ck_assert(renderer->get_position_called == 1);
 
 	mockbus_incoming(c = mafw_dbus_method(MAFW_RENDERER_METHOD_GET_STATUS));
 	mockbus_expect(mafw_dbus_gerror(c, eerr));
 	g_main_loop_run(Loop);
-	fail_unless(renderer->get_status_called == 1);
+	ck_assert(renderer->get_status_called == 1);
 
 
 	mockbus_incoming(c =
@@ -316,7 +316,7 @@ START_TEST(test_renderer_errors)
 			MAFW_DBUS_STRING("Entyem-pentyem"))));
 	mockbus_expect(mafw_dbus_gerror(c, eerr));
 	mockbus_deliver(NULL);
-	fail_unless(renderer->assign_playlist_called == 1);
+	ck_assert(renderer->assign_playlist_called == 1);
 	mockbus_finish();
 	g_error_free(eerr);
 }
@@ -326,7 +326,7 @@ static gboolean set_ext_called;
 static void dummy_set_ext_prop(MafwExtension *self, const gchar *name,
 				  const GValue *value)
 {
-	fail_if(set_ext_called);
+	ck_assert(!set_ext_called);
 	set_ext_called = TRUE;
 }
 
@@ -343,7 +343,7 @@ static void dummy_get_ext_prop(MafwExtension *self, const gchar *name,
 
 	cb(self, name, value, udata, NULL);
 
-	fail_if(get_ext_called);
+	ck_assert(!get_ext_called);
 	get_ext_called = TRUE;
 }
 
@@ -354,9 +354,9 @@ static void name_changed_cb(MafwExtension *extension, GParamSpec *pspec,
 	gchar *name;
 
 	g_object_get(extension, "name", &name, NULL);
-	fail_if(strcmp(name, "fakename"));
+	ck_assert(!strcmp(name, "fakename"));
 	g_free(name);
-	fail_if(name_chd_called);
+	ck_assert(!name_chd_called);
 	name_chd_called = TRUE;
 }
 
@@ -399,7 +399,7 @@ START_TEST(test_extension)
 				      MAFW_DBUS_STRING("fakeprop"),
 				      MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
-	fail_if(!set_ext_called);
+	ck_assert(set_ext_called);
 
 	mockbus_incoming(c =
 		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
@@ -409,7 +409,7 @@ START_TEST(test_extension)
 	mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_STRING("fakeprop"),
                                        MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
-	fail_if(!get_ext_called);
+	ck_assert(get_ext_called);
 	get_ext_called = FALSE;
 
 	mockbus_incoming(c =
@@ -421,7 +421,7 @@ START_TEST(test_extension)
 				  MAFW_EXTENSION_ERROR_INVALID_PROPERTY,
 				  "Unknown property: fakepr"));
 	mockbus_deliver(NULL);
-	fail_if(get_ext_called);
+	ck_assert(!get_ext_called);
 
 	mockbus_incoming(c =
 		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
@@ -443,7 +443,7 @@ START_TEST(test_extension)
 				MAFW_EXTENSION_SIGNAL_NAME_CHANGED,
 				MAFW_DBUS_STRING("fakename")));
 	mockbus_deliver(NULL);
-	fail_if(!name_chd_called);
+	ck_assert(name_chd_called);
 
 	mockbus_incoming(c =
 		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,

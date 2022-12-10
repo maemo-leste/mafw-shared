@@ -73,12 +73,12 @@ static void browse_result(MafwSource * self, guint browse_id,
 	     "index: %d, obj_id: %s\n", browse_id, remaining_count,
 	     index, object_id);
 
-	fail_if(browse_id != 4444);
-	fail_if(remaining_count != -1);
-	fail_if(index != 0);
-	fail_if (strcmp(object_id, "testobject"));
-	fail_if (!metadatas);
-	fail_if (error);
+	ck_assert_uint_eq(browse_id, 4444);
+	ck_assert_int_eq(remaining_count, -1);
+	ck_assert_int_eq(index, 0);
+	ck_assert(!strcmp(object_id, "testobject"));
+	ck_assert(metadatas);
+	ck_assert(!error);
 	browse_result_ok = TRUE;
 
 	g_main_loop_quit(mainloop_test);
@@ -93,12 +93,12 @@ static void browse_error_result(MafwSource * self, guint browse_id,
 	     "index: %d, obj_id: %s\n", browse_id, remaining_count,
 	     index, object_id);
 
-	fail_if(browse_id != MAFW_SOURCE_INVALID_BROWSE_ID);
-	fail_if(remaining_count != 0);
-	fail_if(index != 0);
-	fail_if (object_id != NULL);
-	fail_if (metadatas);
-	fail_if (!error);
+	ck_assert(browse_id == MAFW_SOURCE_INVALID_BROWSE_ID);
+	ck_assert_int_eq(remaining_count, 0);
+	ck_assert_uint_eq(index, 0);
+	ck_assert(object_id == NULL);
+	ck_assert(!metadatas);
+	ck_assert(error);
 	browse_result_ok = TRUE;
 }
 
@@ -148,12 +148,12 @@ static void metadata_result(MafwSource *self, const gchar *object_id,
 {
 	GValue *v;
 
-	fail_if(strcmp(object_id, SOURCE_UUID "::wherever"));
-	fail_unless(md != NULL);
+	ck_assert(!strcmp(object_id, SOURCE_UUID "::wherever"));
+	ck_assert(md != NULL);
 	v = mafw_metadata_first(md, "title");
-	fail_if(strcmp(g_value_get_string(v), "Less than you"));
+	ck_assert(!strcmp(g_value_get_string(v), "Less than you"));
 	v = mafw_metadata_first(md, "album");
-	fail_if(strcmp(g_value_get_string(v), "Loudry service"));
+	ck_assert(!strcmp(g_value_get_string(v), "Loudry service"));
 	*(gboolean *)user_data = TRUE;
 }
 
@@ -161,11 +161,11 @@ static void no_metadata_result(MafwSource *self, const gchar *object_id,
 			       GHashTable *md, gpointer user_data,
 			       const GError *error)
 {
-	fail_unless(md == NULL);
-	fail_unless(error != NULL);
-	fail_unless(error->domain == MAFW_SOURCE_ERROR);
-	fail_unless(error->code == MAFW_SOURCE_ERROR_INVALID_OBJECT_ID);
-	fail_if(strcmp(error->message, "shekira"));
+	ck_assert(md == NULL);
+	ck_assert(error != NULL);
+	ck_assert(error->domain == MAFW_SOURCE_ERROR);
+	ck_assert(error->code == MAFW_SOURCE_ERROR_INVALID_OBJECT_ID);
+	ck_assert(!strcmp(error->message, "shekira"));
 	*(gboolean *)user_data = TRUE;
 }
 
@@ -195,7 +195,7 @@ START_TEST(test_metadata)
 				 SOURCE_UUID "::wherever",
 				 MAFW_SOURCE_LIST("album", "title"),
 				 metadata_result, &called);
-	fail_unless(called);
+	ck_assert(called);
 
 	/* Invalid request. */
 	mockbus_expect(mafw_dbus_method(MAFW_SOURCE_METHOD_GET_METADATA,
@@ -208,7 +208,7 @@ START_TEST(test_metadata)
 				 "invaliduuid::whatever",
 				 MAFW_SOURCE_LIST("pancake"),
 				 no_metadata_result, &called);
-	fail_unless(called);
+	ck_assert(called);
 	mafw_registry_remove_extension(mafw_registry_get_instance(),
                                         (gpointer)sp);
 	mockbus_finish();
@@ -220,36 +220,36 @@ static void _metadatas_cb(MafwSource *self, GHashTable *metadatas,
 {
 	GHashTable *cur_md;
 	GValue *val;
-	fail_if(g_hash_table_size(metadatas) != 2);
+	ck_assert(g_hash_table_size(metadatas) == 2);
 	cur_md = g_hash_table_lookup(metadatas, "testobject");
-	fail_if(!cur_md);
-	fail_if(g_hash_table_size(cur_md) != 1);
+	ck_assert(cur_md);
+	ck_assert(g_hash_table_size(cur_md) == 1);
 	val = mafw_metadata_first(cur_md, "title");
-	fail_if(val == NULL);
+	ck_assert(val != NULL);
 	cur_md = g_hash_table_lookup(metadatas, "testobject1");
-	fail_if(!cur_md);
-	fail_if(g_hash_table_size(cur_md) != 1);
+	ck_assert(cur_md);
+	ck_assert(g_hash_table_size(cur_md) == 1);
 	val = mafw_metadata_first(cur_md, "title");
-	fail_if(val == NULL);
+	ck_assert(val != NULL);
 	if (!error_state)
 	{
-		fail_if(error != NULL);
+		ck_assert(error == NULL);
 	}
 	else
 	{
-		fail_if(error == NULL);
-		fail_if(error->code != 10);
-		fail_if(strcmp(error->message, METADATAS_ERROR_MSG) != 0);
+		ck_assert(error != NULL);
+		ck_assert(error->code == 10);
+		ck_assert(!strcmp(error->message, METADATAS_ERROR_MSG));
 	}
 }
 
 static void _metadatas_err_cb(MafwSource *self, GHashTable *metadatas,
 				gpointer udat, const GError *error)
 {
-	fail_if(error == NULL);
-	fail_if(error->code != 10);
-	fail_if(strcmp(error->message, METADATAS_ERROR_MSG) != 0);
-	fail_if(metadatas != NULL);
+	ck_assert(error != NULL);
+	ck_assert(error->code == 10);
+	ck_assert(!strcmp(error->message, METADATAS_ERROR_MSG));
+	ck_assert(metadatas == NULL);
 }
 
 
@@ -281,7 +281,7 @@ START_TEST(test_metadatas)
 
 	sp = MAFW_PROXY_SOURCE(mafw_proxy_source_new(SOURCE_UUID, "fake",
 					mafw_registry_get_instance()));
-	fail_unless(sp != NULL, "Object construction failed");
+	ck_assert_msg(sp != NULL, "Object construction failed");
 
 	mafw_source_get_metadatas(MAFW_SOURCE(sp), objlist,
 				metadata_keys,
@@ -375,7 +375,7 @@ START_TEST(test_browse)
 
 	sp = MAFW_PROXY_SOURCE(mafw_proxy_source_new(SOURCE_UUID, "fake",
 					mafw_registry_get_instance()));
-	fail_unless(sp != NULL, "Object construction failed");
+	ck_assert_msg(sp != NULL, "Object construction failed");
 
 	browse_id = mafw_source_browse(MAFW_SOURCE(sp),
 					     "testobject", FALSE, NULL, NULL,
@@ -388,7 +388,8 @@ START_TEST(test_browse)
 	mainloop_test = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(mainloop_test);
 
-	fail_unless(browse_result_ok == TRUE, "Browse result signal missing.");
+	ck_assert_msg(browse_result_ok == TRUE,
+		      "Browse result signal missing.");
 
 
 	mockbus_expect(
@@ -412,9 +413,10 @@ START_TEST(test_browse)
 
 	info("Browse ID: %d", browse_id);
 
-	fail_unless(browse_result_ok == TRUE, "Browse result signal missing.");
+	ck_assert_msg(browse_result_ok == TRUE,
+		      "Browse result signal missing.");
 
-	fail_if(browse_id != MAFW_SOURCE_INVALID_BROWSE_ID);
+	ck_assert(browse_id == MAFW_SOURCE_INVALID_BROWSE_ID);
 
 
 	mafw_registry_remove_extension(mafw_registry_get_instance(),
@@ -473,17 +475,17 @@ START_TEST(test_cancel_browse)
 				 browse_result2, results);
 	g_main_loop_run(mainloop_test = g_main_loop_new(NULL, FALSE));
 
-	fail_if(results->len != 3);
-	fail_if(strcmp(results->pdata[0], "testobject::item0"));
-	fail_if(strcmp(results->pdata[1], "testobject::item1"));
-	fail_if(strcmp(results->pdata[2], "testobject::item2"));
+	ck_assert_int_eq(results->len, 3);
+	ck_assert(!strcmp(results->pdata[0], "testobject::item0"));
+	ck_assert(!strcmp(results->pdata[1], "testobject::item1"));
+	ck_assert(!strcmp(results->pdata[2], "testobject::item2"));
 
 	g_free(results->pdata[0]);
 	g_free(results->pdata[1]);
 	g_free(results->pdata[2]);
 	g_ptr_array_free(results, TRUE);
 	mafw_registry_remove_extension(mafw_registry_get_instance(),
-                                        (gpointer)src);
+				       (gpointer)src);
 	mockbus_finish();
 }
 END_TEST
@@ -520,8 +522,8 @@ START_TEST(test_cancel_browse_invalid)
 	src = MAFW_PROXY_SOURCE(mafw_proxy_source_new(SOURCE_UUID, "fake",
 					mafw_registry_get_instance()));
 
-	fail_if(mafw_source_cancel_browse(MAFW_SOURCE(src), 10, &error));
-	fail_if(!error);
+	ck_assert(!mafw_source_cancel_browse(MAFW_SOURCE(src), 10, &error));
+	ck_assert(error);
 	g_error_free(error);
 
 	browse_id = mafw_source_browse(
@@ -532,7 +534,7 @@ START_TEST(test_cancel_browse_invalid)
 
 	g_main_loop_run(mainloop_test = g_main_loop_new(NULL, FALSE));
 
-	fail_if(mafw_source_cancel_browse(MAFW_SOURCE(src), browse_id, NULL));
+	ck_assert(!mafw_source_cancel_browse(MAFW_SOURCE(src), browse_id, NULL));
 
 
 
@@ -557,8 +559,9 @@ START_TEST(test_cancel_browse_invalid)
 		mafw_dbus_method(MAFW_SOURCE_METHOD_CANCEL_BROWSE,
 				 MAFW_DBUS_UINT32(4444)));
 	mockbus_error(MAFW_SOURCE_ERROR, 2, "testproblem");
-	fail_if(mafw_source_cancel_browse(MAFW_SOURCE(src), browse_id, &error));
-	fail_if(!error);
+	ck_assert(!mafw_source_cancel_browse(MAFW_SOURCE(src), browse_id,
+					     &error));
+	ck_assert(error);
 	g_error_free(error);
 
 	mafw_registry_remove_extension(mafw_registry_get_instance(),
@@ -570,26 +573,26 @@ END_TEST
 static void object_created(MafwSource *src, const gchar *objectid,
 			   gpointer *comm, const GError *error)
 {
-	fail_unless(comm[0] == src);
-	fail_unless(GPOINTER_TO_INT(comm[1]) == FALSE);
+	ck_assert(comm[0] == src);
+	ck_assert(GPOINTER_TO_INT(comm[1]) == FALSE);
 
-	fail_if(error != NULL);
-	fail_if(!objectid);
-	fail_if(strcmp(objectid, "babba") != 0);
+	ck_assert(error == NULL);
+	ck_assert(objectid);
+	ck_assert(!strcmp(objectid, "babba"));
 	comm[1] = GINT_TO_POINTER(TRUE);
 }
 
 static void object_not_created(MafwSource *src, const gchar *objectid,
 			       gpointer *comm, const GError *error)
 {
-	fail_unless(comm[0] == src);
-	fail_unless(GPOINTER_TO_INT(comm[1]) == FALSE);
+	ck_assert(comm[0] == src);
+	ck_assert(GPOINTER_TO_INT(comm[1]) == FALSE);
 
-	fail_if(objectid != NULL);
-	fail_if(error    == NULL);
-	fail_if(error->domain != MAFW_SOURCE_ERROR);
-	fail_if(error->code   != MAFW_EXTENSION_ERROR_ACCESS_DENIED);
-	fail_if(strcmp(error->message, "balfasz") != 0);
+	ck_assert(objectid == NULL);
+	ck_assert(error != NULL);
+	ck_assert(error->domain == MAFW_SOURCE_ERROR);
+	ck_assert(error->code == MAFW_EXTENSION_ERROR_ACCESS_DENIED);
+	ck_assert(!strcmp(error->message, "balfasz"));
 
 	comm[1] = GINT_TO_POINTER(TRUE);
 }
@@ -618,7 +621,7 @@ START_TEST(test_object_creation)
 				(MafwSourceObjectCreatedCb)object_created,
 			       	comm);
 	mockbus_finish();
-	fail_if(GPOINTER_TO_INT(comm[1]) != TRUE);
+	ck_assert(GPOINTER_TO_INT(comm[1]) == TRUE);
 
 	/* With metadata */
 	md = mafw_metadata_new();
@@ -635,7 +638,7 @@ START_TEST(test_object_creation)
 				(MafwSourceObjectCreatedCb)object_created,
 			       	comm);
 	mockbus_finish();
-	fail_if(GPOINTER_TO_INT(comm[1]) != TRUE);
+	ck_assert(GPOINTER_TO_INT(comm[1]) == TRUE);
 
 	/* With error */
 	mockbus_expect(mafw_dbus_method(MAFW_SOURCE_METHOD_CREATE_OBJECT,
@@ -649,7 +652,7 @@ START_TEST(test_object_creation)
 				(MafwSourceObjectCreatedCb)object_not_created,
 			       	comm);
 	mockbus_finish();
-	fail_if(GPOINTER_TO_INT(comm[1]) != TRUE);
+	ck_assert(GPOINTER_TO_INT(comm[1]) == TRUE);
 
 	/* Clean up */
 	mafw_metadata_release(md);
@@ -665,10 +668,10 @@ static void metadata_set_cb(MafwSource *src, const gchar *objectid,
 			    const gchar **failed_keys,
 			    gpointer *user_data, const GError *error)
 {
-	fail_if(strcmp(objectid, "edited_object_id") != 0, "wrong object id");
-	fail_if(error != NULL, "error was not supposed to be set");
-	fail_if(*((gint*)user_data) != 42);
-	fail_if(g_strv_length((gchar**)failed_keys) != 0);
+	ck_assert_msg(!strcmp(objectid, "edited_object_id"), "wrong object id");
+	ck_assert_msg(error == NULL, "error was not supposed to be set");
+	ck_assert(*((gint*)user_data) == 42);
+	ck_assert(g_strv_length((gchar**)failed_keys) == 0);
 	mdat_set_cb_called = TRUE;
 }
 
@@ -676,12 +679,12 @@ static void metadata_set_failed_key_cb(MafwSource *src, const gchar *objectid,
 				       const gchar **failed_keys,
 				       gpointer *user_data, const GError *error)
 {
-	fail_if(strcmp(objectid, "edited_object_id") != 0, "wrong object id");
-	fail_if(error == NULL, "error was supposed to be set");
-	fail_if(*((gint*)user_data) != 42);
-	fail_if(failed_keys == NULL);
-	fail_if(strcmp(failed_keys[0], "wrong_key") != 0);
-	fail_if(error->code != MAFW_SOURCE_ERROR_UNSUPPORTED_METADATA_KEY);
+	ck_assert_msg(!strcmp(objectid, "edited_object_id"), "wrong object id");
+	ck_assert_msg(error != NULL, "error was supposed to be set");
+	ck_assert(*((gint*)user_data) == 42);
+	ck_assert(failed_keys != NULL);
+	ck_assert(!strcmp(failed_keys[0], "wrong_key"));
+	ck_assert(error->code == MAFW_SOURCE_ERROR_UNSUPPORTED_METADATA_KEY);
 	medat_set_failed_cb_called = TRUE;
 }
 
@@ -689,12 +692,12 @@ static void metadata_set_with_error_cb(MafwSource *src, const gchar *objectid,
 				       const gchar **failed_keys,
 				       gpointer *user_data, const GError *error)
 {
-	fail_if(objectid != NULL);
-	fail_if(*((gint*)user_data) != 42);
-	fail_if(error == NULL, "Error was not set");
-	fail_if(error->domain != MAFW_SOURCE_ERROR);
-	fail_if(error->code != MAFW_EXTENSION_ERROR_ACCESS_DENIED);
-	fail_if(strcmp(error->message, "ei pysty") != 0);
+	ck_assert(objectid == NULL);
+	ck_assert(*((gint*)user_data) == 42);
+	ck_assert_msg(error != NULL, "Error was not set");
+	ck_assert(error->domain == MAFW_SOURCE_ERROR);
+	ck_assert(error->code == MAFW_EXTENSION_ERROR_ACCESS_DENIED);
+	ck_assert(!strcmp(error->message, "ei pysty"));
 	mdat_set_error_cb_called = TRUE;
 }
 
@@ -769,35 +772,36 @@ START_TEST(test_set_metadata)
                                         (gpointer)src);
 	mafw_metadata_release(md);
 
-	fail_unless(mdat_set_cb_called && medat_set_failed_cb_called &&
-		mdat_set_error_cb_called && TRUE, "Some cb was not called");
+	ck_assert_msg(mdat_set_cb_called && medat_set_failed_cb_called &&
+		      mdat_set_error_cb_called && TRUE,
+		      "Some cb was not called");
 }
 END_TEST
 
 static void object_destroyed(MafwSource *src, const gchar *objectid,
 			     gpointer *comm, const GError *error)
 {
-	fail_unless(comm[0] == src);
-	fail_unless(GPOINTER_TO_INT(comm[1]) == FALSE);
+	ck_assert(comm[0] == src);
+	ck_assert(GPOINTER_TO_INT(comm[1]) == FALSE);
 
-	fail_if(!objectid);
-	fail_if(strcmp(objectid, "police") != 0);
+	ck_assert(objectid);
+	ck_assert(!strcmp(objectid, "police"));
 	comm[1] = GINT_TO_POINTER(TRUE);
 }
 
 static void object_not_destroyed(MafwSource *src, const gchar *objectid,
 				 gpointer *comm, const GError *error)
 {
-	fail_unless(comm[0] == src);
-	fail_unless(GPOINTER_TO_INT(comm[1]) == FALSE);
+	ck_assert(comm[0] == src);
+	ck_assert(GPOINTER_TO_INT(comm[1]) == FALSE);
 
-	fail_if(!objectid);
-	fail_if(strcmp(objectid, "whitehouse") != 0);
+	ck_assert(objectid);
+	ck_assert(!strcmp(objectid, "whitehouse"));
 
-	fail_if(error == NULL);
-	fail_if(error->domain != MAFW_SOURCE_ERROR);
-	fail_if(error->code   != MAFW_EXTENSION_ERROR_ACCESS_DENIED);
-	fail_if(strcmp(error->message, "loser") != 0);
+	ck_assert(error != NULL);
+	ck_assert(error->domain == MAFW_SOURCE_ERROR);
+	ck_assert(error->code == MAFW_EXTENSION_ERROR_ACCESS_DENIED);
+	ck_assert(!strcmp(error->message, "loser"));
 
 	comm[1] = GINT_TO_POINTER(TRUE);
 }
@@ -822,7 +826,7 @@ START_TEST(test_object_destruction)
 				(MafwSourceObjectDestroyedCb)object_destroyed,
 			       	comm);
 	mockbus_finish();
-	fail_if(GPOINTER_TO_INT(comm[1]) != TRUE);
+	ck_assert(GPOINTER_TO_INT(comm[1]) == TRUE);
 
 	/* Failure */
 	mockbus_expect(mafw_dbus_method(MAFW_SOURCE_METHOD_DESTROY_OBJECT,
@@ -837,7 +841,7 @@ START_TEST(test_object_destruction)
 	mafw_registry_remove_extension(mafw_registry_get_instance(),
                                         (gpointer)src);
 	mockbus_finish();
-	fail_if(GPOINTER_TO_INT(comm[1]) != TRUE);
+	ck_assert(GPOINTER_TO_INT(comm[1]) == TRUE);
 }
 END_TEST
 
@@ -854,14 +858,14 @@ static void check_signals(void)
 
 static void sp_metadata_changed(MafwSource *self, const gchar *object_id)
 {
-	fail_if(strcmp(object_id, "str") != 0, "Wrong object_id");
+	ck_assert_msg(!strcmp(object_id, "str"), "Wrong object_id");
 	mdata_chd = TRUE;
 	check_signals();
 }
 
 static void sp_container_changed(MafwSource *self, const gchar *object_id)
 {
-	fail_if(strcmp(object_id, "str_oid") != 0, "Wrong object_id");
+	ck_assert_msg(!strcmp(object_id, "str_oid"), "Wrong object_id");
 	cont_chd = TRUE;
 	check_signals();
 }
@@ -869,10 +873,10 @@ static void sp_container_changed(MafwSource *self, const gchar *object_id)
 static void sp_updating(MafwSource *self, gint progress, gint processed_items,
                         gint remaining_items, gint remaining_time)
 {
-        fail_if(progress != 25, "Wrong updating progress");
-        fail_if(processed_items != 4, "Wrong updating processed items");
-        fail_if(remaining_items != 6, "Wrong updating remaining items");
-        fail_if(remaining_time != 12, "Wrong updating remaining time");
+	ck_assert_msg(progress == 25, "Wrong updating progress");
+	ck_assert_msg(processed_items == 4, "Wrong updating processed items");
+	ck_assert_msg(remaining_items == 6, "Wrong updating remaining items");
+	ck_assert_msg(remaining_time == 12, "Wrong updating remaining time");
         updt_chd = TRUE;
         check_signals();
 }
@@ -892,7 +896,7 @@ START_TEST(test_source_signals)
 
 	sp = MAFW_PROXY_SOURCE(mafw_proxy_source_new(SOURCE_UUID, "fake",
 					mafw_registry_get_instance()));
-	fail_unless(sp != NULL, "Object construction failed");
+	ck_assert_msg(sp != NULL, "Object construction failed");
 
 	g_signal_connect(sp, "metadata-changed",
 			 G_CALLBACK(sp_metadata_changed), NULL);

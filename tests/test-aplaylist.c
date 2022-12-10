@@ -94,22 +94,22 @@ static void assert_pls(Pls *pls, struct item items[])
 			break;
                 }
                 /* Check oid */
-		fail_if(strcmp(pls->vidx[i], items[i].oid),
-			"oid mismatch at %u. '%s' != '%s'",
-			i, items[i].oid, pls->vidx[i]);
+		ck_assert_msg(!strcmp(pls->vidx[i], items[i].oid),
+			      "oid mismatch at %u. '%s' != '%s'",
+			      i, items[i].oid, pls->vidx[i]);
 		/* -1 means, that should not be checked, as it is random */
 		if (items[i].pidx != -1) {
                         if (pls->shuffled) {
-                                fail_unless(items[i].pidx == pls->pidx[i],
-                                            "pidx mismatch at %u: actual %u expected %u.",
-                                            i, pls->pidx[i], items[i].pidx);
-                                fail_unless(pls->iidx[pls->pidx[i]] == i,
-                                            "iidx mismatch at %u: actual %u expected %u.",
-                                            pls->pidx[i], pls->iidx[pls->pidx[i]], i);
+				ck_assert_msg(items[i].pidx == pls->pidx[i],
+					      "pidx mismatch at %u: actual %u expected %u.",
+					      i, pls->pidx[i], items[i].pidx);
+				ck_assert_msg(pls->iidx[pls->pidx[i]] == i,
+					      "iidx mismatch at %u: actual %u expected %u.",
+					      pls->pidx[i], pls->iidx[pls->pidx[i]], i);
                         } else {
-                                fail_unless(items[i].pidx == i,
-                                            "pidx mismatch at %u: actual %u expected %u.",
-                                            i, i, items[i].pidx);
+				ck_assert_msg(items[i].pidx == i,
+					      "pidx mismatch at %u: actual %u expected %u.",
+					      i, i, items[i].pidx);
                         }
                 }
 	}
@@ -120,7 +120,7 @@ static void assert_pls(Pls *pls, struct item items[])
 			fprintf(stderr, "%u %u '%s'\n",
 				i, items[i].pidx, items[i].oid);
                 }
-		fail("expected more elements");
+		ck_abort_msg("expected more elements");
 	}
         /* More elements than expected */
 	if (pls->len > len) {
@@ -136,7 +136,7 @@ static void assert_pls(Pls *pls, struct item items[])
                                         i, i, pls->vidx[i]);
                         }
                 }
-		fail("expected less elements");
+		ck_abort_msg("expected less elements");
 	}
 }
 
@@ -145,8 +145,8 @@ START_TEST(test_create)
 	Pls *p;
 
 	p = pls_new(10, "one");
-	fail_unless(p->id == 10);
-	fail_if(strcmp(p->name, "one"));
+	ck_assert(p->id == 10);
+	ck_assert(!strcmp(p->name, "one"));
  	assert_pls(p, EPLS);
 	pls_insert(p, 0, "alma");
 	pls_insert(p, 1, "korte");
@@ -157,7 +157,7 @@ START_TEST(test_create)
 	pls_clear(p);
  	assert_pls(p, EPLS);
 	pls_set_name(p, "two");
-	fail_if(strcmp(p->name, "two"));
+	ck_assert(!strcmp(p->name, "two"));
 	pls_free(p);
 }
 END_TEST
@@ -172,7 +172,7 @@ static void setup_pls(void)
 
 static void teardown_pls(void)
 {
-	fail_unless(pls_check(Playlist));
+	ck_assert(pls_check(Playlist));
 	pls_free(Playlist);
 }
 
@@ -182,29 +182,29 @@ START_TEST(test_append)
 	const gchar *oidl[] = {"ab", "cd", "ef", NULL};
 
 	assert_pls(p, EPLS);
-	fail_unless(pls_append(p, "alpha"));
+	ck_assert(pls_append(p, "alpha"));
 	assert_pls(p, APLS({0, "alpha"}));
-	fail_unless(pls_append(p, "beta"));
+	ck_assert(pls_append(p, "beta"));
 	assert_pls(p, APLS({0, "alpha"},
 			   {1, "beta"}));
-	fail_unless(pls_check(Playlist));
+	ck_assert(pls_check(Playlist));
 	pls_free(p);
 
 	Playlist = p = mkpls(APLS({0, "eek"},
 				  {2, "a"},
 				  {1, "mouse"}));
-	fail_unless(pls_append(p, "blackbeard"));
+	ck_assert(pls_append(p, "blackbeard"));
 	assert_pls(p, APLS({0, "eek"},
 			   {2, "a"},
 			   {1, "mouse"},
 			   {3, "blackbeard"}));
-	fail_unless(pls_check(Playlist));
+	ck_assert(pls_check(Playlist));
 	pls_free(p);
 
 	Playlist = p = mkpls(APLS({0, "eek"},
 				  {2, "a"},
 				  {1, "mouse"}));
-	fail_unless(pls_appends(p, oidl, 3));
+	ck_assert(pls_appends(p, oidl, 3));
 	assert_pls(p, APLS({0, "eek"},
 			   {2, "a"},
 			   {1, "mouse"},
@@ -235,24 +235,24 @@ START_TEST(test_insert)
 	Pls *p = Playlist;
 	const gchar *oblist[] = { "ab", "cd", "ef"};
 
-	fail_unless(pls_insert(p, 0, "alma"));
+	ck_assert(pls_insert(p, 0, "alma"));
 	assert_pls(p, APLS({0, "alma"}));
-	fail_unless(pls_insert(p, 1, "dinnye"));
+	ck_assert(pls_insert(p, 1, "dinnye"));
 	assert_pls(p, APLS({0, "alma"},
 			   {1, "dinnye"}));
-	fail_if(pls_insert(p, 3, "no no"));
+	ck_assert(!pls_insert(p, 3, "no no"));
 	assert_pls(p, APLS({0, "alma"},
 			   {1, "dinnye"}));
 
 	pls_clear(p);
-	fail_if(pls_insert(p, 1, "should fail"));
+	ck_assert(!pls_insert(p, 1, "should fail"));
 
-	fail_unless(pls_insert(p, 0, "prepending"));
+	ck_assert(pls_insert(p, 0, "prepending"));
 	assert_pls(p, APLS({0, "prepending"}));
-	fail_unless(pls_insert(p, 0, "just"));
+	ck_assert(pls_insert(p, 0, "just"));
 	assert_pls(p, APLS({0, "just"},
 			   {1, "prepending"}));
-	fail_unless(pls_insert(p, 0, "always"));
+	ck_assert(pls_insert(p, 0, "always"));
 	assert_pls(p, APLS({0, "always"},
 			   {1, "just"},
 			   {2, "prepending"}));
@@ -262,7 +262,7 @@ START_TEST(test_insert)
 	Playlist = p = mkpls(APLS({0, "insert"},
 				  {1, "versus"},
 				  {2, "shuffle"}));
-	fail_unless(pls_inserts(p, 1, oblist, 3));
+	ck_assert(pls_inserts(p, 1, oblist, 3));
 	assert_pls(p, APLS({0, "insert"},
 			   {1, "ab"},
 			   {2, "cd"},
@@ -274,7 +274,7 @@ START_TEST(test_insert)
 				  {1, "versus"},
 				  {0, "shuffle"}));
 	p->shuffled = TRUE;
-	fail_unless(pls_insert(p, 0, "will break"));
+	ck_assert(pls_insert(p, 0, "will break"));
 	assert_pls(p, APLS({-1, "will break"},
 			   {-1, "insert"},
 			   {-1, "versus"},
@@ -288,7 +288,7 @@ START_TEST(test_insert)
 		/* if it points to the first item, it should not be checked */
 		if (p->pidx[i] != 0)
 		{
-			fail_if(p->pidx[i] != index_table[j]);
+			ck_assert(p->pidx[i] == index_table[j]);
 			j++;
 		}
 	}
@@ -299,7 +299,7 @@ START_TEST(test_insert)
 		index_table[i] = p->pidx[i];
 	}
 
-	fail_unless(pls_insert(p, 4, "the last"));
+	ck_assert(pls_insert(p, 4, "the last"));
 	assert_pls(p, APLS({-1, "will break"},
 			   {-1, "insert"},
 			   {-1, "versus"},
@@ -311,7 +311,7 @@ START_TEST(test_insert)
 	{
 		if (p->pidx[i] != 4)
 		{
-			fail_if(p->pidx[i] != index_table[j]);
+			ck_assert(p->pidx[i] == index_table[j]);
 			j++;
 		}
 	}
@@ -323,24 +323,24 @@ START_TEST(test_remove)
 {
 	Pls *p = Playlist;
 
-	fail_if(pls_remove(p, 0));
-	fail_if(pls_remove(p, 10));
-	fail_if(pls_remove(p, -2));
+	ck_assert(!pls_remove(p, 0));
+	ck_assert(!pls_remove(p, 10));
+	ck_assert(!pls_remove(p, -2));
 
 	pls_append(p, "xyzzy");
 	pls_append(p, "is");
 	pls_append(p, "magic");
-	fail_if(pls_remove(p, 3));
+	ck_assert(!pls_remove(p, 3));
 	assert_pls(p, APLS({0, "xyzzy"},
 			   {1, "is"},
 			   {2, "magic"}));
-	fail_unless(pls_remove(p, 1));
+	ck_assert(pls_remove(p, 1));
 	assert_pls(p, APLS({0, "xyzzy"},
 			   {1, "magic"}));
-	fail_unless(pls_remove(p, 1));
+	ck_assert(pls_remove(p, 1));
 	assert_pls(p, APLS({0, "xyzzy"}));
-	fail_if(pls_remove(p, 1));
-	fail_unless(pls_remove(p, 0));
+	ck_assert(!pls_remove(p, 1));
+	ck_assert(pls_remove(p, 0));
 	assert_pls(p, EPLS);
 
 	pls_free(p);
@@ -348,11 +348,11 @@ START_TEST(test_remove)
 				  {1, "is"},
 				  {0, "true"},
 				  {2, "magic"}));
-	fail_unless(pls_remove(p, 2));
+	ck_assert(pls_remove(p, 2));
 	assert_pls(p, APLS({2, "xyzzy"},
 			   {1, "is"},
 			   {0, "magic"}));
-	fail_unless(pls_remove(p, 2));
+	ck_assert(pls_remove(p, 2));
 	assert_pls(p, APLS({1, "xyzzy"},
 			   {0, "is"}));
 }
@@ -367,17 +367,17 @@ START_TEST(test_move)
 	pls_append(p, "c");
 	pls_append(p, "d");
 	pls_move(p, 0, 0);
-	fail_unless(pls_move(p, 0, 0));
+	ck_assert(pls_move(p, 0, 0));
 	assert_pls(p, APLS({0, "a"},
 			   {1, "b"},
 			   {2, "c"},
 			   {3, "d"}));
-	fail_unless(pls_move(p, 0, 1));
+	ck_assert(pls_move(p, 0, 1));
 	assert_pls(p, APLS({0, "b"},
 			   {1, "a"},
 			   {2, "c"},
 			   {3, "d"}));
-	fail_unless(pls_move(p, 3, 0));
+	ck_assert(pls_move(p, 3, 0));
 	assert_pls(p, APLS({0, "d"},
 			   {1, "b"},
 			   {2, "a"},
@@ -394,12 +394,12 @@ START_TEST(test_move)
 			   {0, "c"},
 			   {2, "d"}));
 
-	fail_unless(pls_move(p, 0, 1));
+	ck_assert(pls_move(p, 0, 1));
 	assert_pls(p, APLS({1, "b"},
 			   {3, "a"},
 			   {0, "c"},
 			   {2, "d"}));
-	fail_unless(pls_move(p, 2, 0));
+	ck_assert(pls_move(p, 2, 0));
 	assert_pls(p, APLS({1, "c"},
 			   {3, "b"},
 			   {0, "a"},
@@ -411,11 +411,11 @@ START_TEST(test_shuffle_empty)
 {
 	Pls *p = Playlist;
 
-	fail_if(pls_is_shuffled(p));
+	ck_assert(!pls_is_shuffled(p));
 	pls_shuffle(p);
 	/* So, what's the definition of is-shuffled for an empty playlist, if
 	 * shuffle is an operation and not a state? :) */
-	fail_unless(pls_is_shuffled(p) || !pls_is_shuffled(p));
+	ck_assert(pls_is_shuffled(p) || !pls_is_shuffled(p));
 }
 END_TEST
 
@@ -430,19 +430,19 @@ START_TEST(test_shuffle)
 	pls_append(p, "DD");
 	pls_append(p, "EE");
 	pls_append(p, "FF");
-	fail_if(pls_is_shuffled(p));
+	ck_assert(!pls_is_shuffled(p));
 	pls_shuffle(p);
-	fail_unless(pls_is_shuffled(p));
+	ck_assert(pls_is_shuffled(p));
 	pls_unshuffle(p);
-	fail_if(pls_is_shuffled(p));
+	ck_assert(!pls_is_shuffled(p));
 
 	nonrandom = 0;
 	for (i = 0; i < 50; ++i) {
 		pls_shuffle(p);
 		nonrandom += !pls_is_shuffled(p);
-		fail_unless(pls_check(p));
+		ck_assert(pls_check(p));
 	}
-	fail_if(nonrandom > 4);
+	ck_assert_int_lt(nonrandom, 4);
 }
 END_TEST
 
@@ -457,12 +457,12 @@ START_TEST(test_iterator)
 	/* Check with empty playlist */
 	p = pls_new(66, "test-pl");
 	pls_get_starting(p, &new_idx, &oid);
-	fail_if(oid);
+	ck_assert(!oid);
 	pls_get_next(p, &new_idx, &oid);
-	fail_if(oid);
+	ck_assert(!oid);
 	new_idx = 1;
 	pls_get_next(p, &new_idx, &oid);
-	fail_if(oid);
+	ck_assert(!oid);
 	pls_free(p);
 
 	Playlist = p = mkpls(APLS({0, "a"},
@@ -470,53 +470,53 @@ START_TEST(test_iterator)
 				  {2, "c"},
 				  {3, "d"}));
 	pls_get_last(p, &new_idx, &oid);
-	fail_if(new_idx != 3);
-	fail_if(strcmp(oid, "d"));
+	ck_assert_uint_eq(new_idx, 3);
+	ck_assert(!strcmp(oid, "d"));
 	g_free(oid);
 	oid = NULL;
 
 	pls_get_starting(p, &new_idx, &oid);
-	fail_if(new_idx != 0);
-	fail_if(strcmp(oid, "a"));
+	ck_assert_uint_eq(new_idx, 0);
+	ck_assert(!strcmp(oid, "a"));
 	g_free(oid);
 	oid = NULL;
 
 	pls_get_next(p, &new_idx, &oid);
-	fail_if(new_idx != 1);
-	fail_if(strcmp(oid, "b"));
+	ck_assert_uint_eq(new_idx, 1);
+	ck_assert(!strcmp(oid, "b"));
 	g_free(oid);
 	oid = NULL;
 
 	pls_get_prev(p, &new_idx, &oid);
-	fail_if(new_idx != 0);
-	fail_if(strcmp(oid, "a"));
+	ck_assert_uint_eq(new_idx, 0);
+	ck_assert(!strcmp(oid, "a"));
 	g_free(oid);
 	oid = NULL;
 
 	pls_get_prev(p, &new_idx, &oid);
-	fail_if(oid);
+	ck_assert(!oid);
 
 	new_idx = 3;
 	pls_get_next(p, &new_idx, &oid);
-	fail_if(oid);
+	ck_assert(!oid);
 
 	/*repeat on */
 	p->repeat = TRUE;
 	pls_get_next(p, &new_idx, &oid);
-	fail_if(new_idx != 0);
-	fail_if(strcmp(oid, "a"));
+	ck_assert_uint_eq(new_idx, 0);
+	ck_assert(!strcmp(oid, "a"));
 	g_free(oid);
 	oid = NULL;
 
 	pls_get_prev(p, &new_idx, &oid);
-	fail_if(new_idx != 3);
-	fail_if(strcmp(oid, "d"));
+	ck_assert_uint_eq(new_idx, 3);
+	ck_assert(!strcmp(oid, "d"));
 	g_free(oid);
 	oid = NULL;
 
 	pls_get_last(p, &new_idx, &oid);
-	fail_if(new_idx != 3);
-	fail_if(strcmp(oid, "d"));
+	ck_assert_uint_eq(new_idx, 3);
+	ck_assert(!strcmp(oid, "d"));
 	g_free(oid);
 	oid = NULL;
 
@@ -530,26 +530,26 @@ START_TEST(test_iterator)
 	p->shuffled = TRUE;
 
 	pls_get_last(p, &new_idx, &oid);
-	fail_if(new_idx != 0);
-	fail_if(strcmp(oid, "a"));
+	ck_assert_uint_eq(new_idx, 0);
+	ck_assert(!strcmp(oid, "a"));
 	g_free(oid);
 	oid = NULL;
 
 	pls_get_starting(p, &new_idx, &oid);
-	fail_if(new_idx != 2);
-	fail_if(strcmp(oid, "c"));
+	ck_assert_uint_eq(new_idx, 2);
+	ck_assert(!strcmp(oid, "c"));
 	g_free(oid);
 	oid = NULL;
 
 	pls_get_next(p, &new_idx, &oid);
-	fail_if(new_idx != 3);
-	fail_if(strcmp(oid, "d"));
+	ck_assert_uint_eq(new_idx, 3);
+	ck_assert(!strcmp(oid, "d"));
 	g_free(oid);
 	oid = NULL;
 
 	pls_get_prev(p, &new_idx, &oid);
-	fail_if(new_idx != 2);
-	fail_if(strcmp(oid, "c"));
+	ck_assert_uint_eq(new_idx, 2);
+	ck_assert(!strcmp(oid, "c"));
 	g_free(oid);
 	oid = NULL;
 }
@@ -561,37 +561,37 @@ START_TEST(test_dirty)
 	Pls *p;
 
 	p = pls_new(55, "pls");
-	fail_unless(p->dirty);
+	ck_assert(p->dirty);
 
 	p->dirty = FALSE;
 	pls_append(p, "alma");
-	fail_unless(p->dirty);
+	ck_assert(p->dirty);
 
 	p->dirty = FALSE;
 	pls_insert(p, 0, "zero");
-	fail_unless(p->dirty);
+	ck_assert(p->dirty);
 
 	p->dirty = FALSE;
 	pls_remove(p, 1);
-	fail_unless(p->dirty);
+	ck_assert(p->dirty);
 
 	p->dirty = FALSE;
 	pls_shuffle(p);
-	fail_unless(p->dirty);
+	ck_assert(p->dirty);
 
 	p->dirty = FALSE;
 	pls_unshuffle(p);
-	fail_unless(p->dirty);
+	ck_assert(p->dirty);
 
 	p->dirty = FALSE;
 	pls_set_repeat(p, TRUE);
-	fail_unless(p->dirty);
+	ck_assert(p->dirty);
 
 	p->dirty = FALSE;
 	pls_append(p, "a few");
 	pls_append(p, "more items");
 	pls_move(p, 0, 1);
-	fail_unless(p->dirty);
+	ck_assert(p->dirty);
 
 	pls_free(p);
 }
@@ -610,16 +610,16 @@ START_TEST(test_save)
 		sprintf(name, "item_%02u", i);
 		pls_append(p1, name);
 	}
-	fail_unless(p1->dirty);
-	fail_unless(pls_save(p1, "tale.mp"));
+	ck_assert(p1->dirty);
+	ck_assert(pls_save(p1, "tale.mp"));
 	p2 = pls_load("tale.mp");
-	fail_if(p2 == NULL);
-	fail_unless(p2->id == p1->id);
-	fail_if(strcmp(p2->name, p1->name));
-	fail_unless(p2->repeat == p1->repeat);
-	fail_unless(p2->shuffled == p1->shuffled);
-	fail_unless(p2->len == p1->len);
-	fail_unless(p2->dirty);
+	ck_assert(p2 != NULL);
+	ck_assert(p2->id == p1->id);
+	ck_assert(!strcmp(p2->name, p1->name));
+	ck_assert(p2->repeat == p1->repeat);
+	ck_assert(p2->shuffled == p1->shuffled);
+	ck_assert(p2->len == p1->len);
+	ck_assert(p2->dirty);
 	pls_free(p1);
 	pls_free(p2);
 }
@@ -642,12 +642,12 @@ START_TEST(stress_persist)
 	}
 	g_get_current_time(&t0);
 	for (i = 0; i < 10; ++i)
-		fail_unless(pls_save(p1, "p1.mp"));
+		ck_assert(pls_save(p1, "p1.mp"));
 	g_get_current_time(&t1);
 	/* Let's say that saving 20k elements under 150ms is good. */
 	usec =  (t1.tv_sec * G_USEC_PER_SEC + t1.tv_usec) -
 		(t0.tv_sec * G_USEC_PER_SEC + t0.tv_usec);
-	fail_unless(usec < (20*150*1000));
+	ck_assert(usec < (20*150*1000));
 	pls_free(p1);
 #endif
 }
@@ -658,20 +658,20 @@ START_TEST(fuzz_load)
 {
 	Pls *p;
 
-	fail_if(pls_load("a_nonexistent_file") != NULL);
+	ck_assert(pls_load("a_nonexistent_file") == NULL);
 	g_file_set_contents("junk",
 			    ""
 			    , -1, NULL);
-	fail_if(pls_load("junk") != NULL);
+	ck_assert(pls_load("junk") == NULL);
 	g_file_set_contents("junk",
 			    "lfszp is some random string"
 			    , -1, NULL);
-	fail_if(pls_load("junk") != NULL);
+	ck_assert(pls_load("junk") == NULL);
 	g_file_set_contents("junk",
 			    "V4\n"
 			    "is not a version we know\n"
 			    , -1, NULL);
-	fail_if(pls_load("junk") != NULL);
+	ck_assert(pls_load("junk") == NULL);
 	g_file_set_contents("junk",
 			    "V1\n"
 			    "-3451\n"
@@ -680,7 +680,7 @@ START_TEST(fuzz_load)
 			    "1\n"
 			    "-10\n"
 			    , -1, NULL);
-	fail_if(pls_load("junk") != NULL);
+	ck_assert(pls_load("junk") == NULL);
 	g_file_set_contents("junk",
 			    "V1\n"
 			    "-3451\n"
@@ -691,7 +691,7 @@ START_TEST(fuzz_load)
 			    "1,asdf\n"
 			    "2,fdsa\n"
 			    , -1, NULL);
-	fail_if(pls_load("junk") != NULL);
+	ck_assert(pls_load("junk") == NULL);
 	g_file_set_contents("junk",
 			    "V1\n"
 			    "3451\n"
@@ -700,7 +700,7 @@ START_TEST(fuzz_load)
 			    "2342\n"
 			    "-10\n"
 			    , -1, NULL);
-	fail_if(pls_load("junk") != NULL);
+	ck_assert(pls_load("junk") == NULL);
 	g_file_set_contents("junk",
 			    "V1\n"
 			    "123\n"
@@ -709,7 +709,7 @@ START_TEST(fuzz_load)
 			    "1\n"
 			    "10\n"
 			    , -1, NULL);
-	fail_if(pls_load("junk") != NULL);
+	ck_assert(pls_load("junk") == NULL);
 	g_file_set_contents("junk",
 			    "V1\n"
 			    "123\n"
@@ -720,7 +720,7 @@ START_TEST(fuzz_load)
 			    "-1,one\n"
 			    "4,two\n"
 			    , -1, NULL);
-	fail_if(pls_load("junk") != NULL);
+	ck_assert(pls_load("junk") == NULL);
 	g_file_set_contents("junk",
 			    "V1\n"
 			    "123\n"
@@ -731,7 +731,7 @@ START_TEST(fuzz_load)
 			    "1,\n"
 			    "0,two\n"
 			    , -1, NULL);
-	fail_if(pls_load("junk") != NULL);
+	ck_assert(pls_load("junk") == NULL);
 	g_file_set_contents("junk",
 			    "V1\n"
 			    "123\n"
@@ -745,7 +745,7 @@ START_TEST(fuzz_load)
 			    , -1, NULL);
 	/* This will succeed, we don't care if it actually has more items than
 	 * $len says. */
-	fail_unless((p = pls_load("junk")) != NULL);
+	ck_assert((p = pls_load("junk")) != NULL);
 	pls_free(p);
 	unlink("junk");
 }
@@ -766,7 +766,7 @@ void save_me(Pls *pls)
 	if (Save_me_noop)
 		return;
 
-	fail_unless(pls->dirty);
+	ck_assert(pls->dirty);
 	Times_saved++;
 	Playlists_saved |= GPOINTER_TO_SIZE(pls);
 	pls->dirty = FALSE;
@@ -878,16 +878,16 @@ START_TEST(test_dirty_timer)
 	run_edit(0, p);
 	quit_after(3 + Settle_time);
 	g_main_loop_run(TheLoop);
-	fail_unless(Times_saved >= 1);
-	fail_unless(Playlists_saved == (0|GPOINTER_TO_SIZE(p)));
+	ck_assert(Times_saved >= 1);
+	ck_assert(Playlists_saved == (0|GPOINTER_TO_SIZE(p)));
 
 	/* See if destroying a playlist removes the dirty timer. */
 	Playlists_saved = Times_saved = 0;
 	run_edit(2, p);
 	quit_after(Settle_time + 1);
 	g_main_loop_run(TheLoop);
-	fail_unless(Times_saved == 0);
-	fail_unless(Playlists_saved == 0);
+	ck_assert(Times_saved == 0);
+	ck_assert(Playlists_saved == 0);
 }
 END_TEST
 
@@ -908,8 +908,8 @@ START_TEST(multi_dirty)
 	run_edit(2, c);
 	quit_after(3 + Settle_time);
 	g_main_loop_run(TheLoop);
-	fail_unless(Times_saved >= 2);
-	fail_unless(Playlists_saved ==
+	ck_assert(Times_saved >= 2);
+	ck_assert(Playlists_saved ==
 		    (0|GPOINTER_TO_SIZE(a)|GPOINTER_TO_SIZE(b)));
 	pls_free(a);
 	pls_free(b);

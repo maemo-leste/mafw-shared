@@ -80,8 +80,8 @@ static void fx_shared_setup(void)
 			mafw_playlist_manager_get(), "myplaylist", NULL));
 
 	/* Check whether the playlist was created successfully */
-	fail_unless(MAFW_IS_PROXY_PLAYLIST(g_playlist),
-		    "Playlist creation failed.");
+	ck_assert_msg(MAFW_IS_PROXY_PLAYLIST(g_playlist),
+		      "Playlist creation failed.");
 
 	/* Start with a clean slate */
 	mafw_playlist_clear(g_playlist, NULL);
@@ -117,76 +117,76 @@ START_TEST(test_insert_and_get_item)
 	const gchar *plitems[] = {"ab", "cd", "ef", NULL};
 	
 	/* Insert some items, including invalid indices */
-	fail_unless(mafw_playlist_insert_item(g_playlist, 0, "item 1", NULL));
-	fail_unless(mafw_playlist_insert_item(g_playlist, 1, "item 2", NULL));
+	ck_assert(mafw_playlist_insert_item(g_playlist, 0, "item 1", NULL));
+	ck_assert(mafw_playlist_insert_item(g_playlist, 1, "item 2", NULL));
 	expect_fallback(mafw_playlist_insert_item(g_playlist, 1, NULL, NULL),
 			FALSE);
-	fail_if(mafw_playlist_insert_item(g_playlist, 6, "item 3", NULL));
-	fail_if(mafw_playlist_insert_item(g_playlist, -1, "item 4", NULL));
-	fail_unless(mafw_playlist_insert_item(g_playlist, 0, "item 0", NULL));
-	fail_if(mafw_playlist_get_size(g_playlist, NULL) != 3);
+	ck_assert(!mafw_playlist_insert_item(g_playlist, 6, "item 3", NULL));
+	ck_assert(!mafw_playlist_insert_item(g_playlist, -1, "item 4", NULL));
+	ck_assert(mafw_playlist_insert_item(g_playlist, 0, "item 0", NULL));
+	ck_assert(mafw_playlist_get_size(g_playlist, NULL) == 3);
 
 	/* Verify insertion order */
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 0, NULL)),
-		"Unable to get item inserted at position 0");
-	fail_if(strcmp("item 0", item) != 0,
-		"First item in playlist is not the one expected.");
+	ck_assert_msg((item = mafw_playlist_get_item(g_playlist, 0, NULL)),
+		      "Unable to get item inserted at position 0");
+	ck_assert_msg(!strcmp("item 0", item),
+		      "First item in playlist is not the one expected.");
 	g_free(item);
 
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 1, NULL)),
-		"Unable to get item inserted at position 1");
-	fail_if(strcmp("item 1", item) != 0,
-		"Second item in playlist is not the one expected.");
+	ck_assert_msg((item = mafw_playlist_get_item(g_playlist, 1, NULL)),
+		      "Unable to get item inserted at position 1");
+	ck_assert_msg(!strcmp("item 1", item),
+		      "Second item in playlist is not the one expected.");
 	g_free(item);
 
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 2, NULL)),
-		"Unable to get item inserted at position 2");
-	fail_if(strcmp("item 2", item) != 0,
-		"Third item in playlist is not the one expected.");
+	ck_assert_msg((item = mafw_playlist_get_item(g_playlist, 2, NULL)),
+		      "Unable to get item inserted at position 2");
+	ck_assert_msg(!strcmp("item 2", item),
+		      "Third item in playlist is not the one expected.");
 	g_free(item);
 	
 	/* insert_items */
-	fail_unless(mafw_playlist_insert_items(g_playlist, 1, plitems, NULL));
+	ck_assert(mafw_playlist_insert_items(g_playlist, 1, plitems, NULL));
 
 	/* Verify insertion order */
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 0, NULL)),
-		"Unable to get item inserted at position 0");
-	fail_if(strcmp("item 0", item) != 0,
-		"First item in playlist is not the one expected.");
+	ck_assert_msg((item = mafw_playlist_get_item(g_playlist, 0, NULL)),
+		      "Unable to get item inserted at position 0");
+	ck_assert_msg(!strcmp("item 0", item),
+		      "First item in playlist is not the one expected.");
 	g_free(item);
 
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 1, NULL)),
-		"Unable to get item inserted at position 1");
-	fail_if(strcmp("ab", item) != 0,
-		"Second item in playlist is not the one expected.");
+	ck_assert_msg((item = mafw_playlist_get_item(g_playlist, 1, NULL)),
+		      "Unable to get item inserted at position 1");
+	ck_assert_msg(!strcmp("ab", item),
+		      "Second item in playlist is not the one expected.");
 	g_free(item);
 
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 2, NULL)),
-		"Unable to get item inserted at position 2");
-	fail_if(strcmp("cd", item) != 0,
-		"Third item in playlist is not the one expected.");
+	ck_assert_msg((item = mafw_playlist_get_item(g_playlist, 2, NULL)),
+		      "Unable to get item inserted at position 2");
+	ck_assert_msg(!strcmp("cd", item),
+		      "Third item in playlist is not the one expected.");
 	g_free(item);
 
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 3, NULL)),
-		"Unable to get item inserted at position 3");
-	fail_if(strcmp("ef", item) != 0,
-		"Fourth item in playlist is not the one expected.");
+	ck_assert_msg((item = mafw_playlist_get_item(g_playlist, 3, NULL)),
+		      "Unable to get item inserted at position 3");
+	ck_assert_msg(!strcmp("ef", item),
+		      "Fourth item in playlist is not the one expected.");
 	g_free(item);
 
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 4, NULL)),
-		"Unable to get item inserted at position 4");
-	fail_if(strcmp("item 1", item) != 0,
-		"Fifth item in playlist is not the one expected.");
+	ck_assert_msg((item = mafw_playlist_get_item(g_playlist, 4, NULL)),
+		      "Unable to get item inserted at position 4");
+	ck_assert_msg(!strcmp("item 1", item),
+		      "Fifth item in playlist is not the one expected.");
 	g_free(item);
 
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 5, NULL)),
-		"Unable to get item inserted at position 5");
-	fail_if(strcmp("item 2", item) != 0,
-		"Sixth item in playlist is not the one expected.");
+	ck_assert_msg((item = mafw_playlist_get_item(g_playlist, 5, NULL)),
+		      "Unable to get item inserted at position 5");
+	ck_assert_msg(!strcmp("item 2", item),
+		      "Sixth item in playlist is not the one expected.");
 	g_free(item);
 
 	/* Get item at an invalid index */
-	fail_unless(mafw_playlist_get_item(g_playlist, 17, NULL) == NULL);
+	ck_assert(mafw_playlist_get_item(g_playlist, 17, NULL) == NULL);
 	/* Try to insert in a NULL playlist (must not segfault) */
 	expect_fallback(mafw_playlist_insert_item(NULL, 0, "item", NULL),
 			FALSE);
@@ -202,38 +202,38 @@ START_TEST(test_append)
 	gchar **items;
 	GError *err = NULL;
 
-	fail_unless(mafw_playlist_append_item(g_playlist, "item 1", NULL));
-	fail_unless(mafw_playlist_append_item(g_playlist, "item 2", NULL));
-	fail_unless(mafw_playlist_append_items(g_playlist, plitems, NULL));
+	ck_assert(mafw_playlist_append_item(g_playlist, "item 1", NULL));
+	ck_assert(mafw_playlist_append_item(g_playlist, "item 2", NULL));
+	ck_assert(mafw_playlist_append_items(g_playlist, plitems, NULL));
 	expect_fallback(mafw_playlist_append_item(g_playlist, NULL, NULL),
 			FALSE);
-	fail_if(mafw_playlist_get_size(g_playlist, NULL) != 5);
+	ck_assert(mafw_playlist_get_size(g_playlist, NULL) == 5);
 
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 0, NULL)));
-	fail_if(strcmp("item 1", item) != 0);
+	ck_assert((item = mafw_playlist_get_item(g_playlist, 0, NULL)));
+	ck_assert(!strcmp("item 1", item));
 	g_free(item);
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 1, NULL)));
-	fail_if(strcmp("item 2", item) != 0);
+	ck_assert((item = mafw_playlist_get_item(g_playlist, 1, NULL)));
+	ck_assert(!strcmp("item 2", item));
 	g_free(item);
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 2, NULL)));
-	fail_if(strcmp("ab", item) != 0);
+	ck_assert((item = mafw_playlist_get_item(g_playlist, 2, NULL)));
+	ck_assert(!strcmp("ab", item));
 	g_free(item);
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 3, NULL)));
-	fail_if(strcmp("cd", item) != 0);
+	ck_assert((item = mafw_playlist_get_item(g_playlist, 3, NULL)));
+	ck_assert(!strcmp("cd", item));
 	g_free(item);
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 4, NULL)));
-	fail_if(strcmp("ef", item) != 0);
+	ck_assert((item = mafw_playlist_get_item(g_playlist, 4, NULL)));
+	ck_assert(!strcmp("ef", item));
 	g_free(item);
 	
-	fail_if(!(items = mafw_playlist_get_items(g_playlist, 1, 3, NULL)));
-	fail_if(strcmp("item 2", items[0]) != 0, "Got: %s", items[0]);
-	fail_if(strcmp("ab", items[1]) != 0, "Got: %s", items[1]);
-	fail_if(strcmp("cd", items[2]) != 0, "Got: %s", items[2]);
-	fail_if(items[3] != NULL);
+	ck_assert((items = mafw_playlist_get_items(g_playlist, 1, 3, NULL)));
+	ck_assert_msg(!strcmp("item 2", items[0]), "Got: %s", items[0]);
+	ck_assert_msg(!strcmp("ab", items[1]), "Got: %s", items[1]);
+	ck_assert_msg(!strcmp("cd", items[2]), "Got: %s", items[2]);
+	ck_assert(items[3] == NULL);
 	g_strfreev(items);
 	items = mafw_playlist_get_items(g_playlist, 5, 6, &err);
-	fail_if(items);
-	fail_if(err == NULL);
+	ck_assert(!items);
+	ck_assert(err != NULL);
 	g_error_free(err);
 }
 END_TEST
@@ -242,17 +242,17 @@ START_TEST(test_clear)
 {
 	/* Clear list */
 	mafw_playlist_clear(g_playlist, NULL);
-	fail_if(mafw_playlist_get_size(g_playlist, NULL) != 0,
-		"After clearing a playlist its size is not 0");
+	ck_assert_msg(mafw_playlist_get_size(g_playlist, NULL) == 0,
+		      "After clearing a playlist its size is not 0");
 
 	/* Insert some items */
 	mafw_playlist_insert_item(g_playlist, 0, "item 1", NULL);
 	mafw_playlist_insert_item(g_playlist, 1, "item 2", NULL);
 
 	/* Clear list */
-	fail_unless(mafw_playlist_clear(g_playlist, NULL));
-	fail_if(mafw_playlist_get_size(g_playlist, NULL) != 0,
-		"After clearing the playlist its size is not 0");
+	ck_assert(mafw_playlist_clear(g_playlist, NULL));
+	ck_assert_msg(mafw_playlist_get_size(g_playlist, NULL) == 0,
+		      "After clearing the playlist its size is not 0");
 }
 END_TEST
 
@@ -264,10 +264,9 @@ START_TEST(test_set_get_name)
 
 	/* Check the initial value */
 	returned_name = mafw_playlist_get_name(g_playlist);
-	fail_if(returned_name == NULL,
-		"Unable to get playlist name");
-	fail_if(strcmp(returned_name, "myplaylist") != 0,
-		"The initial value of name is not myplaylist as it should be");
+	ck_assert_msg(returned_name, "Unable to get playlist name");
+	ck_assert_msg(!strcmp(returned_name, "myplaylist"),
+		      "The initial value of name is not myplaylist as it should be");
 	g_free(returned_name);
 
 	/* Set name to the playlist */
@@ -275,26 +274,23 @@ START_TEST(test_set_get_name)
 
 	/* Get the name of the playlist */
 	returned_name = mafw_playlist_get_name(g_playlist);
-	fail_if(returned_name == NULL,
-		"Unable to get playlist name");
-	fail_if(strcmp(returned_name, name) != 0,
-		"The returned name of the playlist is not correct");
+	ck_assert_msg(returned_name, "Unable to get playlist name");
+	ck_assert_msg(!strcmp(returned_name, name),
+		      "The returned name of the playlist is not correct");
 	g_free(returned_name);
 	/* Replace the name of the playlist */
 	mafw_playlist_set_name(g_playlist, name2);
 	returned_name = mafw_playlist_get_name(g_playlist);
-	fail_if(returned_name == NULL,
-		"Unable to get playlist name");
-	fail_if(strcmp(returned_name, name2) != 0,
-		"The returned name of the playlist is not correct no. 2");
+	ck_assert_msg(returned_name, "Unable to get playlist name");
+	ck_assert_msg(!strcmp(returned_name, name2),
+		      "The returned name of the playlist is not correct no. 2");
 	g_free(returned_name);
 	/* Try to replace the name of the playlist with NULL value */
 	expect_ignore(mafw_playlist_set_name(g_playlist, NULL));
 	returned_name = mafw_playlist_get_name(g_playlist);
-	fail_if(returned_name == NULL,
-		"Unable to get playlist name");
-	fail_if(strcmp(returned_name, name2) != 0,
-		"The returned name of the playlist is not correct no. 3");
+	ck_assert_msg(returned_name, "Unable to get playlist name");
+	ck_assert_msg(!strcmp(returned_name, name2),
+		      "The returned name of the playlist is not correct no. 3");
 	g_free(returned_name);
 	/* Try to get/set the name from the NULL playlist (must not segfault) */
 	expect_ignore(mafw_playlist_set_name(NULL, ""));
@@ -313,12 +309,12 @@ START_TEST(test_get_size)
 
 	/* Check the initial value */
 	size = mafw_playlist_get_size(g_playlist, NULL);
-	fail_if(size != 4, "Inserted 4 elements and the size is not 4");
+	ck_assert_msg(size == 4, "Inserted 4 elements and the size is not 4");
 
 	/* Remove element and check the size */
 	mafw_playlist_remove_item(g_playlist, 2, NULL);
 	size = mafw_playlist_get_size(g_playlist, NULL);
-	fail_if(size != 3,
+	ck_assert_msg(size == 3,
 		"Inserted 4 elements, then removed 1 and the size is not 3");
 
 	/* FIXME: Change the list contents and check the size */
@@ -329,7 +325,8 @@ START_TEST(test_get_size)
 	/* Clear the list and check the size */
 	mafw_playlist_clear(g_playlist, NULL);
 	size = mafw_playlist_get_size(g_playlist, NULL);
-	fail_if(size != 0, "We have cleared the list and the size is not zero");
+	ck_assert_msg(size == 0,
+		      "We have cleared the list and the size is not zero");
 }
 END_TEST
 
@@ -340,15 +337,13 @@ START_TEST(test_iterator)
 
 	mafw_playlist_get_starting_index(g_playlist, &new_idx, &oid,
 				NULL);
-	fail_if(oid);
+	ck_assert(!oid);
 	
-	fail_if(mafw_playlist_get_next(g_playlist, &new_idx, &oid,
-				NULL));
-	fail_if(oid);
+	ck_assert(!mafw_playlist_get_next(g_playlist, &new_idx, &oid, NULL));
+	ck_assert(!oid);
 
-	fail_if(mafw_playlist_get_prev(g_playlist, &new_idx, &oid,
-				NULL));
-	fail_if(oid);
+	ck_assert(!mafw_playlist_get_prev(g_playlist, &new_idx, &oid, NULL));
+	ck_assert(!oid);
 	
 	/* Insert some items */
 	mafw_playlist_insert_item(g_playlist, 0, "item 4", NULL);
@@ -358,60 +353,54 @@ START_TEST(test_iterator)
 	
 	mafw_playlist_get_last_index(g_playlist, &new_idx, &oid,
 				NULL);
-	fail_if(new_idx != 3);
-	fail_if(strcmp(oid, "item 4"));
+	ck_assert_int_eq(new_idx, 3);
+	ck_assert(!strcmp(oid, "item 4"));
 	g_free(oid);
 	oid = NULL;
 	
 	mafw_playlist_get_starting_index(g_playlist, &new_idx, &oid,
 				NULL);
-	fail_if(new_idx != 0);
-	fail_if(strcmp(oid, "item 1"));
+	ck_assert_int_eq(new_idx, 0);
+	ck_assert(!strcmp(oid, "item 1"));
 	g_free(oid);
 	oid = NULL;
 	
-	fail_if(!mafw_playlist_get_next(g_playlist, &new_idx, &oid,
-				NULL));
-	fail_if(new_idx != 1);
-	fail_if(strcmp(oid, "item 3"));
+	ck_assert(mafw_playlist_get_next(g_playlist, &new_idx, &oid, NULL));
+	ck_assert_int_eq(new_idx, 1);
+	ck_assert(!strcmp(oid, "item 3"));
 	g_free(oid);
 	oid = NULL;
 
-	fail_if(!mafw_playlist_get_prev(g_playlist, &new_idx, &oid,
-				NULL));
-	fail_if(new_idx != 0);
-	fail_if(strcmp(oid, "item 1"));
+	ck_assert(mafw_playlist_get_prev(g_playlist, &new_idx, &oid, NULL));
+	ck_assert_int_eq(new_idx, 0);
+	ck_assert(!strcmp(oid, "item 1"));
 	g_free(oid);
 	oid = NULL;
 
-	fail_if(mafw_playlist_get_prev(g_playlist, &new_idx, &oid,
-				NULL));
-	fail_if(oid);
+	ck_assert(!mafw_playlist_get_prev(g_playlist, &new_idx, &oid, NULL));
+	ck_assert(!oid);
 	
 	new_idx = 3;
-	fail_if(mafw_playlist_get_next(g_playlist, &new_idx, &oid,
-				NULL));
-	fail_if(oid);
+	ck_assert(!mafw_playlist_get_next(g_playlist, &new_idx, &oid, NULL));
+	ck_assert(!oid);
 	
 	mafw_playlist_set_repeat(g_playlist, TRUE);
-	fail_if(!mafw_playlist_get_next(g_playlist, &new_idx, &oid,
-				NULL));
-	fail_if(new_idx != 0);
-	fail_if(strcmp(oid, "item 1"));
+	ck_assert(mafw_playlist_get_next(g_playlist, &new_idx, &oid, NULL));
+	ck_assert_int_eq(new_idx, 0);
+	ck_assert(!strcmp(oid, "item 1"));
 	g_free(oid);
 	oid = NULL;
 
-	fail_if(!mafw_playlist_get_prev(g_playlist, &new_idx, &oid,
-				NULL));
-	fail_if(new_idx != 3);
-	fail_if(strcmp(oid, "item 4"));
+	ck_assert(mafw_playlist_get_prev(g_playlist, &new_idx, &oid, NULL));
+	ck_assert_int_eq(new_idx, 3);
+	ck_assert(!strcmp(oid, "item 4"));
 	g_free(oid);
 	oid = NULL;
 	
 	mafw_playlist_get_last_index(g_playlist, &new_idx, &oid,
 				NULL);
-	fail_if(new_idx != 3);
-	fail_if(strcmp(oid, "item 4"));
+	ck_assert_int_eq(new_idx, 3);
+	ck_assert(!strcmp(oid, "item 4"));
 	g_free(oid);
 	oid = NULL;
 
@@ -430,19 +419,20 @@ START_TEST(test_remove_items)
 	mafw_playlist_insert_item(g_playlist, 0, "item 1", NULL);
 
 	/* Check what happens when we remove one element */
-	fail_unless(mafw_playlist_remove_item(g_playlist, 2, NULL));
+	ck_assert(mafw_playlist_remove_item(g_playlist, 2, NULL));
 
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 2, NULL)),
-		"Unable to get item inserted at position 2");
-	fail_if(strcmp(item, "item 3") == 0,
-		"We have removed one item but it is still there");
+	ck_assert_msg((item = mafw_playlist_get_item(g_playlist, 2, NULL)),
+		      "Unable to get item inserted at position 2");
+	ck_assert_msg(strcmp(item, "item 3"),
+		      "We have removed one item but it is still there");
 	g_free(item);
 
 	/* Try to remove an index that does not exist */
-	fail_if(mafw_playlist_remove_item(g_playlist, 22, NULL));
+	ck_assert(!mafw_playlist_remove_item(g_playlist, 22, NULL));
 	size = mafw_playlist_get_size(g_playlist, NULL);
-	fail_if(size != 3, "After removing a non-existing element from a " \
-		"playlist, the number of elements is not correct");
+	ck_assert_msg(size == 3,
+		      "After removing a non-existing element from a " \
+		      "playlist, the number of elements is not correct");
 
 	/* Check that the NULL playlist does not segfault */
 	expect_fallback(mafw_playlist_remove_item(NULL, 0, NULL), FALSE);
@@ -460,78 +450,81 @@ START_TEST(test_move_item)
 	mafw_playlist_insert_item(g_playlist, 0, "item 1", NULL);
 
 	/* Swap the first two elements */
-	fail_unless(mafw_playlist_move_item(g_playlist, 0, 1, NULL));
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 0, NULL)),
-		"Unable to get moved item at position 0");
-	fail_if(strcmp(item, "item 2"),
-		"Element at position 0 is not the one expected: %s", item);
+	ck_assert(mafw_playlist_move_item(g_playlist, 0, 1, NULL));
+	ck_assert_msg((item = mafw_playlist_get_item(g_playlist, 0, NULL)),
+		      "Unable to get moved item at position 0");
+	ck_assert_msg(!strcmp(item, "item 2"),
+		      "Element at position 0 is not the one expected: %s",
+		      item);
 	g_free(item);
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 1, NULL)),
-		"Unable to get moved item at position 1");
-	fail_if(strcmp(item, "item 1"),
-		"Element at position 1 is not the on expected: %s", item);
+	ck_assert_msg((item = mafw_playlist_get_item(g_playlist, 1, NULL)),
+		      "Unable to get moved item at position 1");
+	ck_assert_msg(!strcmp(item, "item 1"),
+		      "Element at position 1 is not the on expected: %s", item);
 	g_free(item);
 
 	/* Swap them back */
-	fail_unless(mafw_playlist_move_item(g_playlist, 1, 0, NULL));
+	ck_assert(mafw_playlist_move_item(g_playlist, 1, 0, NULL));
 
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 0, NULL)),
-		"Unable to get item moved back to position 0");
-	fail_if(strcmp(item, "item 1"),
-		"Element at position 0 is not the one expected: %s", item);
+	ck_assert_msg((item = mafw_playlist_get_item(g_playlist, 0, NULL)),
+		      "Unable to get item moved back to position 0");
+	ck_assert_msg(!strcmp(item, "item 1"),
+		      "Element at position 0 is not the one expected: %s",
+		      item);
 	g_free(item);
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 1, NULL)),
-		"Unable to get item moved back to position 1");
-	fail_if(strcmp(item, "item 2"),
-		"Element at position 1 is not the one expected: %s", item);
+	ck_assert_msg((item = mafw_playlist_get_item(g_playlist, 1, NULL)),
+		      "Unable to get item moved back to position 1");
+	ck_assert_msg(!strcmp(item, "item 2"),
+		      "Element at position 1 is not the one expected: %s",
+		      item);
 	g_free(item);
 
 	/* Move second element to the end  */
-	fail_unless(mafw_playlist_move_item(g_playlist, 1, 3, NULL));
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 3, NULL)),
-		"Unable to get item moved to position 3");
-	fail_if(strcmp(item, "item 2"),
-		"Element at position 3 is not the on expected: %s", item);
+	ck_assert(mafw_playlist_move_item(g_playlist, 1, 3, NULL));
+	ck_assert_msg((item = mafw_playlist_get_item(g_playlist, 3, NULL)),
+		      "Unable to get item moved to position 3");
+	ck_assert_msg(!strcmp(item, "item 2"),
+		      "Element at position 3 is not the on expected: %s", item);
 	g_free(item);
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 1, NULL)),
-		"Unable to get item moved to position 1");
-	fail_if(strcmp(item, "item 3"),
-		"Element at position 1 is not the on expected: %s", item);
+	ck_assert_msg((item = mafw_playlist_get_item(g_playlist, 1, NULL)),
+		      "Unable to get item moved to position 1");
+	ck_assert_msg(!strcmp(item, "item 3"),
+		      "Element at position 1 is not the on expected: %s", item);
 	g_free(item);
 
 	/* Move it back again */
-	fail_unless(mafw_playlist_move_item(g_playlist, 3, 1, NULL));
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 3, NULL)),
-		"Unable to get item moved back to position 3");
-	fail_if(strcmp(item, "item 4"),
-		"Element at position 3 is not the on expected: %s", item);
+	ck_assert(mafw_playlist_move_item(g_playlist, 3, 1, NULL));
+	ck_assert_msg((item = mafw_playlist_get_item(g_playlist, 3, NULL)),
+		      "Unable to get item moved back to position 3");
+	ck_assert_msg(!strcmp(item, "item 4"),
+		      "Element at position 3 is not the on expected: %s", item);
 	g_free(item);
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 1, NULL)),
-		"Unable to get item moved back to position 1");
-	fail_if(strcmp(item, "item 2"),
-		"Element at position 1 is not the on expected: %s", item);
+	ck_assert_msg((item = mafw_playlist_get_item(g_playlist, 1, NULL)),
+		      "Unable to get item moved back to position 1");
+	ck_assert_msg(!strcmp(item, "item 2"),
+		      "Element at position 1 is not the on expected: %s", item);
 	g_free(item);
 
 	/* Try to move from/to an invalid index to a valid index */
-	fail_if(mafw_playlist_move_item(g_playlist, 50, 0, NULL));
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 0, NULL)),
-		"Moving an item from an invalid index into a valid index " \
-		"modifies the list (should not)");
-	fail_if(strcmp(item, "item 1"),
-		"Move from invalid index changes the playlist (should not)");
-	fail_if(mafw_playlist_get_size(g_playlist, NULL) != 4,
-		"Move from invalid index changes the playlist (should not)");
+	ck_assert(!mafw_playlist_move_item(g_playlist, 50, 0, NULL));
+	ck_assert_msg((item = mafw_playlist_get_item(g_playlist, 0, NULL)),
+		      "Moving an item from an invalid index into a valid " \
+		      "index modifies the list (should not)");
+	ck_assert_msg(!strcmp(item, "item 1"),
+		      "Move from invalid index changes the playlist (should not)");
+	ck_assert_msg(mafw_playlist_get_size(g_playlist, NULL) == 4,
+		      "Move from invalid index changes the playlist (should not)");
 	g_free(item);
 
 	/* Try to move to an invalid index from a valid index */
-	fail_if(mafw_playlist_move_item(g_playlist, 0, 50, NULL));
-	fail_if(!(item = mafw_playlist_get_item(g_playlist, 0, NULL)),
-		"Moving an item to an invalid index from a valid index " \
-		"modified the list (should not)");
-	fail_if(strcmp(item, "item 1"),
-		"Move to invalid index changes the playlist (should not)");
-	fail_if(mafw_playlist_get_size(g_playlist, NULL) != 4,
-		"Move to invalid index changes the playlist (should not)");
+	ck_assert(!mafw_playlist_move_item(g_playlist, 0, 50, NULL));
+	ck_assert_msg((item = mafw_playlist_get_item(g_playlist, 0, NULL)),
+		      "Moving an item to an invalid index from a valid index " \
+		      "modified the list (should not)");
+	ck_assert_msg(!strcmp(item, "item 1"),
+		      "Move to invalid index changes the playlist (should not)");
+	ck_assert_msg(mafw_playlist_get_size(g_playlist, NULL) == 4,
+		      "Move to invalid index changes the playlist (should not)");
 	g_free(item);
 
 	/* Try to pass in a NULL playlist */
@@ -546,8 +539,7 @@ START_TEST(test_set_get_repeat)
 	mafw_playlist_set_repeat(g_playlist, TRUE);
 	repeat = mafw_playlist_get_repeat(g_playlist);
 
-	fail_if(repeat != TRUE,
-		"Repeat setting is not correct");
+	ck_assert_msg(repeat == TRUE, "Repeat setting is not correct");
 
 }
 END_TEST
@@ -598,67 +590,71 @@ START_TEST(test_contents_changed_signal)
 
 	g_main_loop_run(Loop);
 	current = &g_array_index(comm, PlaylistChangedInfo, 0);
-	fail_if(current->from != 0 || current->nremove != 0 ||
-		current->nreplace != 0 ||
-		current->signal_type != CONTENT_CHD_SIGNAL,
-		"Signal parameters are incorrect. from:%u,remove:%u,replace:%u",
-		current->from, current->nremove, current->nreplace);
+	ck_assert_msg(!(current->from != 0 || current->nremove != 0 ||
+			current->nreplace != 0 ||
+			current->signal_type != CONTENT_CHD_SIGNAL),
+		      "Signal parameters are incorrect. from:%u,remove:%u,replace:%u",
+		      current->from, current->nremove, current->nreplace);
 
 	/* Insert some items and check the signal */
 	mafw_playlist_insert_item(g_playlist, 0, "item 2", NULL);
 	g_main_loop_run(Loop);
-	fail_if(comm->len != 2,	"The signal was not emitted after insertion");
+	ck_assert_msg(comm->len == 2,
+		      "The signal was not emitted after insertion");
 	current = &g_array_index(comm, PlaylistChangedInfo, 0);
-	fail_if(current->from != 0 || current->nremove != 0 ||
-		current->nreplace != 1 ||
-		current->signal_type != CONTENT_CHD_SIGNAL,
-		"Signal parameters are incorrect. from:%u,remove:%u,replace:%u",
-		current->from, current->nremove, current->nreplace);
+	ck_assert_msg(!(current->from != 0 || current->nremove != 0 ||
+			current->nreplace != 1 ||
+			current->signal_type != CONTENT_CHD_SIGNAL),
+		      "Signal parameters are incorrect. from:%u,remove:%u,replace:%u",
+		      current->from, current->nremove, current->nreplace);
 
 	mafw_playlist_insert_item(g_playlist, 0, "item 1", NULL);
 	g_main_loop_run(Loop);
-	fail_if(comm->len != 3, "The signal was not emitted after insertion");
+	ck_assert_msg(comm->len == 3,
+		      "The signal was not emitted after insertion");
 	current = &g_array_index(comm, PlaylistChangedInfo, 0);
-	fail_if(current->from != 0 || current->nremove != 0 ||
-		current->nreplace != 1 ||
-		current->signal_type != CONTENT_CHD_SIGNAL,
-		"Signal parameters are incorrect. from:%u,remove:%u,replace:%u",
-		current->from, current->nremove, current->nreplace);
+	ck_assert_msg(!(current->from != 0 || current->nremove != 0 ||
+			current->nreplace != 1 ||
+			current->signal_type != CONTENT_CHD_SIGNAL),
+		      "Signal parameters are incorrect. from:%u,remove:%u,replace:%u",
+		      current->from, current->nremove, current->nreplace);
 
 	/* Check the movement of one item */
 	mafw_playlist_move_item(g_playlist, 0, 1, NULL);
 	g_main_loop_run(Loop);
-	fail_if(comm->len != 4,	"The signal was not emitted after moving");
+	ck_assert_msg(comm->len == 4,
+		      "The signal was not emitted after moving");
 	current = &g_array_index(comm, PlaylistChangedInfo, 0);
-	fail_if(current->from != 0 || current->nremove != 1 ||
-		current->nreplace != 0 ||
-		current->signal_type != ITEM_MVD_SIGNAL,
-		"Signal parameters are incorrect. from:%u,remove:%u,replace:%u "
-		"type: %d",
-		current->from, current->nremove, current->nreplace,
-		current->signal_type);
+	ck_assert_msg(!(current->from != 0 || current->nremove != 1 ||
+			current->nreplace != 0 ||
+			current->signal_type != ITEM_MVD_SIGNAL),
+		      "Signal parameters are incorrect. from:%u,remove:%u,replace:%u "
+		      "type: %d",
+		      current->from, current->nremove, current->nreplace,
+		      current->signal_type);
 
 	/* Check the signal when removing an index */
 	mafw_playlist_remove_item(g_playlist, 1, NULL);
 	g_main_loop_run(Loop);
-	fail_if(comm->len != 5,	"The signal was not emitted after removal");
+	ck_assert_msg(comm->len == 5,	"The signal was not emitted after removal");
 	current = &g_array_index(comm, PlaylistChangedInfo, 0);
-	fail_if(current->from != 1 || current->nremove != 1 ||
-		current->nreplace != 0 ||
-		current->signal_type != CONTENT_CHD_SIGNAL,
-		"Signal parameters are incorrect. from:%u,remove:%u,replace:%u",
-		current->from, current->nremove, current->nreplace);
+	ck_assert_msg(!(current->from != 1 || current->nremove != 1 ||
+			current->nreplace != 0 ||
+			current->signal_type != CONTENT_CHD_SIGNAL),
+		      "Signal parameters are incorrect. from:%u,remove:%u,replace:%u",
+		      current->from, current->nremove, current->nreplace);
 
 	/* Check the signal when clearing the list */
 	mafw_playlist_clear(g_playlist, NULL);
 	g_main_loop_run(Loop);
-	fail_if(comm->len != 6,	"The signal was not emitted after clearing");
+	ck_assert_msg(comm->len == 6,
+		      "The signal was not emitted after clearing");
 	current = &g_array_index(comm, PlaylistChangedInfo, 0);
-	fail_if(current->from != 0 || current->nremove != 1 ||
-		current->nreplace != 0 ||
-		current->signal_type != CONTENT_CHD_SIGNAL,
-		"Signal parameters are incorrect. from:%u,remove:%u,replace:%u",
-		current->from, current->nremove, current->nreplace);
+	ck_assert_msg(!(current->from != 0 || current->nremove != 1 ||
+			current->nreplace != 0 ||
+			current->signal_type != CONTENT_CHD_SIGNAL),
+		      "Signal parameters are incorrect. from:%u,remove:%u,replace:%u",
+		      current->from, current->nremove, current->nreplace);
 
 	/* Disconnect now because the tear down fixture *_clear()s the list. */
 	g_signal_handlers_disconnect_by_func(G_OBJECT(g_playlist),
@@ -696,21 +692,21 @@ START_TEST(test_property_changed_signal)
 	new_name  = g_strdup_printf("%.8X", g_random_int());
 
 	mafw_playlist_set_name(MAFW_PLAYLIST(g_playlist), new_name);
-	fail_unless(nrenames == 1 && nrepeats == 0);
+	ck_assert(nrenames == 1 && nrepeats == 0);
 
 	/* Restore $name (though the end-test fixture should be able
 	 * to destroy it anyway). */
 	mafw_playlist_set_name(MAFW_PLAYLIST(g_playlist), orig_name);
-	fail_unless(nrenames == 2 && nrepeats == 0);
+	ck_assert(nrenames == 2 && nrepeats == 0);
 
 	/* The signal is expected to be emitted even if the property,
 	 * in efffect, didn't change. */
 	mafw_playlist_set_repeat(MAFW_PLAYLIST(g_playlist), TRUE);
-	fail_unless(nrenames == 2 && nrepeats == 1);
+	ck_assert(nrenames == 2 && nrepeats == 1);
 	mafw_playlist_set_repeat(MAFW_PLAYLIST(g_playlist), TRUE);
-	fail_unless(nrenames == 2 && nrepeats == 2);
+	ck_assert(nrenames == 2 && nrepeats == 2);
 	mafw_playlist_set_repeat(MAFW_PLAYLIST(g_playlist), FALSE);
-	fail_unless(nrenames == 2 && nrepeats == 3);
+	ck_assert(nrenames == 2 && nrepeats == 3);
 
 	g_free(orig_name);
 	g_free(new_name);
@@ -755,18 +751,18 @@ static void test_shuffle_stress(guint nturns, guint nitems)
 		g_hash_table_insert(before, item, GINT_TO_POINTER(nitems-i-1));
 	}
 
-	fail_if(g_hash_table_size(before) != nitems);
-	fail_if(mafw_playlist_get_size(g_playlist, NULL) != nitems);
+	ck_assert(g_hash_table_size(before) == nitems);
+	ck_assert(mafw_playlist_get_size(g_playlist, NULL) == nitems);
 
 	/* $g_playlist is still not shuffled. */
-	fail_if(mafw_playlist_is_shuffled(g_playlist));
+	ck_assert(!mafw_playlist_is_shuffled(g_playlist));
 
 	not_shuffled = 0;
 	for (i = 0; i < nturns; i++) {
 		guint newpos;
 		GHashTable *tmp;
 
-		fail_unless(mafw_playlist_shuffle(g_playlist, NULL));
+		ck_assert(mafw_playlist_shuffle(g_playlist, NULL));
 		/*
 		 * After a shuffle() one would expect the list is_shuffled().
 		 * Thus said, but it may happen the operation just happened to
@@ -776,11 +772,11 @@ static void test_shuffle_stress(guint nturns, guint nitems)
 		 */
 		if (!mafw_playlist_is_shuffled(g_playlist)) {
 			not_shuffled++;
-			fail_if(not_shuffled > 1);
+			ck_assert_int_le(not_shuffled, 1);
 		}
 
 		/* Check that exactly the same items are in the playlist */
-		fail_if(mafw_playlist_get_size(g_playlist, NULL) != nitems);
+		ck_assert(mafw_playlist_get_size(g_playlist, NULL) == nitems);
 		mafw_playlist_get_starting_index(g_playlist, &next_id, &item,
                                                  NULL);
 		newpos = 0;
@@ -788,10 +784,10 @@ static void test_shuffle_stress(guint nturns, guint nitems)
 		{
 			gpointer oldpos;
 
-			fail_if(item == NULL);
+			ck_assert(item != NULL);
 
-			fail_if(!g_hash_table_lookup_extended(before, item,
-							      NULL, &oldpos));
+			ck_assert(g_hash_table_lookup_extended(before, item,
+							       NULL, &oldpos));
 
 			g_hash_table_insert(after, item,
 					    GINT_TO_POINTER(newpos));
@@ -839,27 +835,27 @@ START_TEST(test_shuffle)
 
 	/* First try to shuffle an empty list.
 	 * (Presumably it's empty due to the setup fixture.) */
-	fail_if(mafw_playlist_is_shuffled(g_playlist));
+	ck_assert(!mafw_playlist_is_shuffled(g_playlist));
 	g_main_loop_run(Loop);
-	fail_unless(mafw_playlist_shuffle(g_playlist, NULL));
+	ck_assert(mafw_playlist_shuffle(g_playlist, NULL));
 	g_timeout_add(100,(GSourceFunc)g_main_loop_quit,Loop);
 	g_main_loop_run(Loop);
-	fail_if(contents_changed->len>1 || nshuffles != 1);
-	fail_if(!mafw_playlist_is_shuffled(g_playlist));
-	fail_unless(mafw_playlist_unshuffle(g_playlist, NULL));
+	ck_assert(contents_changed->len <= 1 && nshuffles == 1);
+	ck_assert(mafw_playlist_is_shuffled(g_playlist));
+	ck_assert(mafw_playlist_unshuffle(g_playlist, NULL));
 	g_main_loop_run(Loop);
 
 	/* Try with a single-item playlist.  Expect a playlist_changed
 	 * (of insert_item()), and a is-shuffled (of shuffle()). */
 	mafw_playlist_insert_item(g_playlist, 0, "item 0", NULL);
-	fail_if(mafw_playlist_is_shuffled(g_playlist));
-	fail_unless(mafw_playlist_shuffle(g_playlist, NULL));
-	fail_unless(mafw_playlist_unshuffle(g_playlist, NULL));
+	ck_assert(!mafw_playlist_is_shuffled(g_playlist));
+	ck_assert(mafw_playlist_shuffle(g_playlist, NULL));
+	ck_assert(mafw_playlist_unshuffle(g_playlist, NULL));
 	g_main_loop_run(Loop);
 	g_main_loop_run(Loop);
 	g_main_loop_run(Loop);
-	fail_if(contents_changed->len != 2 || nshuffles != 4);
-	fail_if(mafw_playlist_is_shuffled(g_playlist));
+	ck_assert(contents_changed->len == 2 && nshuffles == 4);
+	ck_assert(!mafw_playlist_is_shuffled(g_playlist));
 	nchanges_expected = nshuffles_expected = 4;
 
 	/* Run the meat of the test. */
@@ -869,18 +865,18 @@ START_TEST(test_shuffle)
 
 	/* test_shuffle_stress() tried shuffle() to death,
 	 * so see that unshuffle() restores playing indices. */
-	fail_unless(mafw_playlist_unshuffle(g_playlist, NULL));
+	ck_assert(mafw_playlist_unshuffle(g_playlist, NULL));
 	g_main_loop_run(Loop);
 	nshuffles_expected++;
-	fail_if(mafw_playlist_is_shuffled(g_playlist));
+	ck_assert(!mafw_playlist_is_shuffled(g_playlist));
 	/* Finally collect, and check the number of signals received. */
 	g_timeout_add_seconds(5,(GSourceFunc)g_main_loop_quit,Loop);
 	dont_quit = TRUE;
 	g_main_loop_run(Loop);
-	fail_if(contents_changed->len -1!= nchanges_expected,"%d %d",
-                contents_changed->len,nchanges_expected);
+	ck_assert_msg(contents_changed->len - 1 == nchanges_expected, "%d %d",
+		      contents_changed->len,nchanges_expected);
 
-	fail_if(nshuffles != nshuffles_expected);
+	ck_assert(nshuffles == nshuffles_expected);
 
 	/* The same as in test_contents_changed_signal(). */
 	g_signal_handlers_disconnect_by_func(G_OBJECT(g_playlist),
@@ -910,24 +906,24 @@ START_TEST(test_proxy_playlist_bind_lists)
 				      MAFW_PROXY_PLAYLIST(g_playlist)), NULL);
 
 	/* Check whether the playlist was created successfully */
-	fail_unless(MAFW_IS_PROXY_PLAYLIST(another),
-		    "List creation failed.");
+	ck_assert_msg(MAFW_IS_PROXY_PLAYLIST(another),
+		      "List creation failed.");
 
 	/* Check that the lists are bound to the same playlist ID */
 	id1 = mafw_proxy_playlist_get_id(
 					 MAFW_PROXY_PLAYLIST(another));
 	id2 = mafw_proxy_playlist_get_id(
 				      MAFW_PROXY_PLAYLIST(g_playlist));
-	fail_unless(id1 == id2,
-		    "Unable to bind two playlist objects to the same playlist");
+	ck_assert_msg(id1 == id2,
+		      "Unable to bind two playlist objects to the same playlist");
 
 	/* Check that the item returned thru "the other" playlist object is
 	   the same that was inserted thru the global playlist object */
 	returned_item = mafw_playlist_get_item(MAFW_PLAYLIST(another), 0, NULL);
-	fail_if(returned_item == NULL,
-		"Unable to get an inserted item thru another playlist object");
-	fail_if(strcmp(returned_item, item),
-		"Got the wrong item thru another playlist object");
+	ck_assert_msg(returned_item,
+		      "Unable to get an inserted item thru another playlist object");
+	ck_assert_msg(!strcmp(returned_item, item),
+		      "Got the wrong item thru another playlist object");
 	g_free(returned_item);
 	g_free(item);
 
@@ -979,10 +975,10 @@ static void itemcb_valid(MafwPlaylist *pls,
 
 	/* We've requested the URI in this case. */
 	Itemcb_called++;
-	fail_unless(md != NULL);
+	ck_assert(md != NULL);
 	vuri = mafw_metadata_first(md, MAFW_METADATA_KEY_URI);
-	fail_unless(vuri != NULL);
-	fail_if(strcmp(g_value_get_string(vuri), URI(Contents[idx])));
+	ck_assert(vuri != NULL);
+	ck_assert(!strcmp(g_value_get_string(vuri), URI(Contents[idx])));
 }
 
 START_TEST(test_valid)
@@ -992,9 +988,9 @@ START_TEST(test_valid)
 					 MAFW_SOURCE_LIST(MAFW_METADATA_KEY_URI),
 					 itemcb_valid, &Destructed, destruct);
 	checkmore_spin_loop(-1);
-	fail_unless(Itemcb_called == 3);
-	fail_unless(Old_md_called == 3);
-	fail_unless(Destructed);
+	ck_assert(Itemcb_called == 3);
+	ck_assert(Old_md_called == 3);
+	ck_assert(Destructed);
 	/* [0..0], valid metadata key. */
 	Old_md_called = 0;
 	Itemcb_called = 0;
@@ -1003,9 +999,9 @@ START_TEST(test_valid)
 					 MAFW_SOURCE_LIST(MAFW_METADATA_KEY_URI),
 					 itemcb_valid, &Destructed, destruct);
 	checkmore_spin_loop(-1);
-	fail_unless(Itemcb_called == 1);
-	fail_unless(Old_md_called == 1);
-	fail_unless(Destructed);
+	ck_assert(Itemcb_called == 1);
+	ck_assert(Old_md_called == 1);
+	ck_assert(Destructed);
 	/* [0..inf), valid metadata key. */
 	Old_md_called = 0;
 	Itemcb_called = 0;
@@ -1014,9 +1010,9 @@ START_TEST(test_valid)
 					 MAFW_SOURCE_LIST(MAFW_METADATA_KEY_URI),
 					 itemcb_valid, &Destructed, destruct);
 	checkmore_spin_loop(-1);
-	fail_unless(Itemcb_called == PLS_SIZE);
-	fail_unless(Old_md_called == PLS_SIZE);
-	fail_unless(Destructed);
+	ck_assert(Itemcb_called == PLS_SIZE);
+	ck_assert(Old_md_called == PLS_SIZE);
+	ck_assert(Destructed);
 	/* [2..inf), valid metadata key. */
 	Old_md_called = 0;
 	Itemcb_called = 0;
@@ -1025,9 +1021,9 @@ START_TEST(test_valid)
 					 MAFW_SOURCE_LIST(MAFW_METADATA_KEY_URI),
 					 itemcb_valid, &Destructed, destruct);
 	checkmore_spin_loop(-1);
-	fail_unless(Itemcb_called == PLS_SIZE - 2);
-	fail_unless(Old_md_called == PLS_SIZE - 2);
-	fail_unless(Destructed);
+	ck_assert(Itemcb_called == PLS_SIZE - 2);
+	ck_assert(Old_md_called == PLS_SIZE - 2);
+	ck_assert(Destructed);
 }
 END_TEST
 
@@ -1039,7 +1035,7 @@ static void itemcb_nomd(MafwPlaylist *pls,
 {
 	/* In this case we have requested NO metadata */
 	Itemcb_called++;
-	fail_unless(md == NULL);
+	ck_assert(md == NULL);
 }
 
 
@@ -1050,9 +1046,9 @@ START_TEST(test_valid_empty)
 	Req = mafw_playlist_get_items_md(g_playlist, 0, -1, MAFW_SOURCE_NO_KEYS,
 					  itemcb_nomd, &Destructed, destruct);
 	checkmore_spin_loop(500);
-	fail_unless(Itemcb_called == 0);
-	fail_unless(Old_md_called == 0);
-	fail_unless(Destructed);
+	ck_assert(Itemcb_called == 0);
+	ck_assert(Old_md_called == 0);
+	ck_assert(Destructed);
 }
 END_TEST
 
@@ -1064,9 +1060,9 @@ START_TEST(test_invalid)
 	Req = mafw_playlist_get_items_md(g_playlist, 0, 999, NULL, itemcb_nomd,
 					 &Destructed, destruct);
 	checkmore_spin_loop(-1);
-	fail_unless(Old_md_called == 0);
-	fail_unless(Itemcb_called == PLS_SIZE);
-	fail_unless(Destructed);
+	ck_assert(Old_md_called == 0);
+	ck_assert(Itemcb_called == PLS_SIZE);
+	ck_assert(Destructed);
 }
 END_TEST
 
@@ -1076,8 +1072,8 @@ START_TEST(test_invalid_2)
 	Req = mafw_playlist_get_items_md(g_playlist, 10, 20, NULL, itemcb_nomd,
 					 &Destructed, destruct);
 	checkmore_spin_loop(500);
-	fail_unless(Old_md_called == 0);
-	fail_unless(Itemcb_called == 0);
+	ck_assert(Old_md_called == 0);
+	ck_assert(Itemcb_called == 0);
 }
 END_TEST
 
@@ -1087,9 +1083,9 @@ START_TEST(test_no_md)
 	Req = mafw_playlist_get_items_md(g_playlist, 0, 2, NULL, itemcb_nomd,
 					 &Destructed, destruct);
 	checkmore_spin_loop(-1);
-	fail_unless(Itemcb_called == 3);
-	fail_unless(Old_md_called == 0);
-	fail_unless(Destructed);
+	ck_assert(Itemcb_called == 3);
+	ck_assert(Old_md_called == 0);
+	ck_assert(Destructed);
 }
 END_TEST
 
@@ -1103,7 +1099,7 @@ static void itemcb_cancel(MafwPlaylist *pls,
 	if (idx == 0)
 		mafw_playlist_cancel_get_items_md(Req);
 	/* It's a failure if we get called after canceling. */
-	fail_if(idx > 0);
+	ck_assert_int_le(idx, 0);
 }
 
 START_TEST(test_cancel_1)
@@ -1112,8 +1108,8 @@ START_TEST(test_cancel_1)
 	Req = mafw_playlist_get_items_md(g_playlist, 0, 2, NULL, itemcb_cancel,
 					 &Destructed, destruct);
 	checkmore_spin_loop(-1);
-	fail_unless(Destructed);
-	fail_unless(Old_md_called == 0);
+	ck_assert(Destructed);
+	ck_assert(Old_md_called == 0);
 }
 END_TEST
 
@@ -1124,9 +1120,9 @@ START_TEST(test_cancel_2)
 					 &Destructed, destruct);
 	mafw_playlist_cancel_get_items_md(Req);
 	checkmore_spin_loop(-1);
-	fail_unless(Destructed);
-	fail_unless(Itemcb_called == 0);
-	fail_unless(Old_md_called == 0);
+	ck_assert(Destructed);
+	ck_assert(Itemcb_called == 0);
+	ck_assert(Old_md_called == 0);
 }
 END_TEST
 
@@ -1149,9 +1145,9 @@ START_TEST(test_multi_1)
 				   MAFW_SOURCE_LIST(MAFW_METADATA_KEY_URI),
 				   itemcb_valid, &n_dest, multi_dest);
 	checkmore_spin_loop(-1);
-	fail_unless(n_dest == 2);
-	fail_unless(Itemcb_called == 6);
-	fail_unless(Old_md_called == 6);
+	ck_assert(n_dest == 2);
+	ck_assert(Itemcb_called == 6);
+	ck_assert(Old_md_called == 6);
 }
 END_TEST
 
@@ -1165,7 +1161,7 @@ static void itemcb_cancel_multi(MafwPlaylist *pls,
 	Itemcb_called++;
 	if (idx == 1)
 		mafw_playlist_cancel_get_items_md(Req);
-	fail_if(idx > 1);
+	ck_assert_int_le(idx, 1);
 }
 
 START_TEST(test_multi_2)
@@ -1181,9 +1177,9 @@ START_TEST(test_multi_2)
 				   MAFW_SOURCE_LIST(MAFW_METADATA_KEY_URI),
 				   itemcb_valid, &n_dest, multi_dest);
 	checkmore_spin_loop(-1);
-	fail_unless(n_dest == 2);
-	fail_unless(Itemcb_called == 2 + 6);
-	fail_unless(Old_md_called == 0 + 6);
+	ck_assert(n_dest == 2);
+	ck_assert(Itemcb_called == 2 + 6);
+	ck_assert(Old_md_called == 0 + 6);
 }
 END_TEST
 

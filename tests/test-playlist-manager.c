@@ -56,16 +56,16 @@
 /* Macros {{{ */
 /*
  * Override the function of `check' so at most one of the processes can
- * execute it.  This is necessary because _fail_unless() communicates
+ * execute it.  This is necessary because _ck_assert() communicates
  * with the grandparent test runner through a file descriptor and if
  * more than one process writes something to it messages may be confused,
  * which `chech' reports as a fatal error.  Under stressing conditions
  * it is easy to hit this.
  */
-#define _fail_unless(...)		\
+#define _ck_assert(...)		\
 do {					\
 	lock(LOCK_EX);			\
-	_fail_unless(__VA_ARGS__);	\
+	_ck_assert(__VA_ARGS__);	\
 	lock(LOCK_UN);			\
 } while (0)
 
@@ -200,12 +200,12 @@ START_TEST(test_get_manager)
 	/* Check that mafw_playlist_manager_get()
 	 * always returns the same object. */
 	manager = mafw_playlist_manager_get();
-	fail_if(manager == NULL,
-		"Didn't get the playlist manager");
-	fail_if(manager != mafw_playlist_manager_get(),
-		"Getting differing playlist manager instances");
-	fail_if(G_OBJECT(manager)->ref_count != 1,
-		"Manager should not be referred by anyone");
+	ck_assert_msg(manager != NULL,
+		      "Didn't get the playlist manager");
+	ck_assert_msg(manager == mafw_playlist_manager_get(),
+		      "Getting differing playlist manager instances");
+	ck_assert_msg(G_OBJECT(manager)->ref_count == 1,
+		      "Manager should not be referred by anyone");
 
 	/* See if the destruction brings down the test. */
 	checkmore_ignore("PlaylistManager is shutting down");
@@ -243,9 +243,9 @@ START_TEST(test_get_playlists)
 	/* $all <- all already existing playlists.
 	 * Don't use mafw_playlist_manager_free_list_of_playlists()
 	 * because we need to keep ->name. */
-	fail_if(!(list = mafw_playlist_manager_list_playlists(manager,
-								     &err)),
-		err ? err->message : NULL);
+	ck_assert_msg((list = mafw_playlist_manager_list_playlists(manager,
+								   &err)),
+		      "%s", err ? err->message : "");
 	for (item = (MafwPlaylistManagerItem *)list->data;
 	     item->name; item++)
 		g_tree_insert(all, GUINT_TO_POINTER(item->id), item->name);
@@ -258,7 +258,7 @@ START_TEST(test_get_playlists)
 		playlist = mafw_playlist_manager_create_playlist(manager,
 								  name,
 								  NULL);
-		fail_if(!playlist);
+		ck_assert(playlist);
 		id = mafw_proxy_playlist_get_id(playlist);
 
 		g_ptr_array_add(mine, playlist);
@@ -277,8 +277,8 @@ START_TEST(test_get_playlists)
 	list = mafw_playlist_manager_list_playlists(manager, NULL);
 	for (item = (MafwPlaylistManagerItem *)list->data;
 	     item->name; item++) {
-		fail_if(!(name = g_tree_lookup(all, GUINT_TO_POINTER(item->id))));
-		fail_unless(!strcmp(item->name, name));
+		ck_assert((name = g_tree_lookup(all, GUINT_TO_POINTER(item->id))));
+		ck_assert(!strcmp(item->name, name));
 	}
 	mafw_playlist_manager_free_list_of_playlists(list);
 
@@ -286,7 +286,7 @@ START_TEST(test_get_playlists)
 	plst = mafw_playlist_manager_get_playlists(manager, NULL);
 	for (i = 0; i < plst->len; i++) {
 		id = mafw_proxy_playlist_get_id(plst->pdata[i]);
-		fail_if(!g_tree_lookup(all, GUINT_TO_POINTER(id)));
+		ck_assert(g_tree_lookup(all, GUINT_TO_POINTER(id)));
 	}
 	g_ptr_array_free(plst, TRUE);
 
@@ -302,7 +302,7 @@ START_TEST(test_get_playlists)
 	/* Get the list of available playlists and verify there are
 	 * exactly as many as it was before we started testing. */
 	list = mafw_playlist_manager_list_playlists(manager, NULL);
-	fail_if(list->len != g_tree_nnodes(all));
+	ck_assert(list->len == g_tree_nnodes(all));
 	mafw_playlist_manager_free_list_of_playlists(list);
 
 	/* Clean up */
@@ -332,7 +332,7 @@ START_TEST(test_dup_playlists)
         /*create playlist with random name*/
         name = g_strdup_printf("%.8X", g_random_int());
         playlist = mafw_playlist_manager_create_playlist(manager, name, NULL);
-        fail_if(!playlist);
+	ck_assert(playlist);
 
         /*set some random properties of playlist*/
          mafw_playlist_set_repeat(MAFW_PLAYLIST(playlist),TRUE);
@@ -342,13 +342,13 @@ START_TEST(test_dup_playlists)
 
         /*Dup playlist with a diff name*/
          new_name = g_strdup_printf("%s_dup", name);
-         fail_if((new_playlist = mafw_playlist_manager_dup_playlist(manager, playlist,
+	 ck_assert((new_playlist = mafw_playlist_manager_dup_playlist(manager, playlist,
 	 							new_name,
-                                                                NULL)) == NULL);
+								NULL)));
 	plst_name = mafw_playlist_get_name(MAFW_PLAYLIST(new_playlist));
-	fail_if(strcmp(plst_name, new_name) != 0);
+	ck_assert(!strcmp(plst_name, new_name));
 	g_free(plst_name);
-	fail_if(mafw_proxy_playlist_get_id(playlist) ==
+	ck_assert(mafw_proxy_playlist_get_id(playlist) !=
 			mafw_proxy_playlist_get_id(new_playlist));
         /* Verify that mafw_playlist_manager_list_playlists()
          * returns the correct information */
@@ -358,8 +358,8 @@ START_TEST(test_dup_playlists)
                  if(!strcmp(plst_name, new_name)){
                 	found = TRUE;
                         g_free(plst_name);
-                        fail_if(!mafw_playlist_get_repeat(plst->pdata[j]));
-                        fail_if(mafw_playlist_is_shuffled(plst->pdata[j]) !=
+			ck_assert(mafw_playlist_get_repeat(plst->pdata[j]));
+			ck_assert(mafw_playlist_is_shuffled(plst->pdata[j]) ==
 			 		mafw_playlist_is_shuffled(
 			 			MAFW_PLAYLIST(playlist)));
                         mafw_playlist_manager_destroy_playlist(manager,
@@ -374,7 +374,7 @@ START_TEST(test_dup_playlists)
         g_ptr_array_free(plst, TRUE);
         g_free(new_name);
         g_free(name);
-        fail_if(!found);
+	ck_assert(found);
 }
 END_TEST /* }}} */
 
@@ -426,15 +426,15 @@ static void playlist_created(MafwPlaylistManager *manager,
 
 	/* Based $table verify that $playlist could have been created
 	 * by the creator, then add it to $Ids and $Objects. */
-	fail_if(playlist == NULL);
+	ck_assert(playlist);
 
 	/* Is $playlist valid?  If $name is NULL the destroyer
 	 * was quicker to destroy than us to notice. */
 	g_object_get(playlist, "name", &name, NULL);
 	if (!name)
 		return;
-	fail_if(!(table = g_tree_lookup(Names, name)),
-		"Unexpected playlist `%s'", name);
+	ck_assert_msg((table = g_tree_lookup(Names, name)),
+		      "Unexpected playlist `%s'", name);
 	g_free(name);
 
 	plprint("CREATED", playlist);
@@ -444,13 +444,13 @@ static void playlist_created(MafwPlaylistManager *manager,
 	/* Register it in $Ids.  Since playlist ids are very unique now
 	 * no two playlist can exist with the same id. */
 	id = mafw_proxy_playlist_get_id(playlist);
-	fail_if(g_tree_lookup(Ids, GUINT_TO_POINTER(id)) != NULL,
-		"Playlist ID %u already seen", id);
+	ck_assert_msg(g_tree_lookup(Ids, GUINT_TO_POINTER(id)) == NULL,
+		      "Playlist ID %u already seen", id);
 	g_tree_insert(Ids, GUINT_TO_POINTER(id), table);
 
 	/* Register it in $Objects. */
-	fail_if(g_tree_lookup(Objects, playlist) != NULL,
-		"Playlist %p already seen", playlist);
+	ck_assert_msg(g_tree_lookup(Objects, playlist) == NULL,
+		      "Playlist %p already seen", playlist);
 	g_tree_insert(Objects, g_object_ref(playlist), playlist);
 } /* }}} */
 
@@ -472,15 +472,15 @@ static void playlist_destroyed(MafwPlaylistManager *manager,
 	/* Validate $playlist. */
 	id = mafw_proxy_playlist_get_id(playlist);
 	if (!(table = g_tree_lookup(Ids, GUINT_TO_POINTER(id))))
-		fail("Unexpected playlist %u.", id);
+		ck_abort_msg("Unexpected playlist %u.", id);
 	else
 		table->ndestroyed++;
 
 	/* Deregister it. */
-	fail_if(!g_tree_remove(Ids, GUINT_TO_POINTER(id)),
-		"Playlist ID %u not found", id);
-	fail_if(!g_tree_remove(Objects, playlist),
-		"Playlist %p not found", playlist);
+	ck_assert_msg(g_tree_remove(Ids, GUINT_TO_POINTER(id)),
+		      "Playlist ID %u not found", id);
+	ck_assert_msg(g_tree_remove(Objects, playlist),
+		      "Playlist %p not found", playlist);
 
 	/* Are we finished? */
 	if (NCompleted >= NRounds && g_tree_nnodes(Ids) == 0) {
@@ -566,7 +566,7 @@ static gboolean do_create(void)
 	playlist = mafw_playlist_manager_create_playlist(manager,
 							       	current->name,
 							       	&err);
-	fail_if(!playlist, err ? err->message : NULL);
+	ck_assert_msg(playlist, "%s", err ? err->message : "");
 
 	/* mafw_playlist_manager_create_playlist() may have failed
 	 * because of run-time reasons. */
@@ -720,14 +720,14 @@ START_TEST(test_like_a_little_angel)
 
 	/* Test finished.  Verify that evey playlist created by the
 	 * creator has been destroyed by the destroyer. */
-	fail_if(g_tree_nnodes(Ids)	!= 0);
-	fail_if(g_tree_nnodes(Objects)	!= 0);
+	ck_assert(g_tree_nnodes(Ids) == 0);
+	ck_assert(g_tree_nnodes(Objects) == 0);
 
 	/* Check that every playlist names have been created and
 	 * destroyed the same times. */
 	for (i = 0; i < G_N_ELEMENTS(table); i++) {
-		fail_if(table[i].ncreated == 0);
-		fail_if(table[i].ncreated != table[i].ndestroyed);
+		ck_assert(table[i].ncreated != 0);
+		ck_assert(table[i].ncreated == table[i].ndestroyed);
 	}
 
 	/* Clean up. */
@@ -739,7 +739,7 @@ START_TEST(test_like_a_little_angel)
 	if (is_creator) {
 		signal(SIGCHLD, SIG_DFL);
 		destroyer_died(0);
-		fail_if(Destroyer_died);
+		ck_assert(!Destroyer_died);
 	} else
 		/* exit() the destroyer, otherwise `check' gets confused. */
 		exit(0);

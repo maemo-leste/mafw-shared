@@ -83,7 +83,7 @@ static void play_cb(MafwRenderer* renderer, gpointer user_data,
                     const GError* error)
 {
 	play_called = TRUE;
-	fail_if(error, "play_cb has error");
+	ck_assert_msg(!error, "play_cb has error");
 }
 
 static gboolean play_error_called;
@@ -91,7 +91,7 @@ static void play_cb_error(MafwRenderer* renderer, gpointer user_data,
                           const GError* error)
 {
 	play_error_called = TRUE;
-	fail_if(error == NULL, "play_cb does not have an error");
+	ck_assert_msg(error, "play_cb does not have an error");
 }
 
 START_TEST(test_play)
@@ -104,71 +104,71 @@ START_TEST(test_play)
 	sp = MAFW_PROXY_RENDERER(mafw_proxy_renderer_new(
                                          RENDERER_UUID, "fake",
                                          mafw_registry_get_instance()));
-	fail_unless(sp != NULL, "Object construction failed");
+	ck_assert_msg(sp != NULL, "Object construction failed");
 
 	mockbus_expect(mafw_dbus_method(MAFW_RENDERER_METHOD_PLAY));
 	mockbus_reply();
 	mafw_renderer_play(MAFW_RENDERER(sp), play_cb, NULL);
-	fail_unless(play_called, "Play-cb not called");
+	ck_assert_msg(play_called, "Play-cb not called");
 
 	mockbus_expect(mafw_dbus_method(MAFW_RENDERER_METHOD_PLAY_OBJECT,
 				MAFW_DBUS_STRING("Test_id")));
 	mockbus_reply();
 	play_called = FALSE;
 	mafw_renderer_play_object(MAFW_RENDERER(sp), "Test_id", play_cb, NULL);
-	fail_unless(play_called, "Play-cb not called for play_object");
+	ck_assert_msg(play_called, "Play-cb not called for play_object");
 
 	mockbus_expect(mafw_dbus_method(MAFW_RENDERER_METHOD_PLAY_URI,
 				MAFW_DBUS_STRING("Test_id")));
 	mockbus_reply();
 	play_called = FALSE;
 	mafw_renderer_play_uri(MAFW_RENDERER(sp), "Test_id", play_cb, NULL);
-	fail_unless(play_called, "Play-cb not called for play_uri");
+	ck_assert_msg(play_called, "Play-cb not called for play_uri");
 
 	mockbus_expect(mafw_dbus_method(MAFW_RENDERER_METHOD_STOP));
 	mockbus_reply();
 	play_called = FALSE;
 	mafw_renderer_stop(MAFW_RENDERER(sp), play_cb, NULL);
-	fail_unless(play_called, "Play-cb not called for stop");
+	ck_assert_msg(play_called, "Play-cb not called for stop");
 
 	mockbus_expect(mafw_dbus_method(MAFW_RENDERER_METHOD_PAUSE));
 	mockbus_reply();
 	play_called = FALSE;
 	mafw_renderer_pause(MAFW_RENDERER(sp), play_cb, NULL);
-	fail_unless(play_called, "Play-cb not called for pause");
+	ck_assert_msg(play_called, "Play-cb not called for pause");
 
 	mockbus_expect(mafw_dbus_method(MAFW_RENDERER_METHOD_RESUME));
 	mockbus_reply();
 	play_called = FALSE;
 	mafw_renderer_resume(MAFW_RENDERER(sp), play_cb, NULL);
-	fail_unless(play_called, "Play-cb not called for resume");
+	ck_assert_msg(play_called, "Play-cb not called for resume");
 
 	mockbus_expect(mafw_dbus_method(MAFW_RENDERER_METHOD_NEXT));
 	mockbus_reply();
 	play_called = FALSE;
 	mafw_renderer_next(MAFW_RENDERER(sp), play_cb, NULL);
-	fail_unless(play_called, "Play-cb not called for next");
+	ck_assert_msg(play_called, "Play-cb not called for next");
 
 	mockbus_expect(mafw_dbus_method(MAFW_RENDERER_METHOD_PREVIOUS));
 	mockbus_reply();
 	play_called = FALSE;
 	mafw_renderer_previous(MAFW_RENDERER(sp), play_cb, NULL);
-	fail_unless(play_called, "Play-cb not called for previous");
+	ck_assert_msg(play_called, "Play-cb not called for previous");
 
 	mockbus_expect(mafw_dbus_method(MAFW_RENDERER_METHOD_GOTO_INDEX,
 				MAFW_DBUS_UINT32(1)));
 	mockbus_reply();
 	play_called = FALSE;
 	mafw_renderer_goto_index(MAFW_RENDERER(sp), 1, play_cb, NULL);
-	fail_unless(play_called, "Play-cb not called for goto_index");
+	ck_assert_msg(play_called, "Play-cb not called for goto_index");
 
 	/* Error occured */
 	mockbus_expect(mafw_dbus_method(MAFW_RENDERER_METHOD_GOTO_INDEX,
 				MAFW_DBUS_UINT32(1)));
 	mockbus_error(MAFW_RENDERER_ERROR, 2, "testproblem");
 	mafw_renderer_goto_index(MAFW_RENDERER(sp), 1, play_cb_error, NULL);
-	fail_unless(play_error_called, "Play-cb not called for goto_index with "
-				"error reply");
+	ck_assert_msg(play_error_called,
+		      "Play-cb not called for goto_index with error reply");
 
 	mafw_registry_remove_extension(mafw_registry_get_instance(),
                                         (gpointer)sp);
@@ -179,16 +179,18 @@ END_TEST
 static void set_get_position_cb(MafwRenderer *renderer, gint seconds,
 				gpointer user_data, const GError *error)
 {
-	fail_if(GPOINTER_TO_INT(user_data) != 0xACDCABBA, "Wrong userdata");
-	fail_if(seconds != 31337, "Wrong position returned");
-	fail_if(error != NULL);
+	ck_assert_msg(GPOINTER_TO_INT(user_data) == 0xACDCABBA,
+		      "Wrong userdata");
+	ck_assert_msg(seconds == 31337, "Wrong position returned");
+	ck_assert(!error);
 }
 
 static void set_get_position_error_cb(MafwRenderer *renderer, gint seconds,
 				gpointer user_data, const GError *error)
 {
-	fail_if(GPOINTER_TO_INT(user_data) != 0xACDCABBA, "Wrong userdata");
-	fail_if(error == NULL);
+	ck_assert_msg(GPOINTER_TO_INT(user_data) == 0xACDCABBA,
+		      "Wrong userdata");
+	ck_assert(error);
 }
 
 START_TEST(test_set_position)
@@ -206,7 +208,7 @@ START_TEST(test_set_position)
 	sp = MAFW_PROXY_RENDERER(mafw_proxy_renderer_new(
                                          RENDERER_UUID, "fake",
                                          mafw_registry_get_instance()));
-	fail_unless(sp != NULL, "Object construction failed");
+	ck_assert_msg(sp != NULL, "Object construction failed");
 
 	mafw_renderer_set_position(MAFW_RENDERER(sp), SeekAbsolute,
 				seconds, set_get_position_cb,
@@ -230,7 +232,7 @@ START_TEST(test_get_position)
 	sp = MAFW_PROXY_RENDERER(mafw_proxy_renderer_new(
                                          RENDERER_UUID, "fake",
                                          mafw_registry_get_instance()));
-	fail_unless(sp != NULL, "Object construction failed");
+	ck_assert_msg(sp != NULL, "Object construction failed");
 
 	/* Try to get position and check its outcome in the above callback */
 	mafw_renderer_get_position(MAFW_RENDERER(sp), set_get_position_cb,
@@ -252,28 +254,28 @@ static void get_status_cb(MafwRenderer *renderer, MafwPlaylist *playlist,
                           const gchar* object_id, gboolean *is_oid_null,
                           const GError *error)
 {
-	fail_if(error != NULL, "Get status returned with an error");
+	ck_assert_msg(error == NULL, "Get status returned with an error");
 	if (!*is_oid_null)
 	{
-		fail_if(playlist != NULL, "Wrong playlist");
+		ck_assert_msg(!playlist, "Wrong playlist");
 	}
 	else
 	{
-		fail_if(playlist == NULL, "Wrong playlist");
+		ck_assert_msg(playlist, "Wrong playlist");
 	}
-	fail_if(index != 22, "Wrong index");
-	fail_if(state != 1, "Wrong play state");
+	ck_assert_msg(index == 22, "Wrong index");
+	ck_assert_msg(state == 1, "Wrong play state");
 	if (!*is_oid_null)
 	{
-		fail_if(strcmp(object_id,
-                               "All your base are belong to us") != 0,
-			"Wrong object ID");
+		ck_assert_msg(!strcmp(object_id,
+				      "All your base are belong to us"),
+			      "Wrong object ID");
 	}
 	else
 	{
-		fail_if(object_id != NULL);
+		ck_assert(object_id == NULL);
 	}
-	fail_if(stat_cb_called);
+	ck_assert(!stat_cb_called);
 	stat_cb_called = TRUE;
 }
 
@@ -282,10 +284,10 @@ static void get_status_error_cb(MafwRenderer *renderer, MafwPlaylist *playlist,
                                 const gchar* object_id, gpointer udata,
                                 const GError *error)
 {
-	fail_if(!error);
-	fail_if(playlist);
-	fail_if(object_id);
-	fail_if(stat_cb_called);
+	ck_assert(error);
+	ck_assert(!playlist);
+	ck_assert(!object_id);
+	ck_assert(!stat_cb_called);
 	stat_cb_called = TRUE;
 }
 
@@ -300,7 +302,7 @@ START_TEST(test_get_status)
 	sp = MAFW_PROXY_RENDERER(mafw_proxy_renderer_new(
                                          RENDERER_UUID, "fake",
                                          mafw_registry_get_instance()));
-	fail_unless(sp != NULL, "Object construction failed");
+	ck_assert_msg(sp != NULL, "Object construction failed");
 
 	mockbus_expect(mafw_dbus_method(MAFW_RENDERER_METHOD_GET_STATUS));
 	mockbus_reply(MAFW_DBUS_UINT32(MAFW_PROXY_PLAYLIST_INVALID_ID),
@@ -310,7 +312,7 @@ START_TEST(test_get_status)
 
 	mafw_renderer_get_status(MAFW_RENDERER(sp), (gpointer)get_status_cb,
 			     &oid_is_NULL);
-	fail_if(!stat_cb_called);
+	ck_assert(stat_cb_called);
 	stat_cb_called = FALSE;
 
 	mockbus_expect(mafw_dbus_method(MAFW_RENDERER_METHOD_GET_STATUS));
@@ -339,7 +341,7 @@ START_TEST(test_get_status)
 	oid_is_NULL = TRUE;
 	mafw_renderer_get_status(MAFW_RENDERER(sp), (gpointer)get_status_cb,
 			     &oid_is_NULL);
-	fail_if(!stat_cb_called);
+	ck_assert(stat_cb_called);
 	stat_cb_called = FALSE;
 
 	mockbus_expect(mafw_dbus_method(MAFW_RENDERER_METHOD_GET_STATUS));
@@ -347,7 +349,7 @@ START_TEST(test_get_status)
 	mafw_renderer_get_status(MAFW_RENDERER(sp),
                                  (gpointer)get_status_error_cb,
                                  NULL);
-	fail_if(!stat_cb_called);
+	ck_assert(stat_cb_called);
 	stat_cb_called = FALSE;
 
 	mafw_registry_remove_extension(mafw_registry_get_instance(),
@@ -366,7 +368,7 @@ START_TEST(test_get_status_invalid)
 	sp = MAFW_PROXY_RENDERER(mafw_proxy_renderer_new(
                                          RENDERER_UUID, "fake",
                                          mafw_registry_get_instance()));
-	fail_unless(sp != NULL, "Object construction failed");
+	ck_assert_msg(sp != NULL, "Object construction failed");
 
 	/* This should just assert, but not crash */
 	expect_ignore(mafw_renderer_get_status(MAFW_RENDERER(sp), NULL, NULL));
@@ -390,7 +392,7 @@ static void check_signals(void)
 static void sp_state_changed(MafwRenderer *self,
 			       MafwPlayState state)
 {
-	fail_if(state != 1, "Wrong state");
+	ck_assert_msg(state == 1, "Wrong state");
 	st_chd = TRUE;
 	check_signals();
 }
@@ -399,17 +401,17 @@ static void sp_media_changed(MafwRenderer *self, gint index,
 						const gchar *object_id)
 {
 	static gboolean called_once;
-	fail_if(index != 10, "Wrong index");
+	ck_assert_msg(index == 10, "Wrong index");
 	if (called_once)
 	{
-		fail_if(object_id == NULL, "Object id is NULL");
-		fail_if(strcmp(object_id, "str") != 0, "Wrong object_id");
-		fail_if(med_chd);
+		ck_assert_msg(object_id != NULL, "Object id is NULL");
+		ck_assert_msg(!strcmp(object_id, "str"), "Wrong object_id");
+		ck_assert(!med_chd);
 		med_chd = TRUE;
 	}
 	else
 	{
-		fail_if(object_id != NULL);
+		ck_assert(object_id == NULL);
 		called_once = TRUE;
 	}
 	check_signals();
@@ -418,16 +420,16 @@ static void sp_media_changed(MafwRenderer *self, gint index,
 static void sp_playlist_changed(MafwRenderer *self,
 			       MafwPlaylist *playlist)
 {
-	fail_if(pllist_chd);
+	ck_assert(!pllist_chd);
 	pllist_chd = TRUE;
-	fail_if(!playlist);
+	ck_assert(playlist);
 	check_signals();
 }
 
 static void sp_buffering_info(MafwRenderer *self, gfloat status)
 {
-	fail_if(status != 0.2f, "Wrong buffer info");
-	fail_if(buff_inf);
+	ck_assert_msg(status == 0.2f, "Wrong buffer info");
+	ck_assert(!buff_inf);
 	buff_inf = TRUE;
 	check_signals();
 }
@@ -435,11 +437,11 @@ static void sp_buffering_info(MafwRenderer *self, gfloat status)
 static void sp_metadata_changed(MafwRenderer *self,
 				const gchar *key, GValueArray *value)
 {
-	fail_if(strcmp(key, "date"));
-	fail_unless(value->n_values == 2);
-	fail_unless(g_value_get_uint(&value->values[0]) == 2008);
-	fail_unless(g_value_get_uint(&value->values[1]) == 05);
-	fail_if(metada_inf);
+	ck_assert(!strcmp(key, "date"));
+	ck_assert(value->n_values == 2);
+	ck_assert(g_value_get_uint(&value->values[0]) == 2008);
+	ck_assert(g_value_get_uint(&value->values[1]) == 05);
+	ck_assert(!metada_inf);
 	metada_inf = TRUE;
 	check_signals();
 }
@@ -456,7 +458,7 @@ START_TEST(test_signals)
 	sp = MAFW_PROXY_RENDERER(mafw_proxy_renderer_new(
                                          RENDERER_UUID, "fake",
                                          mafw_registry_get_instance()));
-	fail_unless(sp != NULL, "Object construction failed");
+	ck_assert_msg(sp != NULL, "Object construction failed");
 	g_signal_connect(sp, "state-changed", G_CALLBACK(sp_state_changed),
 			 NULL);
 	g_signal_connect(sp, "media-changed", G_CALLBACK(sp_media_changed),
@@ -540,7 +542,7 @@ START_TEST(test_assign_playlist)
 	sp = MAFW_PROXY_RENDERER(mafw_proxy_renderer_new(
                                          RENDERER_UUID, "fake",
                                          mafw_registry_get_instance()));
-	fail_unless(sp != NULL, "Object construction failed");
+	ck_assert_msg(sp != NULL, "Object construction failed");
 
 	mockbus_expect(mafw_dbus_method_full(
 			       DBUS_SERVICE_DBUS,
@@ -564,22 +566,22 @@ START_TEST(test_assign_playlist)
 	playlist = mafw_playlist_manager_get_playlist(
                 mafw_playlist_manager_get(),
                 10, NULL);
-	fail_if(!playlist);
+	ck_assert(playlist);
 
 	mockbus_expect(mafw_dbus_method(
 			       MAFW_RENDERER_METHOD_ASSIGN_PLAYLIST,
 					MAFW_DBUS_UINT32(10)));
 	mockbus_reply();
-	fail_if(!mafw_renderer_assign_playlist(MAFW_RENDERER(sp), playlist,
-                                               &err));
-	fail_if(err);
+	ck_assert(mafw_renderer_assign_playlist(MAFW_RENDERER(sp), playlist,
+						&err));
+	ck_assert(!err);
 	mockbus_expect(mafw_dbus_method(
 			       MAFW_RENDERER_METHOD_ASSIGN_PLAYLIST,
 					MAFW_DBUS_UINT32(10)));
 	mockbus_error(MAFW_RENDERER_ERROR, 2, "testproblem");
-	fail_if(mafw_renderer_assign_playlist(MAFW_RENDERER(sp), playlist,
-                                              &err));
-	fail_if(!err);
+	ck_assert(!mafw_renderer_assign_playlist(MAFW_RENDERER(sp), playlist,
+						 &err));
+	ck_assert(err);
 	g_error_free(err);
 
 	mafw_registry_remove_extension(mafw_registry_get_instance(),

@@ -85,11 +85,11 @@ START_TEST(test_set_get_name)
 	mockbus_reply(MAFW_DBUS_STRING("Test-name"));
 
 	pl = MAFW_PROXY_PLAYLIST(mafw_proxy_playlist_new(1));
-	fail_if(pl == NULL, "Failed to create MafwProxyPlaylist");
+	ck_assert_msg(pl, "Failed to create MafwProxyPlaylist");
 
 	mafw_playlist_set_name(MAFW_PLAYLIST(pl), "Test-name");
 	name = mafw_playlist_get_name(MAFW_PLAYLIST(pl));
-	fail_if(strcmp(name, "Test-name") != 0, "Get_name doesn't work");
+	ck_assert_msg(!strcmp(name, "Test-name"), "Get_name doesn't work");
 	g_free(name);
 
 	/* What happens in case of error... */
@@ -98,7 +98,7 @@ START_TEST(test_set_get_name)
 	mockbus_error(MAFW_RENDERER_ERROR, 2, "testproblem");
 
 	name = mafw_playlist_get_name(MAFW_PLAYLIST(pl));
-	fail_if(name);
+	ck_assert(!name);
 
 	g_object_unref(pl);
 	mockbus_finish();
@@ -119,19 +119,19 @@ START_TEST(test_set_get_repeat)
 	mockbus_reply(MAFW_DBUS_BOOLEAN(TRUE));
 
 	pl = MAFW_PROXY_PLAYLIST(mafw_proxy_playlist_new(1));
-	fail_if(pl == NULL, "Failed to create MafwProxyPlaylist");
+	ck_assert_msg(pl, "Failed to create MafwProxyPlaylist");
 
 	mafw_playlist_set_repeat(MAFW_PLAYLIST(pl), TRUE);
-	fail_if(mafw_playlist_get_repeat(MAFW_PLAYLIST(pl)) != TRUE,
-	       	"Get_repeat doesn't work");
+	ck_assert_msg(mafw_playlist_get_repeat(MAFW_PLAYLIST(pl)) == TRUE,
+		      "Get_repeat doesn't work");
 
 	/*What happens in case of error */
 	mockbus_expect(mafw_dbus_method(
 				       MAFW_PLAYLIST_METHOD_GET_REPEAT));
 	mockbus_error(MAFW_RENDERER_ERROR, 2, "testproblem");
 
-	fail_if(mafw_playlist_get_repeat(MAFW_PLAYLIST(pl)) == TRUE,
-	       	"Get_repeat doesn't work");
+	ck_assert_msg(mafw_playlist_get_repeat(MAFW_PLAYLIST(pl)) != TRUE,
+		      "Get_repeat doesn't work");
 
 	g_object_unref(pl);
 
@@ -158,19 +158,19 @@ START_TEST(test_shuffle)
 	mockbus_reply();
 
 	pl = MAFW_PROXY_PLAYLIST(mafw_proxy_playlist_new(1));
-	fail_if(pl == NULL, "Failed to create MafwProxyPlaylist");
+	ck_assert_msg(pl, "Failed to create MafwProxyPlaylist");
 
-	fail_if(mafw_playlist_is_shuffled(MAFW_PLAYLIST(pl)) != FALSE,
-	       	"Is_shuffled doesn't work");
+	ck_assert_msg(mafw_playlist_is_shuffled(MAFW_PLAYLIST(pl)) == FALSE,
+		      "Is_shuffled doesn't work");
 
-	fail_if(mafw_playlist_shuffle(MAFW_PLAYLIST(pl), &err) == FALSE,
-	       	"shuffle doesn't work");
-	fail_if(err);
+	ck_assert_msg(mafw_playlist_shuffle(MAFW_PLAYLIST(pl), &err) != FALSE,
+		      "shuffle doesn't work");
+	ck_assert(!err);
 
 	/* What happens in case of error */
-	fail_if(mafw_playlist_unshuffle(MAFW_PLAYLIST(pl), NULL) == FALSE,
-	       	"Unshuffle doesn't work");
-	fail_if(err);
+	ck_assert_msg(mafw_playlist_unshuffle(MAFW_PLAYLIST(pl), NULL) != FALSE,
+		      "Unshuffle doesn't work");
+	ck_assert(!err);
 	mockbus_expect(mafw_dbus_method(
 				       MAFW_PLAYLIST_METHOD_IS_SHUFFLED));
 	mockbus_error(MAFW_RENDERER_ERROR, 2, "testproblem");
@@ -181,18 +181,18 @@ START_TEST(test_shuffle)
 				       MAFW_PLAYLIST_METHOD_UNSHUFFLE));
 	mockbus_error(MAFW_RENDERER_ERROR, 2, "testproblem");
 
-	fail_if(mafw_playlist_is_shuffled(MAFW_PLAYLIST(pl)) != FALSE,
-	       	"Is_shuffled doesn't work");
+	ck_assert_msg(mafw_playlist_is_shuffled(MAFW_PLAYLIST(pl)) == FALSE,
+		      "Is_shuffled doesn't work");
 
-	fail_if(mafw_playlist_shuffle(MAFW_PLAYLIST(pl), &err) != FALSE,
-	       	"shuffle doesn't work");
-	fail_if(!err);
+	ck_assert_msg(mafw_playlist_shuffle(MAFW_PLAYLIST(pl), &err) == FALSE,
+		      "shuffle doesn't work");
+	ck_assert(err);
 	g_error_free(err);
 	err = NULL;
 
-	fail_if(mafw_playlist_unshuffle(MAFW_PLAYLIST(pl), &err) != FALSE,
-	       	"Unshuffle doesn't work");
-	fail_if(!err);
+	ck_assert_msg(mafw_playlist_unshuffle(MAFW_PLAYLIST(pl), &err) == FALSE,
+		      "Unshuffle doesn't work");
+	ck_assert(err);
 	g_error_free(err);
 	err = NULL;
 
@@ -234,25 +234,25 @@ START_TEST(test_manipulation)
 	mockbus_reply(MAFW_DBUS_BOOLEAN(TRUE));
 
 	pl = MAFW_PROXY_PLAYLIST(mafw_proxy_playlist_new(1));
-	fail_if(pl == NULL, "Failed to create MafwProxyPlaylist");
+	ck_assert_msg(pl != NULL, "Failed to create MafwProxyPlaylist");
 
-	fail_if(mafw_playlist_insert_item(MAFW_PLAYLIST(pl),0, "test::objid",
-			&err) == FALSE,
-	       	"insert_item doesn't work");
-	fail_if(err);
-	fail_if(mafw_playlist_append_item(MAFW_PLAYLIST(pl),"test::objid",
-			&err) == FALSE,
-	       	"append_item doesn't work");
-	fail_if(err);
-	fail_if(mafw_playlist_remove_item(MAFW_PLAYLIST(pl),0, &err) == FALSE,
-	       	"remove_item doesn't work");
-	fail_if(err);
-	fail_if(mafw_playlist_clear(MAFW_PLAYLIST(pl), &err) == FALSE,
-	       	"clear doesn't work");
-	fail_if(err);
-	fail_if(mafw_playlist_move_item(MAFW_PLAYLIST(pl),0,1, &err) == FALSE,
-	       	"move_item doesn't work");
-	fail_if(err);
+	ck_assert_msg(mafw_playlist_insert_item(MAFW_PLAYLIST(pl), 0,
+						"test::objid", &err) != FALSE,
+		      "insert_item doesn't work");
+	ck_assert(!err);
+	ck_assert_msg(mafw_playlist_append_item(MAFW_PLAYLIST(pl),"test::objid",
+						&err) != FALSE,
+		      "append_item doesn't work");
+	ck_assert(!err);
+	ck_assert_msg(mafw_playlist_remove_item(MAFW_PLAYLIST(pl),0, &err)
+		      != FALSE, "remove_item doesn't work");
+	ck_assert(!err);
+	ck_assert_msg(mafw_playlist_clear(MAFW_PLAYLIST(pl), &err) != FALSE,
+		      "clear doesn't work");
+	ck_assert(!err);
+	ck_assert_msg(mafw_playlist_move_item(MAFW_PLAYLIST(pl),0,1, &err)
+		      != FALSE, "move_item doesn't work");
+	ck_assert(!err);
 
 	/* What happens in case of errors... */
 	mockbus_expect(mafw_dbus_method(
@@ -278,31 +278,31 @@ START_TEST(test_manipulation)
 				       DBUS_TYPE_UINT32, 1));
 	mockbus_error(MAFW_RENDERER_ERROR, 2, "testproblem");
 
-	fail_if(mafw_playlist_insert_item(MAFW_PLAYLIST(pl),0, "test::objid",
-			&err) != FALSE,
-	       	"insert_item doesn't work");
-	fail_if(!err);
+	ck_assert_msg(mafw_playlist_insert_item(MAFW_PLAYLIST(pl), 0,
+						"test::objid", &err) == FALSE,
+		      "insert_item doesn't work");
+	ck_assert(err);
 	g_error_free(err);
 	err = NULL;
-	fail_if(mafw_playlist_append_item(MAFW_PLAYLIST(pl),"test::objid",
-			&err) != FALSE,
-	       	"append_item doesn't work");
-	fail_if(!err);
+	ck_assert_msg(mafw_playlist_append_item(MAFW_PLAYLIST(pl),"test::objid",
+						&err) == FALSE,
+		      "append_item doesn't work");
+	ck_assert(err);
 	g_error_free(err);
 	err = NULL;
-	fail_if(mafw_playlist_remove_item(MAFW_PLAYLIST(pl),0, &err) != FALSE,
-	       	"remove_item doesn't work");
-	fail_if(!err);
+	ck_assert_msg(mafw_playlist_remove_item(MAFW_PLAYLIST(pl),0, &err)
+		      == FALSE, "remove_item doesn't work");
+	ck_assert(err);
 	g_error_free(err);
 	err = NULL;
-	fail_if(mafw_playlist_clear(MAFW_PLAYLIST(pl), &err) != FALSE,
-	       	"clear doesn't work");
-	fail_if(!err);
+	ck_assert_msg(mafw_playlist_clear(MAFW_PLAYLIST(pl), &err) == FALSE,
+		      "clear doesn't work");
+	ck_assert(err);
 	g_error_free(err);
 	err = NULL;
-	fail_if(mafw_playlist_move_item(MAFW_PLAYLIST(pl),0,1, &err) != FALSE,
-	       	"move_item doesn't work");
-	fail_if(!err);
+	ck_assert_msg(mafw_playlist_move_item(MAFW_PLAYLIST(pl),0,1, &err)
+		      == FALSE, "move_item doesn't work");
+	ck_assert(err);
 	g_error_free(err);
 	err = NULL;
 
@@ -329,18 +329,16 @@ START_TEST(test_state_functions)
 	mockbus_reply(MAFW_DBUS_UINT32(3));
 
 	pl = MAFW_PROXY_PLAYLIST(mafw_proxy_playlist_new(1));
-	fail_if(pl == NULL, "Failed to create MafwProxyPlaylist");
+	ck_assert_msg(pl != NULL, "Failed to create MafwProxyPlaylist");
 
 	item = mafw_playlist_get_item(MAFW_PLAYLIST(pl),1, &err);
-	fail_if(strcmp(item, "test::objid")
-			!= 0,
-	       	"get_item doesn't work");
+	ck_assert_msg(!strcmp(item, "test::objid"), "get_item doesn't work");
 	g_free(item);
-	fail_if(err);
+	ck_assert(!err);
 
-	fail_if(mafw_playlist_get_size(MAFW_PLAYLIST(pl), &err) != 3,
-	       	"get_size doesn't work");
-	fail_if(err);
+	ck_assert_msg(mafw_playlist_get_size(MAFW_PLAYLIST(pl), &err) == 3,
+		      "get_size doesn't work");
+	ck_assert(!err);
 
 	/* What happens in case of errors... */
 	mockbus_expect(mafw_dbus_method(
@@ -352,15 +350,15 @@ START_TEST(test_state_functions)
 	mockbus_error(MAFW_RENDERER_ERROR, 2, "testproblem");
 
 	item = mafw_playlist_get_item(MAFW_PLAYLIST(pl),1, &err);
-	fail_if(item, "get_item doesn't work");
-	fail_if(!err);
+	ck_assert_msg(!item, "get_item doesn't work");
+	ck_assert(err);
 	g_error_free(err);
 	err = NULL;
 
-	fail_if(mafw_playlist_get_size(MAFW_PLAYLIST(pl), &err) != 0,
-	       	"get_size doesn't work");
+	ck_assert_msg(mafw_playlist_get_size(MAFW_PLAYLIST(pl), &err) == 0,
+		      "get_size doesn't work");
 	g_object_unref(pl);
-	fail_if(!err);
+	ck_assert(err);
 	g_error_free(err);
 	err = NULL;
 
@@ -393,44 +391,44 @@ START_TEST(test_iterator)
 	mockbus_reply(MAFW_DBUS_UINT32(10), MAFW_DBUS_STRING("test::objid3"));
 
 	pl = MAFW_PROXY_PLAYLIST(mafw_proxy_playlist_new(1));
-	fail_if(pl == NULL, "Failed to create MafwProxyPlaylist");
+	ck_assert_msg(pl, "Failed to create MafwProxyPlaylist");
 
 	mafw_playlist_get_starting_index(MAFW_PLAYLIST(pl), &new_idx,
 					&oid, &err);
-	fail_if(err);
-	fail_if(new_idx != 10);
-	fail_if(!oid);
-	fail_if(strcmp(oid, "test::objid"));
+	ck_assert(!err);
+	ck_assert_int_eq(new_idx, 10);
+	ck_assert(oid);
+	ck_assert(!strcmp(oid, "test::objid"));
 	new_idx = 2;
 	g_free(oid);
 	oid = NULL;
 
 	mafw_playlist_get_last_index(MAFW_PLAYLIST(pl), &new_idx,
 					&oid, &err);
-	fail_if(err);
-	fail_if(new_idx != 10);
-	fail_if(!oid);
-	fail_if(strcmp(oid, "test::objid"));
+	ck_assert(!err);
+	ck_assert_int_eq(new_idx, 10);
+	ck_assert(oid);
+	ck_assert(!strcmp(oid, "test::objid"));
 	new_idx = 2;
 	g_free(oid);
 	oid = NULL;
 
-	fail_if(!mafw_playlist_get_next(MAFW_PLAYLIST(pl), &new_idx,
-					&oid,&err));
-	fail_if(err);
-	fail_if(new_idx != 10);
-	fail_if(!oid);
-	fail_if(strcmp(oid, "test::objid2"));
+	ck_assert(mafw_playlist_get_next(MAFW_PLAYLIST(pl), &new_idx,
+					 &oid, &err));
+	ck_assert(!err);
+	ck_assert_int_eq(new_idx, 10);
+	ck_assert(oid);
+	ck_assert(!strcmp(oid, "test::objid2"));
 	new_idx = 2;
 	g_free(oid);
 	oid = NULL;
 
-	fail_if(!mafw_playlist_get_prev(MAFW_PLAYLIST(pl), &new_idx,
-					&oid,&err));
-	fail_if(err);
-	fail_if(new_idx != 10);
-	fail_if(!oid);
-	fail_if(strcmp(oid, "test::objid3"));
+	ck_assert(mafw_playlist_get_prev(MAFW_PLAYLIST(pl), &new_idx,
+					 &oid, &err));
+	ck_assert(!err);
+	ck_assert_int_eq(new_idx, 10);
+	ck_assert(oid);
+	ck_assert(!strcmp(oid, "test::objid3"));
 	new_idx = 2;
 	g_free(oid);
 	oid = NULL;
@@ -453,22 +451,22 @@ START_TEST(test_iterator)
 
 	mafw_playlist_get_starting_index(MAFW_PLAYLIST(pl), &new_idx,
 					&oid, &err);
-	fail_if(err);
-	fail_if(oid);
+	ck_assert(!err);
+	ck_assert(!oid);
 	mafw_playlist_get_last_index(MAFW_PLAYLIST(pl), &new_idx,
 					&oid, &err);
-	fail_if(err);
-	fail_if(oid);
+	ck_assert(!err);
+	ck_assert(!oid);
 
-	fail_if(mafw_playlist_get_next(MAFW_PLAYLIST(pl), &new_idx,
-					&oid,&err));
-	fail_if(err);
-	fail_if(oid);
+	ck_assert(!mafw_playlist_get_next(MAFW_PLAYLIST(pl), &new_idx,
+					  &oid,&err));
+	ck_assert(!err);
+	ck_assert(!oid);
 
-	fail_if(mafw_playlist_get_prev(MAFW_PLAYLIST(pl), &new_idx,
-					&oid,&err));
-	fail_if(err);
-	fail_if(oid);
+	ck_assert(!mafw_playlist_get_prev(MAFW_PLAYLIST(pl), &new_idx,
+					  &oid,&err));
+	ck_assert(!err);
+	ck_assert(!oid);
 
 	/* In case of error ... */
 	mockbus_expect(mafw_dbus_method(
@@ -488,30 +486,30 @@ START_TEST(test_iterator)
 
 	mafw_playlist_get_starting_index(MAFW_PLAYLIST(pl), &new_idx,
 					&oid, &err);
-	fail_if(!err);
+	ck_assert(err);
 	g_error_free(err);
 	err = NULL;
-	fail_if(oid);
+	ck_assert(!oid);
 	mafw_playlist_get_last_index(MAFW_PLAYLIST(pl), &new_idx,
 					&oid, &err);
-	fail_if(!err);
+	ck_assert(err);
 	g_error_free(err);
 	err = NULL;
-	fail_if(oid);
+	ck_assert(!oid);
 
-	fail_if(mafw_playlist_get_next(MAFW_PLAYLIST(pl), &new_idx,
-					&oid,&err));
-	fail_if(!err);
+	ck_assert(!mafw_playlist_get_next(MAFW_PLAYLIST(pl), &new_idx,
+					  &oid,&err));
+	ck_assert(err);
 	g_error_free(err);
 	err = NULL;
-	fail_if(oid);
+	ck_assert(!oid);
 
-	fail_if(mafw_playlist_get_prev(MAFW_PLAYLIST(pl), &new_idx,
-					&oid,&err));
-	fail_if(!err);
+	ck_assert(!mafw_playlist_get_prev(MAFW_PLAYLIST(pl), &new_idx,
+					  &oid,&err));
+	ck_assert(err);
 	g_error_free(err);
 	err = NULL;
-	fail_if(oid);
+	ck_assert(!oid);
 
 	g_object_unref(pl);
 	mockbus_finish();
@@ -522,8 +520,8 @@ static gboolean it_mvd_called;
 
 static void item_moved(MafwPlaylist *playlist, guint from, guint to)
 {
-	fail_if(from != 1, "Wrong from variable");
-	fail_if(to != 2, "Wrong to variable");
+	ck_assert_msg(from == 1, "Wrong from variable");
+	ck_assert_msg(to == 2, "Wrong to variable");
 	it_mvd_called = TRUE;
 }
 
@@ -534,7 +532,7 @@ START_TEST(test_signals)
 	mockbus_reset();
 
 	pl = MAFW_PROXY_PLAYLIST(mafw_proxy_playlist_new(1));
-	fail_if(pl == NULL, "Failed to create MafwProxyPlaylist");
+	ck_assert_msg(pl, "Failed to create MafwProxyPlaylist");
 
 	g_signal_connect(pl, "item-moved", G_CALLBACK(item_moved),
 			 NULL);
@@ -546,7 +544,7 @@ START_TEST(test_signals)
 
 	mockbus_deliver(mafw_dbus_session(NULL));
 
-	fail_if(it_mvd_called != TRUE, "item-moved signal not emitted");
+	ck_assert_msg(it_mvd_called == TRUE, "item-moved signal not emitted");
 
 	g_object_unref(pl);
 
@@ -569,17 +567,17 @@ START_TEST(test_usecount)
 	mockbus_reply();
 
 	pl = MAFW_PROXY_PLAYLIST(mafw_proxy_playlist_new(1));
-	fail_if(pl == NULL, "Failed to create MafwProxyPlaylist");
+	ck_assert_msg(pl, "Failed to create MafwProxyPlaylist");
 
-	fail_if(mafw_playlist_increment_use_count(
-                        MAFW_PLAYLIST(pl), &err) == FALSE,
-	       	"increment_use_count doesn't work");
-	fail_if(err);
+	ck_assert_msg(mafw_playlist_increment_use_count(
+			      MAFW_PLAYLIST(pl), &err) != FALSE,
+		      "increment_use_count doesn't work");
+	ck_assert(!err);
 
-	fail_if(mafw_playlist_decrement_use_count(
-                        MAFW_PLAYLIST(pl), &err) == FALSE,
-	       	"decrement_use_count doesn't work");
-	fail_if(err);
+	ck_assert_msg(mafw_playlist_decrement_use_count(
+			      MAFW_PLAYLIST(pl), &err) != FALSE,
+		      "decrement_use_count doesn't work");
+	ck_assert(!err);
 
 	mockbus_expect(mafw_dbus_method(
                                MAFW_PLAYLIST_METHOD_INCREMENT_USE_COUNT));
@@ -589,17 +587,17 @@ START_TEST(test_usecount)
 	mockbus_error(MAFW_RENDERER_ERROR, 2, "testproblem");
 
 
-	fail_if(mafw_playlist_increment_use_count(
-                        MAFW_PLAYLIST(pl), &err) != FALSE,
-	       	"increment_use_count doesn't work");
-	fail_if(!err);
+	ck_assert_msg(mafw_playlist_increment_use_count(
+			      MAFW_PLAYLIST(pl), &err) == FALSE,
+		      "increment_use_count doesn't work");
+	ck_assert(err);
 	g_error_free(err);
 	err = NULL;
 
-	fail_if(mafw_playlist_decrement_use_count(
-                        MAFW_PLAYLIST(pl), &err)  != FALSE,
-	       	"decrement_use_count doesn't work");
-	fail_if(!err);
+	ck_assert_msg(mafw_playlist_decrement_use_count(
+			      MAFW_PLAYLIST(pl), &err) == FALSE,
+		      "decrement_use_count doesn't work");
+	ck_assert(err);
 	g_error_free(err);
 	err = NULL;
 

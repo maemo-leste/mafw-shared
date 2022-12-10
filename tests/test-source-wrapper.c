@@ -133,7 +133,7 @@ START_TEST(test_source_wrapper)
 	mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_UINT32(1408)));
 
 	mockbus_deliver(NULL);
-	fail_unless(source->browse_called == 1);
+	ck_assert(source->browse_called == 1);
 
 	source->repeat_browse = 25;
 	mockbus_incoming(c = mafw_dbus_method(MAFW_SOURCE_METHOD_BROWSE,
@@ -158,7 +158,7 @@ START_TEST(test_source_wrapper)
 	mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_UINT32(1408)));
 
 	mockbus_deliver(NULL);
-	fail_unless(source->browse_called == 2);
+	ck_assert(source->browse_called == 2);
 
 	source->repeat_browse = 830;
 	mockbus_incoming(c = mafw_dbus_method(MAFW_SOURCE_METHOD_BROWSE,
@@ -210,7 +210,7 @@ START_TEST(test_source_wrapper)
 	mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_UINT32(1408)));
 
 	mockbus_deliver(NULL);
-	fail_unless(source->browse_called == 3);
+	ck_assert(source->browse_called == 3);
 
 	/* Cancel browse */
 	source->repeat_browse = 25;
@@ -247,7 +247,7 @@ START_TEST(test_source_wrapper)
 	mockbus_expect(mafw_dbus_reply(c));
 
 	mockbus_deliver(NULL);
-	fail_unless(source->cancel_browse_called == 2);
+	ck_assert(source->cancel_browse_called == 2);
 	mockbus_finish();
 
 	/* Get metadata */
@@ -260,7 +260,7 @@ START_TEST(test_source_wrapper)
 	mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_METADATA(metadata)));
 
 	mockbus_deliver(NULL);
-	fail_unless(source->get_metadata_called == 1);
+	ck_assert(source->get_metadata_called == 1);
 
 	/* Get metadatas */
 	GHashTable *objshash = g_hash_table_new_full(g_str_hash, g_str_equal,
@@ -284,7 +284,7 @@ START_TEST(test_source_wrapper)
 	mockbus_expect(mdatas_repl(c, objs, metadata, FALSE));
 
 	mockbus_deliver(NULL);
-	fail_unless(source->get_metadatas_called == 1);
+	ck_assert(source->get_metadatas_called == 1);
 	g_free(objs);
 
 	/* Set metadata */
@@ -296,7 +296,7 @@ START_TEST(test_source_wrapper)
 				       MAFW_DBUS_C_STRVZ("pertti", "pasanen")));
 
 	mockbus_deliver(NULL);
-	fail_unless(source->set_metadata_called == 1);
+	ck_assert(source->set_metadata_called == 1);
 
 	/* Create object */
 	mockbus_incoming(c = mafw_dbus_method(MAFW_SOURCE_METHOD_CREATE_OBJECT,
@@ -306,7 +306,7 @@ START_TEST(test_source_wrapper)
 	mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_STRING("testobject")));
 
 	mockbus_deliver(NULL);
-	fail_unless(source->create_object_called == 1);
+	ck_assert(source->create_object_called == 1);
 
 	/* Destroy object */
 	mockbus_incoming(c = mafw_dbus_method(MAFW_SOURCE_METHOD_DESTROY_OBJECT,
@@ -315,7 +315,7 @@ START_TEST(test_source_wrapper)
 	mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_STRING("testobject")));
 
 	mockbus_deliver(NULL);
-	fail_unless(source->destroy_object_called == 1);
+	ck_assert(source->destroy_object_called == 1);
 
 	/* Signals */
 	mockbus_expect(mafw_dbus_signal(MAFW_SOURCE_SIGNAL_METADATA_CHANGED,
@@ -369,7 +369,7 @@ START_TEST(test_activate_settings)
 				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
 				      MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == TRUE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != TRUE);
 
 	// asking activity twice, and then deactivate it
 	g_value_set_boolean(&v, TRUE);
@@ -380,7 +380,7 @@ START_TEST(test_activate_settings)
 				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
 				      MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != FALSE);
 
 	mockbus_incoming(c =
 		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
@@ -389,7 +389,7 @@ START_TEST(test_activate_settings)
 				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
 				      MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != FALSE);
 
 	g_value_set_boolean(&v, FALSE);
 
@@ -407,7 +407,7 @@ START_TEST(test_activate_settings)
 						     MAFW_DBUS_STRING(matchstr)));
 	g_free(matchstr);
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == TRUE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != TRUE);
 
 	// asking activity, then activating by other one, deactivate by first one, deact by second one
 	g_value_set_boolean(&v, TRUE);
@@ -418,7 +418,7 @@ START_TEST(test_activate_settings)
 				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
 				      MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != FALSE);
 
 	msg_sender_id = ":1.104";
 	mockbus_incoming(c =
@@ -428,7 +428,7 @@ START_TEST(test_activate_settings)
 				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
 				      MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != FALSE);
 
 	g_value_set_boolean(&v, FALSE);
 	msg_sender_id = ":1.103";
@@ -446,7 +446,7 @@ START_TEST(test_activate_settings)
 						     MAFW_DBUS_STRING(matchstr)));
 	g_free(matchstr);
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != FALSE);
 	msg_sender_id = ":1.104";
 	mockbus_incoming(c =
 	mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
@@ -462,7 +462,7 @@ START_TEST(test_activate_settings)
 						     MAFW_DBUS_STRING(matchstr)));
 	g_free(matchstr);
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == TRUE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != TRUE);
 
 	// asking activity, then activating by other one, disconnect by first one, deact by second one
 	msg_sender_id = ":1.103";
@@ -474,7 +474,7 @@ START_TEST(test_activate_settings)
 				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
 				      MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != FALSE);
 
 	msg_sender_id = ":1.104";
 	mockbus_incoming(c =
@@ -484,7 +484,7 @@ START_TEST(test_activate_settings)
 				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
 				      MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != FALSE);
 
 	g_value_set_boolean(&v, FALSE);
 	msg_sender_id = ":1.103";
@@ -503,7 +503,7 @@ START_TEST(test_activate_settings)
 						     MAFW_DBUS_STRING(matchstr)));
 	g_free(matchstr);
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != FALSE);
 	msg_sender_id = ":1.104";
 	mockbus_incoming(c =
 	mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
@@ -519,7 +519,7 @@ START_TEST(test_activate_settings)
 						     MAFW_DBUS_STRING(matchstr)));
 	g_free(matchstr);
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == TRUE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != TRUE);
 	
 	// asking activity, then deactivating by other one, disconnect by first one
 	msg_sender_id = ":1.103";
@@ -531,7 +531,7 @@ START_TEST(test_activate_settings)
 				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
 				      MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != FALSE);
 
 	g_value_set_boolean(&v, FALSE);
 	msg_sender_id = ":1.104";
@@ -542,7 +542,7 @@ START_TEST(test_activate_settings)
 				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
 				      MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != FALSE);
 
 	msg_sender_id = ":1.103";
 	mockbus_incoming(c =
@@ -560,7 +560,7 @@ START_TEST(test_activate_settings)
 						     MAFW_DBUS_STRING(matchstr)));
 	g_free(matchstr);
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == TRUE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != TRUE);
 
 	/* Creating another source. Reffing both of them, and reffing one of
 	them by another UIs, closing the first UI*/
@@ -580,7 +580,7 @@ START_TEST(test_activate_settings)
 				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
 				      MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != FALSE);
 
 	mockbus_incoming(c =
 		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH "2",
@@ -589,7 +589,7 @@ START_TEST(test_activate_settings)
 				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
 				      MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source2)->activate_state == FALSE);
+	ck_assert(MOCKED_SOURCE(source2)->activate_state != FALSE);
 
 	msg_sender_id = ":1.104";
 	g_value_set_boolean(&v, TRUE);
@@ -600,7 +600,7 @@ START_TEST(test_activate_settings)
 				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
 				      MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != FALSE);
 
 	msg_sender_id = ":1.103";
 	mockbus_incoming(c =
@@ -618,8 +618,8 @@ START_TEST(test_activate_settings)
 						     MAFW_DBUS_STRING(matchstr)));
 	g_free(matchstr);
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
-	fail_if(MOCKED_SOURCE(source2)->activate_state == TRUE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != FALSE);
+	ck_assert(MOCKED_SOURCE(source2)->activate_state != TRUE);
 
 	msg_sender_id = ":1.104";
 	g_value_set_boolean(&v, FALSE);
@@ -637,7 +637,7 @@ START_TEST(test_activate_settings)
 						     MAFW_DBUS_STRING(matchstr)));
 	g_free(matchstr);
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == TRUE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != TRUE);
 
 	/* Reffing both sources, and reffing one of
 	them by another UIs, closing the last UI. Unreffing the first source,
@@ -651,8 +651,8 @@ START_TEST(test_activate_settings)
 				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
 				      MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
-	fail_if(MOCKED_SOURCE(source2)->activate_state == TRUE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != FALSE);
+	ck_assert(MOCKED_SOURCE(source2)->activate_state != TRUE);
 
 	mockbus_incoming(c =
 		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH "2",
@@ -661,8 +661,8 @@ START_TEST(test_activate_settings)
 				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
 				      MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source2)->activate_state == FALSE);
-	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	ck_assert(MOCKED_SOURCE(source2)->activate_state != FALSE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != FALSE);
 
 	msg_sender_id = ":1.104";
 	g_value_set_boolean(&v, TRUE);
@@ -673,8 +673,8 @@ START_TEST(test_activate_settings)
 				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
 				      MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
-	fail_if(MOCKED_SOURCE(source2)->activate_state == FALSE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != FALSE);
+	ck_assert(MOCKED_SOURCE(source2)->activate_state != FALSE);
 
 	msg_sender_id = ":1.104";
 	mockbus_incoming(c =
@@ -692,8 +692,8 @@ START_TEST(test_activate_settings)
 						     MAFW_DBUS_STRING(matchstr)));
 	g_free(matchstr);
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
-	fail_if(MOCKED_SOURCE(source2)->activate_state == FALSE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != FALSE);
+	ck_assert(MOCKED_SOURCE(source2)->activate_state != FALSE);
 
 	msg_sender_id = ":1.103";
 	g_value_set_boolean(&v, FALSE);
@@ -704,8 +704,8 @@ START_TEST(test_activate_settings)
 				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
 				      MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == TRUE);
-	fail_if(MOCKED_SOURCE(source2)->activate_state == FALSE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != TRUE);
+	ck_assert(MOCKED_SOURCE(source2)->activate_state != FALSE);
 
 	mockbus_incoming(c =
 	mafw_dbus_signal_full(NULL, DBUS_PATH_DBUS,
@@ -722,8 +722,8 @@ START_TEST(test_activate_settings)
 						     MAFW_DBUS_STRING(matchstr)));
 	g_free(matchstr);
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == TRUE);
-	fail_if(MOCKED_SOURCE(source2)->activate_state == TRUE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != TRUE);
+	ck_assert(MOCKED_SOURCE(source2)->activate_state != TRUE);
 
 
 	/* Reffing both sources by a UI, reffing one of them by another UI,
@@ -737,8 +737,8 @@ START_TEST(test_activate_settings)
 				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
 				      MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
-	fail_if(MOCKED_SOURCE(source2)->activate_state == TRUE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != FALSE);
+	ck_assert(MOCKED_SOURCE(source2)->activate_state != TRUE);
 
 	mockbus_incoming(c =
 		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH "2",
@@ -747,8 +747,8 @@ START_TEST(test_activate_settings)
 				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
 				      MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source2)->activate_state == FALSE);
-	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
+	ck_assert(MOCKED_SOURCE(source2)->activate_state != FALSE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != FALSE);
 
 	msg_sender_id = ":1.104";
 	g_value_set_boolean(&v, TRUE);
@@ -759,8 +759,8 @@ START_TEST(test_activate_settings)
 				      MAFW_DBUS_STRING(MAFW_PROPERTY_EXTENSION_ACTIVATE),
 				      MAFW_DBUS_GVALUE(&v)));
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source)->activate_state == FALSE);
-	fail_if(MOCKED_SOURCE(source2)->activate_state == FALSE);
+	ck_assert(MOCKED_SOURCE(source)->activate_state != FALSE);
+	ck_assert(MOCKED_SOURCE(source2)->activate_state != FALSE);
 
 	mockbus_expect(mafw_dbus_method_full(
 		DBUS_SERVICE_DBUS,
@@ -781,7 +781,7 @@ START_TEST(test_activate_settings)
 					MAFW_EXTENSION(source));
 
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source2)->activate_state == FALSE);
+	ck_assert(MOCKED_SOURCE(source2)->activate_state != FALSE);
 	
 	msg_sender_id = ":1.103";
 	g_value_set_boolean(&v, FALSE);
@@ -799,7 +799,7 @@ START_TEST(test_activate_settings)
 						     MAFW_DBUS_STRING(matchstr)));
 	g_free(matchstr);
 	mockbus_deliver(NULL);
-	fail_if(MOCKED_SOURCE(source2)->activate_state == TRUE);
+	ck_assert(MOCKED_SOURCE(source2)->activate_state != TRUE);
 
 
 	mockbus_finish();
@@ -845,7 +845,7 @@ START_TEST(test_source_errors)
 	mockbus_expect(mafw_dbus_gerror(c, error));
 
 	mockbus_deliver(NULL);
-	fail_unless(source->browse_called == 1);
+	ck_assert(source->browse_called == 1);
 
 	/* Cancel browse */
 	mockbus_incoming(c = mafw_dbus_method(MAFW_SOURCE_METHOD_CANCEL_BROWSE,
@@ -854,7 +854,7 @@ START_TEST(test_source_errors)
 	mockbus_expect(mafw_dbus_gerror(c, error));
 
 	mockbus_deliver(NULL);
-	fail_unless(source->cancel_browse_called == 1);
+	ck_assert(source->cancel_browse_called == 1);
 
 	/* Get metadata */
 	mockbus_incoming(c = mafw_dbus_method(MAFW_SOURCE_METHOD_GET_METADATA,
@@ -863,7 +863,7 @@ START_TEST(test_source_errors)
 
 	mockbus_expect(mafw_dbus_gerror(c, error));
 	mockbus_deliver(NULL);
-	fail_unless(source->get_metadata_called == 1);
+	ck_assert(source->get_metadata_called == 1);
 
 	/* Set metadata */
 	mockbus_incoming(c = mafw_dbus_method(MAFW_SOURCE_METHOD_SET_METADATA,
@@ -875,7 +875,7 @@ START_TEST(test_source_errors)
 				       MAFW_DBUS_INT32(error->code),
 				       MAFW_DBUS_STRING(error->message)));
 	mockbus_deliver(NULL);
-	fail_unless(source->get_metadata_called == 1);
+	ck_assert(source->get_metadata_called == 1);
 
 	/* Create object */
 	mockbus_incoming(c = mafw_dbus_method(MAFW_SOURCE_METHOD_CREATE_OBJECT,
@@ -884,7 +884,7 @@ START_TEST(test_source_errors)
 	mockbus_expect(mafw_dbus_gerror(c, error));
 
 	mockbus_deliver(NULL);
-	fail_unless(source->create_object_called == 1);
+	ck_assert(source->create_object_called == 1);
 
 	/* Destroy object */
 	mockbus_incoming(c = mafw_dbus_method(MAFW_SOURCE_METHOD_DESTROY_OBJECT,
@@ -893,7 +893,7 @@ START_TEST(test_source_errors)
 	mockbus_expect(mafw_dbus_gerror(c, error));
 
 	mockbus_deliver(NULL);
-	fail_unless(source->destroy_object_called == 1);
+	ck_assert(source->destroy_object_called == 1);
 
 	mockbus_finish();
 	g_error_free(error);

@@ -95,14 +95,14 @@ START_TEST(test_extension_properties_list)
                                            UUID, "fake",
                                            mafw_registry_get_instance()));
 	props = mafw_extension_list_properties(extension);
-	fail_unless(props->len == 2);
-	fail_if(strcmp(((MafwExtensionProperty *)(props->pdata[0]))->name,
-                       "zidane"));
-	fail_unless(((MafwExtensionProperty *)(props->pdata[0]))->type ==
+	ck_assert(props->len == 2);
+	ck_assert(!strcmp(((MafwExtensionProperty *)(props->pdata[0]))->name,
+			  "zidane"));
+	ck_assert(((MafwExtensionProperty *)(props->pdata[0]))->type ==
                     G_TYPE_INT);
-	fail_if(strcmp(((MafwExtensionProperty *)(props->pdata[1]))->name,
-                       "cigany"));
-	fail_unless(((MafwExtensionProperty *)(props->pdata[1]))->type ==
+	ck_assert(!strcmp(((MafwExtensionProperty *)(props->pdata[1]))->name,
+			  "cigany"));
+	ck_assert(((MafwExtensionProperty *)(props->pdata[1]))->type ==
                     G_TYPE_DOUBLE);
 	mockbus_finish();
 }
@@ -111,10 +111,10 @@ END_TEST
 static void got_extension_prop(MafwExtension *extension, const gchar *prop,
 			  GValue *val, gpointer udata, const GError *err)
 {
-	fail_if(strcmp(prop, "zidane"));
-	fail_unless(G_VALUE_TYPE(val) == G_TYPE_INT);
-	fail_unless(g_value_get_int(val) == 12345);
-	fail_unless(err == NULL);
+	ck_assert(!strcmp(prop, "zidane"));
+	ck_assert(G_VALUE_TYPE(val) == G_TYPE_INT);
+	ck_assert(g_value_get_int(val) == 12345);
+	ck_assert(err == NULL);
 	g_value_unset(val);
 	g_free(val);
 }
@@ -207,7 +207,7 @@ START_TEST(test_errors)
 				      MAFW_EXTENSION_METHOD_LIST_PROPERTIES));
 	mockbus_error(MAFW_EXTENSION_ERROR, 3, "testproblem");
 
-	fail_if(mafw_extension_list_properties(src));
+	ck_assert(!mafw_extension_list_properties(src));
 
 	mockbus_expect(
 		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
@@ -217,7 +217,7 @@ START_TEST(test_errors)
 		      MAFW_DBUS_C_ARRAY(UINT32, guint32,
 					G_TYPE_INT, G_TYPE_DOUBLE));
 
-	fail_if(!mafw_extension_list_properties(src));
+	ck_assert(mafw_extension_list_properties(src));
 
 	mockbus_finish();
 }
@@ -226,7 +226,7 @@ END_TEST
 static void name_changed_cb(MafwExtension *extension, GParamSpec *pspec,
 				gboolean *cb_called)
 {
-	fail_if(*cb_called);
+	ck_assert(!*cb_called);
 	*cb_called = TRUE;
 }
 
@@ -234,20 +234,20 @@ static void error_cb(MafwExtension *extension,
 	   GQuark domain, gint code, const gchar *message,
 	   gboolean *cb_called)
 {
-	fail_if(*cb_called);
+	ck_assert(!*cb_called);
 	*cb_called = TRUE;
-	fail_if(strcmp(message, "message"));
-	fail_if(code != 3);
+	ck_assert(!strcmp(message, "message"));
+	ck_assert_int_eq(code, 3);
 }
 
 static void prop_changed_cb(MafwExtension *extension,
 			 const gchar *prop, const GValue *val,
 			 gboolean *cb_called)
 {
-	fail_if(*cb_called);
+	ck_assert(!*cb_called);
 	*cb_called = TRUE;
-	fail_if(strcmp(prop, "testprop"));
-	fail_if(g_value_get_int(val) != 2);
+	ck_assert(!strcmp(prop, "testprop"));
+	ck_assert(g_value_get_int(val) == 2);
 }
 
 START_TEST(test_signals)
@@ -275,7 +275,7 @@ START_TEST(test_signals)
                                  MAFW_DBUS_GVALUE(&val)));
 	mockbus_deliver(mafw_dbus_session(NULL));
 	mockbus_deliver(mafw_dbus_session(NULL));
-	fail_if(!cb_called);
+	ck_assert(cb_called);
 	cb_called = FALSE;
 
 	mockbus_incoming(mafw_dbus_signal(MAFW_EXTENSION_SIGNAL_ERROR,
@@ -283,13 +283,13 @@ START_TEST(test_signals)
 					MAFW_DBUS_INT32(3),
 					MAFW_DBUS_STRING("message")));
 	mockbus_deliver(mafw_dbus_session(NULL));
-	fail_if(!cb_called);
+	ck_assert(cb_called);
 	cb_called = FALSE;
 
 	mockbus_incoming(mafw_dbus_signal(MAFW_EXTENSION_SIGNAL_NAME_CHANGED,
 					MAFW_DBUS_STRING("TestName")));
 	mockbus_deliver(mafw_dbus_session(NULL));
-	fail_if(!cb_called);
+	ck_assert(cb_called);
 	cb_called = FALSE;
 
 	mockbus_finish();
@@ -325,7 +325,7 @@ START_TEST(test_exists)
 	g_object_ref(src2);
 	g_idle_add(report_props, NULL);
 	checkmore_spin_loop(100);
-	fail_if(G_OBJECT(src2)->ref_count != 1);
+	ck_assert(G_OBJECT(src2)->ref_count == 1);
 
 	g_object_unref(src2);
 }

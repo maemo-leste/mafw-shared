@@ -86,23 +86,23 @@ START_TEST(test_construct_nonempty)
 
 	mafw_shared_deinit();
 	reg = g_object_new(MAFW_TYPE_REGISTRY, NULL);
-	fail_unless(mafw_shared_init(reg, NULL));
+	ck_assert(mafw_shared_init(reg, NULL));
 
-	fail_if(g_list_length(mafw_registry_get_renderers(reg)) != 1);
-	fail_if(g_list_length(mafw_registry_get_sources(reg)) != 1);
+	ck_assert_int_eq(g_list_length(mafw_registry_get_renderers(reg)), 1);
+	ck_assert_int_eq(g_list_length(mafw_registry_get_sources(reg)), 1);
 
 	extension = mafw_registry_get_extension_by_uuid(reg,
                                                         FAKE_RENDERER_NAME);
-	fail_unless(extension != NULL);
-	fail_if(strcmp("fake", mafw_extension_get_plugin(extension)));
-	fail_if(strcmp(FAKE_RENDERER_NAME, mafw_extension_get_uuid(extension)));
-	fail_if(strcmp(FAKE_NAME, mafw_extension_get_name(extension)));
+	ck_assert(extension != NULL);
+	ck_assert(!strcmp("fake", mafw_extension_get_plugin(extension)));
+	ck_assert(!strcmp(FAKE_RENDERER_NAME, mafw_extension_get_uuid(extension)));
+	ck_assert(!strcmp(FAKE_NAME, mafw_extension_get_name(extension)));
 
 	extension = mafw_registry_get_extension_by_uuid(reg, FAKE_SOURCE_NAME);
-	fail_unless(extension != NULL);
-	fail_if(strcmp("fake", mafw_extension_get_plugin(extension)));
-	fail_if(strcmp(FAKE_SOURCE_NAME, mafw_extension_get_uuid(extension)));
-	fail_if(strcmp(FAKE_NAME, mafw_extension_get_name(extension)));
+	ck_assert(extension != NULL);
+	ck_assert(!strcmp("fake", mafw_extension_get_plugin(extension)));
+	ck_assert(!strcmp(FAKE_SOURCE_NAME, mafw_extension_get_uuid(extension)));
+	ck_assert(!strcmp(FAKE_NAME, mafw_extension_get_name(extension)));
 	mafw_shared_deinit();
 	g_object_unref(reg);
 	mockbus_finish();
@@ -111,8 +111,8 @@ END_TEST
 
 static void source_cb(MafwRegistry *reg, MafwSource *src, gint *ncalled)
 {
-	fail_unless(MAFW_IS_SOURCE(src));
-	fail_if(strcmp(mafw_extension_get_uuid(MAFW_EXTENSION(src)),
+	ck_assert(MAFW_IS_SOURCE(src));
+	ck_assert(!strcmp(mafw_extension_get_uuid(MAFW_EXTENSION(src)),
                        FAKE_SOURCE_NAME));
 	(*ncalled)++;
 	if (*ncalled == 2)
@@ -122,8 +122,8 @@ static void source_cb(MafwRegistry *reg, MafwSource *src, gint *ncalled)
 static void renderer_cb(MafwRegistry *reg, MafwRenderer *renderer,
                         gint *ncalled)
 {
-	fail_unless(MAFW_IS_RENDERER(renderer));
-	fail_if(strcmp(mafw_extension_get_uuid(MAFW_EXTENSION(renderer)),
+	ck_assert(MAFW_IS_RENDERER(renderer));
+	ck_assert(!strcmp(mafw_extension_get_uuid(MAFW_EXTENSION(renderer)),
                        FAKE_RENDERER_NAME));
 	(*ncalled)++;
 	if (*ncalled == 2)
@@ -139,10 +139,10 @@ START_TEST(test_registration)
 	mock_services(NULL);
 	mafw_shared_deinit();
 	reg = g_object_new(MAFW_TYPE_REGISTRY, NULL);
-	fail_unless(mafw_shared_init(reg, NULL));
+	ck_assert(mafw_shared_init(reg, NULL));
 
-	fail_if(g_list_length(mafw_registry_get_renderers(reg)) != 0);
-	fail_if(g_list_length(mafw_registry_get_sources(reg)) != 0);
+	ck_assert_int_eq(g_list_length(mafw_registry_get_renderers(reg)), 0);
+	ck_assert_int_eq(g_list_length(mafw_registry_get_sources(reg)), 0);
 
 	nadded = nremoved = 0;
 	g_signal_connect(reg, "source-added",
@@ -160,9 +160,9 @@ START_TEST(test_registration)
 	mock_empty_props(FAKE_SOURCE_SERVICE, FAKE_SOURCE_OBJECT);
 	g_main_loop_run(Mainloop);
 
-	fail_unless(nadded == 2 && nremoved == 0);
-	fail_if(g_list_length(mafw_registry_get_renderers(reg)) != 1);
-	fail_if(g_list_length(mafw_registry_get_sources(reg)) != 1);
+	ck_assert(nadded == 2 && nremoved == 0);
+	ck_assert_int_eq(g_list_length(mafw_registry_get_renderers(reg)), 1);
+	ck_assert_int_eq(g_list_length(mafw_registry_get_sources(reg)), 1);
 
 	/* 2. the previous two extensions go away */
 	nadded = nremoved = 0;
@@ -170,9 +170,9 @@ START_TEST(test_registration)
 	mock_disappearing_extension(FAKE_SOURCE_SERVICE, TRUE);
 	g_main_loop_run(Mainloop);
 
-	fail_unless(nadded == 0 && nremoved == 2);
-	fail_if(g_list_length(mafw_registry_get_renderers(reg)) != 0);
-	fail_if(g_list_length(mafw_registry_get_sources(reg)) != 0);
+	ck_assert(nadded == 0 && nremoved == 2);
+	ck_assert(!g_list_length(mafw_registry_get_renderers(reg)) != 0);
+	ck_assert(!g_list_length(mafw_registry_get_sources(reg)) != 0);
 
 	/* 3. cope with invalid messages */
 	nadded = nremoved = 0;
@@ -185,7 +185,7 @@ START_TEST(test_registration)
 	mock_appearing_extension(MAFW_SOURCE_SERVICE ".parara.", TRUE);
 	g_timeout_add(500, (GSourceFunc)g_main_loop_quit, Mainloop);
 	g_main_loop_run(Mainloop);
-	fail_unless(nadded == 0 && nremoved == 0);
+	ck_assert(nadded == 0 && nremoved == 0);
 	mafw_shared_deinit();
 	mockbus_finish();
 }

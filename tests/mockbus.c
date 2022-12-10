@@ -120,10 +120,8 @@
 
 #if 0
 #include <assert.h>
-#undef fail_unless
-#undef fail_if
-#define fail_unless(x,...) assert((x))
-#define fail_if(x,...) assert(!(x))
+#undef ck_assert
+#define ck_assert(x,...) assert((x))
 #endif
 
 #undef G_LOG_DOMAIN
@@ -254,15 +252,15 @@ void mockbus_reset(void)
  */
 void mockbus_finish(void)
 {
-	fail_if(Expected_conn_address != NULL && !Connect_attempted,
-		"MOCKBUS: a dbus_open_connection() was expected");
+	ck_assert_msg(Expected_conn_address == NULL || Connect_attempted,
+		      "MOCKBUS: a dbus_open_connection() was expected");
 	if (!g_queue_is_empty(&Expected_messages)) {
 		DBusMessage *m;
 		while ((m = g_queue_pop_head(&Expected_messages)))
 		{
 			puts(msginfo(m));
 		}
-		fail("MOCKBUS: expected more messages");
+		ck_abort_msg("MOCKBUS: expected more messages");
 	}
 	if (!g_queue_is_empty(&Replies)) {
 		DBusMessage *m;
@@ -270,16 +268,16 @@ void mockbus_finish(void)
 		{
 			puts(msginfo(m));
 		}
-		fail("MOCKBUS: not all replies were consumed");
+		ck_abort_msg("MOCKBUS: not all replies were consumed");
 	}
 	if (!g_queue_is_empty(&Incoming_messages)) {
 		DBusMessage *m;
 		while ((m = g_queue_pop_head(&Incoming_messages)))
 			puts(msginfo(m));
-		fail("MOCKBUS: not all incoming messages were consumed");
+		ck_abort_msg("MOCKBUS: not all incoming messages were consumed");
 	}
-	fail_if(stored_notify.pending,
-                "A reply was not set, but async method sent");
+	ck_assert_msg(!stored_notify.pending,
+		      "A reply was not set, but async method sent");
 }
 
 /*
@@ -495,7 +493,7 @@ static gboolean cmpmsgs(DBusMessageIter *ia, DBusMessageIter *ib)
 		}
 		ra = dbus_message_iter_next(ia);
 		rb = dbus_message_iter_next(ib);
-		fail_unless(ra == rb);
+		ck_assert(ra == rb);
 	}
 	return TRUE;
 }
@@ -521,27 +519,28 @@ static void ckmsg(DBusMessage *m)
 
  	emsg = g_queue_pop_head(&Expected_messages);
 
-	fail_if(emsg == NULL, "MOCKBUS: this message was unexpected: %s", dbus_message_get_member(m));
-	fail_unless(
+	ck_assert_msg(emsg != NULL, "MOCKBUS: this message was unexpected: %s",
+		      dbus_message_get_member(m));
+	ck_assert_msg(
 		dbus_message_get_type(m) == dbus_message_get_type(emsg),
 		"MOCKBUS: expected different message type");
-	fail_unless(
+	ck_assert_msg(
 		dbus_message_has_path(m, dbus_message_get_path(emsg)),
 		"MOCKBUS: expected different message path: %s vs %s",
 					dbus_message_get_path(emsg),
 					dbus_message_get_path(m));
-	fail_unless(
+	ck_assert_msg(
 		dbus_message_has_interface(m, dbus_message_get_interface(emsg)),
 		"MOCKBUS: expected different interface: %s vs %s",
 					dbus_message_get_interface(emsg),
 					dbus_message_get_interface(m));
-	fail_unless(
+	ck_assert_msg(
 		dbus_message_has_member(m, dbus_message_get_member(emsg)),
 		"MOCKBUS: expected different member");
-	fail_unless(
+	ck_assert_msg(
 		dbus_message_has_signature(m, dbus_message_get_signature(emsg)),
 		"MOCKBUS: expected different signature");
-	fail_unless(compare_msgs(emsg, m),
+	ck_assert_msg(compare_msgs(emsg, m),
 		    "MOCKBUS: message contents are not according to "
 		    "expectations\n%s\nvs\n%s", msginfo(emsg), msginfo(m));
 	dbus_message_unref(emsg);
@@ -656,7 +655,7 @@ void dbus_bus_add_match(DBusConnection *connection,
 			const char *rule,
 			DBusError *error)
 {
-	fail_unless(connection == Mockbus_bus, "MOCKBUS: invalid connection");
+	ck_assert_msg(connection == Mockbus_bus, "MOCKBUS: invalid connection");
 }
 
 DBusConnection* dbus_connection_open(const char *address,
@@ -683,26 +682,26 @@ DBusConnection* dbus_connection_open_private(const char *address,
 
 DBusConnection *dbus_connection_ref(DBusConnection *connection)
 {
-	fail_unless(connection == Mockbus_conn || connection == Mockbus_bus,
+	ck_assert_msg(connection == Mockbus_conn || connection == Mockbus_bus,
 		    "MOCKBUS: invalid connection");
 	return connection;
 }
 
 void dbus_connection_unref(DBusConnection *connection)
 {
-	fail_unless(connection == Mockbus_conn || connection == Mockbus_bus,
+	ck_assert_msg(connection == Mockbus_conn || connection == Mockbus_bus,
 		    "MOCKBUS: invalid connection");
 }
 
 void dbus_connection_flush(DBusConnection *connection)
 {
-	fail_unless(connection == Mockbus_conn || connection == Mockbus_bus,
+	ck_assert_msg(connection == Mockbus_conn || connection == Mockbus_bus,
 		    "MOCKBUS: invalid connection");
 }
 
 void dbus_connection_close(DBusConnection *connection)
 {
-	fail_unless(connection == Mockbus_conn || connection == Mockbus_bus,
+	ck_assert_msg(connection == Mockbus_conn || connection == Mockbus_bus,
 		    "MOCKBUS: invalid connection");
 }
 
@@ -710,7 +709,7 @@ dbus_bool_t dbus_connection_send(DBusConnection *connection,
 				 DBusMessage *message,
 				 dbus_uint32_t *client_serial)
 {
-	fail_unless(connection == Mockbus_conn || connection == Mockbus_bus,
+	ck_assert_msg(connection == Mockbus_conn || connection == Mockbus_bus,
 		    "MOCKBUS: invalid connection");
 	ckmsg(message);
 	return TRUE;
@@ -719,7 +718,7 @@ dbus_bool_t dbus_connection_send(DBusConnection *connection,
 /* TODO mock all pending call funcs too */
 dbus_bool_t dbus_pending_call_get_completed(DBusPendingCall *pending)
 {
-	fail_unless(pending == Mockbus_pendingcall,
+	ck_assert_msg(pending == Mockbus_pendingcall,
 		    "MOCKBUS: who gave you that pending call?");
 	return TRUE;
 }
@@ -728,7 +727,7 @@ DBusMessage *dbus_pending_call_steal_reply(DBusPendingCall *pending)
 {
 	DBusMessage *m;
 
-	fail_unless(pending == Mockbus_pendingcall,
+	ck_assert_msg(pending == Mockbus_pendingcall,
 		    "MOCKBUS: who gave you that pending call?");
 	m = g_queue_pop_head(&Replies);
 	return m;
@@ -739,7 +738,7 @@ dbus_bool_t dbus_pending_call_set_notify(DBusPendingCall *pending,
 					 void *user_data,
 					 DBusFreeFunction free_user_data)
 {
-	fail_unless(pending == Mockbus_pendingcall,
+	ck_assert_msg(pending == Mockbus_pendingcall,
 		    "MOCKBUS: who gave you that pending call?");
 	if (g_queue_is_empty(&Replies))
 	{/* Emulating a slow reply...reply will be added later */
@@ -758,7 +757,7 @@ dbus_bool_t dbus_pending_call_set_notify(DBusPendingCall *pending,
 
 void dbus_pending_call_unref(DBusPendingCall *pending)
 {
-	fail_unless(pending == Mockbus_pendingcall,
+	ck_assert_msg(pending == Mockbus_pendingcall,
 		    "MOCKBUS: who gave you that pending call?");
 }
 
@@ -767,7 +766,7 @@ dbus_bool_t dbus_connection_send_with_reply(DBusConnection *connection,
 					    DBusPendingCall **pending_return,
 					    int timeout_milliseconds)
 {
-	fail_unless(connection == Mockbus_conn || connection == Mockbus_bus,
+	ck_assert_msg(connection == Mockbus_conn || connection == Mockbus_bus,
 		    "MOCKBUS: invalid connection");
 	ckmsg(message);
 	*pending_return = Mockbus_pendingcall;
@@ -782,7 +781,7 @@ DBusMessage
 {
 	DBusMessage *reply = NULL;
 
-	fail_unless(connection == Mockbus_conn || connection == Mockbus_bus,
+	ck_assert_msg(connection == Mockbus_conn || connection == Mockbus_bus,
 		    "MOCKBUS: invalid connection");
 	ckmsg(message);
 
@@ -794,7 +793,7 @@ DBusMessage
 	 * error it wishes.
 	 */
 	reply = g_queue_pop_head(&Replies);
-	fail_if(reply == NULL);
+	ck_assert(reply != NULL);
 	if (dbus_message_get_type(reply) == DBUS_MESSAGE_TYPE_ERROR) {
 		if (error != NULL)
 			dbus_set_error_from_message(error, reply);
@@ -811,7 +810,7 @@ dbus_bool_t dbus_connection_add_filter(DBusConnection *connection,
 {
 	MockbusHandler *h;
 
-	fail_unless(connection == Mockbus_conn || connection == Mockbus_bus,
+	ck_assert_msg(connection == Mockbus_conn || connection == Mockbus_bus,
 		    "MOCKBUS: invalid connection");
 	h = g_new0(MockbusHandler, 1);
 	h->handler = function;
@@ -919,7 +918,7 @@ void dbus_connection_remove_filter(DBusConnection *connection,
 {
 	GSList *removed_element;
 
-	fail_unless(connection == Mockbus_conn || connection == Mockbus_bus,
+	ck_assert_msg(connection == Mockbus_conn || connection == Mockbus_bus,
 		    "MOCKBUS: invalid connection");
 
 	removed_element = g_slist_find_custom(Handlers, function,
@@ -936,7 +935,7 @@ void dbus_connection_remove_filter(DBusConnection *connection,
 void dbus_connection_setup_with_g_main(DBusConnection *connection,
 				       GMainContext *context)
 {
-	fail_unless(connection == Mockbus_conn || connection == Mockbus_bus,
+	ck_assert_msg(connection == Mockbus_conn || connection == Mockbus_bus,
 		    "MOCKBUS: invalid connection");
 	g_timeout_add(200, (GSourceFunc)mockbus_deliver, connection);
 }

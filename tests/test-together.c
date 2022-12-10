@@ -626,13 +626,13 @@ static guint browse(MafwSource *self,
 	/* Validate arguments. */
 	if (strcmp(object_id, "DEADBEEF::foo") == 0) {
 		/* This is the correct object id */
-		fail_unless(recursive == FALSE);
+		ck_assert(recursive == FALSE);
 		fail_if(strcmp(filter, "(egyik=masik)"));
 		fail_if(!metadata_keys || !metadata_keys[0]
 			|| strcmp(metadata_keys[0], "uri")
 			|| metadata_keys[1] != NULL);
-		fail_unless(skip_count == 11);
-		fail_unless(item_count == 99);
+		ck_assert(skip_count == 11);
+		ck_assert(item_count == 99);
 
 		if(strcmp(sort_criteria, "+x,-y") == 0) {
 			/* Pass lots of stuff to idle function. */
@@ -910,10 +910,10 @@ static void ui_browse_result(MafwSource *src, guint browse_id,
 	GValue *mi;
 
 	/* Validate arguments. */
-	fail_unless(error == NULL);
-	fail_unless(browse_id == 123);
-	fail_unless(remaining_count == 0);
-	fail_unless(index == 0);
+	ck_assert(error == NULL);
+	ck_assert(browse_id == 123);
+	ck_assert(remaining_count == 0);
+	ck_assert(index == 0);
 	fail_if(strcmp(object_id, "DEADBEEF::bar"));
 
 	mi = g_hash_table_lookup(metadata, "uri");
@@ -996,9 +996,9 @@ static void ui_src_added(MafwRegistry *reg, MafwSource *src, void *udata)
 {
 	/* Save the discovered source globally. */
 	Src = src;
-	fail_unless(MAFW_IS_SOURCE(Src), "source_added parameter is not a "
+	ck_assert(MAFW_IS_SOURCE(Src), "source_added parameter is not a "
 						"source");
-	fail_unless(!strcmp(mafw_extension_get_uuid(MAFW_EXTENSION(Src)),
+	ck_assert(!strcmp(mafw_extension_get_uuid(MAFW_EXTENSION(Src)),
 				FAKE_SOURCE_NAME),
 				"Wrong uuid for source");
 	if (Src && Renderer) quit_main_loop(G_STRFUNC);
@@ -1008,9 +1008,9 @@ static void ui_renderer_added(MafwRegistry *reg, MafwRenderer *renderer,
                               void *udata)
 {
 	Renderer = renderer;
-	fail_unless(MAFW_IS_RENDERER(Renderer),
+	ck_assert(MAFW_IS_RENDERER(Renderer),
                     "renderer_added parameter is not a renderer");
-	fail_unless(!strcmp(mafw_extension_get_uuid(MAFW_EXTENSION(Renderer)),
+	ck_assert(!strcmp(mafw_extension_get_uuid(MAFW_EXTENSION(Renderer)),
 				FAKE_RENDERER_NAME),
 				"Wrong uuid for renderer");
 	g_signal_connect(MAFW_EXTENSION(Renderer), "error",
@@ -1214,7 +1214,7 @@ START_TEST(test_ui_source_set_metadata)
 
 	called = FALSE;
 	error = NULL;
-	fail_unless(mafw_source_set_metadata(
+	ck_assert(mafw_source_set_metadata(
 			    Src, "gimmi_error", md,
 			    (MafwSourceMetadataSetCb)metadata_set,
 			    &called, &error));
@@ -1224,7 +1224,7 @@ START_TEST(test_ui_source_set_metadata)
 	/* OK, no failed keys */
 	called = FALSE;
 	error = NULL;
-	fail_unless(mafw_source_set_metadata(
+	ck_assert(mafw_source_set_metadata(
 			    Src, "no_errors", md,
 			    (MafwSourceMetadataSetCb)metadata_set_all_ok,
 			    &called, &error));
@@ -1237,7 +1237,7 @@ START_TEST(test_ui_source_set_metadata)
 	error = NULL;
 	mafw_metadata_add_str(md, "color", "blue");
 	mafw_metadata_add_str(md, "resolution", "50x50");
-	fail_unless(mafw_source_set_metadata(
+	ck_assert(mafw_source_set_metadata(
 			    Src, "gimmi_error_later", md,
 			    (MafwSourceMetadataSetCb)metadata_set_failed_keys,
 			    &called, &error));
@@ -1314,7 +1314,7 @@ START_TEST(test_ui_source_create_object)
 	/* Immediate failure */
 	called = FALSE;
 	error = NULL;
-	fail_unless(mafw_source_create_object(Src, "gimmi_error", NULL,
+	ck_assert(mafw_source_create_object(Src, "gimmi_error", NULL,
 			      (MafwSourceObjectCreatedCb)object_not_created_1,
 			      &called, &error));
 	fail_if(error != NULL);
@@ -1324,7 +1324,7 @@ START_TEST(test_ui_source_create_object)
 	/* Deferred failure */
 	called = FALSE;
 	error = NULL;
-	fail_unless(mafw_source_create_object(Src, "gimmi_error_later", NULL,
+	ck_assert(mafw_source_create_object(Src, "gimmi_error_later", NULL,
 			      (MafwSourceObjectCreatedCb)object_not_created_2,
 			      &called, &error));
 	fail_if(error != NULL);
@@ -1334,7 +1334,7 @@ START_TEST(test_ui_source_create_object)
 	/* Success without metadata */
 	called = FALSE;
 	error = NULL;
-	fail_unless(mafw_source_create_object(Src, "mummy", NULL,
+	ck_assert(mafw_source_create_object(Src, "mummy", NULL,
 			      (MafwSourceObjectCreatedCb)object_created_1,
 			      &called, &error));
 	fail_if(error != NULL);
@@ -1346,7 +1346,7 @@ START_TEST(test_ui_source_create_object)
 	mafw_metadata_add_str(md, "compliment", "dearest");
 	called = FALSE;
 	error = NULL;
-	fail_unless(mafw_source_create_object(Src, "daddy", md,
+	ck_assert(mafw_source_create_object(Src, "daddy", md,
 			      (MafwSourceObjectCreatedCb)object_created_2,
 			      &called, &error));
 	fail_if(error != NULL);
@@ -1412,7 +1412,7 @@ START_TEST(test_ui_source_destroy_object)
 	/* Immediate failure */
 	called = FALSE;
 	error = NULL;
-	fail_unless(mafw_source_destroy_object(Src, "gimmi_error",
+	ck_assert(mafw_source_destroy_object(Src, "gimmi_error",
 			(MafwSourceObjectDestroyedCb)object_not_destroyed_1,
 		       	&called, &error));
 	fail_if(error != NULL);
@@ -1422,7 +1422,7 @@ START_TEST(test_ui_source_destroy_object)
 	/* Deferred failure */
 	called = FALSE;
 	error = NULL;
-	fail_unless(mafw_source_destroy_object(Src, "gimmi_error_later",
+	ck_assert(mafw_source_destroy_object(Src, "gimmi_error_later",
 			(MafwSourceObjectDestroyedCb)object_not_destroyed_2,
 		       	&called, &error));
 	fail_if(error != NULL);
@@ -1432,7 +1432,7 @@ START_TEST(test_ui_source_destroy_object)
 	/* Success failure */
 	called = FALSE;
 	error = NULL;
-	fail_unless(mafw_source_destroy_object(Src, "nokes",
+	ck_assert(mafw_source_destroy_object(Src, "nokes",
 			(MafwSourceObjectDestroyedCb)object_destroyed,
 		       	&called, &error));
 	fail_if(error != NULL);
@@ -1493,8 +1493,8 @@ static void test_ui_renderer_playback_cb(MafwRenderer* renderer,
 {
 	/* Play will return with an error */
 	fail_if(error == NULL);
-	fail_unless(error->domain == MAFW_RENDERER_ERROR);
-	fail_unless(error->code == MAFW_RENDERER_ERROR_CANNOT_PLAY);
+	ck_assert(error->domain == MAFW_RENDERER_ERROR);
+	ck_assert(error->code == MAFW_RENDERER_ERROR_CANNOT_PLAY);
 	fail_if(strcmp(error->message,
 		       "Failed because the test case requires it."));
 	fail_if(user_data != GINT_TO_POINTER(0x00BADA55));
@@ -1555,8 +1555,8 @@ START_TEST(test_ui_renderer_assign_playlist)
 	mafw_renderer_assign_playlist(Renderer, MAFW_PLAYLIST(pl),
 				   &error);
 	fail_if(error == NULL);
-	fail_unless(error->domain == MAFW_RENDERER_ERROR);
-	fail_unless(error->code == MAFW_RENDERER_ERROR_CANNOT_PLAY);
+	ck_assert(error->domain == MAFW_RENDERER_ERROR);
+	ck_assert(error->code == MAFW_RENDERER_ERROR_CANNOT_PLAY);
 	fail_if(strcmp(error->message,
 		       "Failed because the test case requires it."));
 	g_error_free(error);
@@ -1925,11 +1925,11 @@ static void renderer_media_changed(MafwRenderer *renderer, guint index,
 
 	if (!called)
 	{
-		fail_unless(index == 2 && !object_id,
+		ck_assert(index == 2 && !object_id,
 				"Wrong media_changed parameters no.1");
 	} else
 	{
-		fail_unless(index == 0 && object_id &&
+		ck_assert(index == 0 && object_id &&
 				strncmp(object_id, "id", 3) == 0,
 				"Wrong media_changed parameters no.2");
 	}
@@ -2479,7 +2479,7 @@ static void gm_cb(const gchar *objectid, GHashTable *metadata,
 	fail_if(strcmp(objectid, "DEADBEEF::foo") != 0);
 	fail_if(error != NULL);
 
-	fail_unless((int) udata == 44);
+	ck_assert((int) udata == 44);
 
 	mi = g_hash_table_lookup(metadata, "uri");
 	fail_if(mafw_metadata_nvalues(mi) != 1);

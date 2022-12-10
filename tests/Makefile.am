@@ -56,7 +56,7 @@ test_pld_LDADD			= $(top_builddir)/libmafw-shared/libmafw-shared.la \
 				  $(LDADD)
 test_aplaylist_SOURCES		= test-aplaylist.c
 test_aplaylist_LDADD		= $(top_builddir)/mafw-playlist-daemon/aplaylist.o \
-				  $(MAFW_LIBS) $(CHECKMORE_LIBS)
+				  $(LDADD)
 
 test_proxy_playlist_msg_SOURCES	= mockbus.c mockbus.h test-proxy-playlist-msg.c
 test_proxy_playlist_msg_LDADD	= $(top_builddir)/libmafw-shared/libmafw-shared.la \

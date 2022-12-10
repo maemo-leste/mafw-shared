@@ -70,15 +70,15 @@ START_TEST(test_create_playlist)
 	playlist1 = mafw_playlist_manager_create_playlist(manager,
 							  "Entyem-pentyem",
 							  &error);
-	fail_if(!playlist1);
-	fail_if(G_OBJECT(playlist1)->ref_count != 2);
-	fail_if(mafw_proxy_playlist_get_id(playlist1) != 101);
-	fail_if(error);
+	ck_assert(playlist1);
+	ck_assert_int_eq(G_OBJECT(playlist1)->ref_count, 2);
+	ck_assert_double_eq(mafw_proxy_playlist_get_id(playlist1), 101);
+	ck_assert(!error);
 
 	/* See if we get the same playlist from its internal store. */
 	playlist2 = mafw_playlist_manager_get_playlist(manager, 101,
 							      NULL);
-	fail_if(playlist2 != playlist1);
+	ck_assert(playlist2 == playlist1);
 	g_object_unref(playlist2);
 
 	/* Tell the manager to create the same playlist,
@@ -89,7 +89,7 @@ START_TEST(test_create_playlist)
 	playlist2 = mafw_playlist_manager_create_playlist(manager,
 							  "Entyem-pentyem",
 							  NULL);
-	fail_if(playlist2 != playlist1);
+	ck_assert(playlist2 == playlist1);
 
 	/* Create another playlist, expect another object. */
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_CREATE_PLAYLIST,
@@ -98,22 +98,22 @@ START_TEST(test_create_playlist)
 	playlist3 = mafw_playlist_manager_create_playlist(manager,
 							"Etyepetyelepetye",
 						       	NULL);
-	fail_if(!playlist3);
-	fail_if(mafw_proxy_playlist_get_id(playlist3) != 404);
-	fail_if(playlist3 == playlist1);
+	ck_assert(playlist3);
+	ck_assert_int_eq(mafw_proxy_playlist_get_id(playlist3), 404);
+	ck_assert(playlist3 != playlist1);
 
 	/* Simulate an error condition, expect error. */
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_CREATE_PLAYLIST,
 					MAFW_DBUS_STRING("Elqrtuk")));
 	mockbus_error(MAFW_PLAYLIST_ERROR,
 		      MAFW_PLAYLIST_ERROR_PLAYLIST_NOT_FOUND, "Hihi");
-	fail_if(mafw_playlist_manager_create_playlist(manager,
-							     "Elqrtuk",
-							     &error));
-	fail_if(!error);
-	fail_if(error->domain != MAFW_PLAYLIST_ERROR);
-	fail_if(error->code   != MAFW_PLAYLIST_ERROR_PLAYLIST_NOT_FOUND);
-	fail_if(strcmp(error->message, "Hihi") != 0);
+	ck_assert(!mafw_playlist_manager_create_playlist(manager,
+							 "Elqrtuk",
+							 &error));
+	ck_assert(error);
+	ck_assert(error->domain == MAFW_PLAYLIST_ERROR);
+	ck_assert(error->code == MAFW_PLAYLIST_ERROR_PLAYLIST_NOT_FOUND);
+	ck_assert(!strcmp(error->message, "Hihi"));
 	g_error_free(error);
 	mockbus_finish();
 }
@@ -152,26 +152,26 @@ START_TEST(test_destroy_playlist)
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_DESTROY_PLAYLIST,
 					MAFW_DBUS_UINT32(101)));
 	error = NULL;
-	fail_if(!mafw_playlist_manager_destroy_playlist(manager,
-							       playlist1,
-							       &error));
-	fail_if(error);
-	fail_if(G_OBJECT(playlist1)->ref_count != 2);
+	ck_assert(mafw_playlist_manager_destroy_playlist(manager,
+							 playlist1,
+							 &error));
+	ck_assert(!error);
+	ck_assert_int_eq(G_OBJECT(playlist1)->ref_count, 2);
 
 	/* $playlist1 is not expected to be removed from the
 	 * internal store until the daemon confirms. */
 	playlist2 = mafw_playlist_manager_get_playlist(manager, 101,
 							      NULL);
-	fail_if(playlist2 != playlist1);
+	ck_assert(playlist2 == playlist1);
 	g_object_unref(playlist2);
 
 	/* Check that destroying the same playlist is not an error. */
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_DESTROY_PLAYLIST,
 					MAFW_DBUS_UINT32(101)));
-	fail_if(!mafw_playlist_manager_destroy_playlist(manager,
-							       playlist1,
-							       &error));
-	fail_if(error);
+	ck_assert(mafw_playlist_manager_destroy_playlist(manager,
+							 playlist1,
+							 &error));
+	ck_assert(!error);
 
 	mockbus_finish();
 }
@@ -185,9 +185,9 @@ static void playlist_created(MafwPlaylistManager *manager,
 {
 	/* Verify that it runs for the first time last checked
 	 * and store $playlist for further reference. */
-	fail_if(!playlist);
+	ck_assert(playlist);
 	g_assert(playlistp);
-	fail_if(*playlistp);
+	ck_assert(!*playlistp);
 	*playlistp = g_object_ref(playlist);
 }
 
@@ -221,14 +221,14 @@ START_TEST(test_playlist_created)
 	playlist1 = mafw_playlist_manager_create_playlist(manager,
 							  "Entyem-pentyem",
 							  NULL);
-	fail_if(!playlist1);
-	fail_if( playlist2);
+	ck_assert( playlist1);
+	ck_assert(!playlist2);
 
 	/* Signal */
 	mockbus_incoming(mafw_dbus_signal(MAFW_PLAYLIST_SIGNAL_PLAYLIST_CREATED,
 					  MAFW_DBUS_UINT32(101)));
 	mockbus_deliver(NULL);
-	fail_unless(playlist2 == playlist1);
+	ck_assert(playlist2 == playlist1);
 
 	g_object_unref(playlist1);
 	g_object_unref(playlist2);
@@ -241,12 +241,12 @@ START_TEST(test_playlist_created)
 	mockbus_incoming(mafw_dbus_signal(MAFW_PLAYLIST_SIGNAL_PLAYLIST_CREATED,
 					  MAFW_DBUS_UINT32(404)));
 	mockbus_deliver(NULL);
-	fail_if(!playlist2);
+	ck_assert(playlist2);
 
 	/* Get */
 	playlist1 = mafw_playlist_manager_get_playlist(manager,
 							      404, NULL);
-	fail_if(playlist1 != playlist2);
+	ck_assert(playlist1 == playlist2);
 
 	/* Clean up */
 	g_object_unref(playlist1);
@@ -262,9 +262,9 @@ static void playlist_destroyed(MafwPlaylistManager *manager,
 			       MafwProxyPlaylist **playlistp)
 {
 	/* Do the exact opposit of playlist_created(). */
-	fail_if(!playlist);
+	ck_assert(playlist);
 	g_assert(playlistp);
-	fail_if(*playlistp != playlist);
+	ck_assert(*playlistp == playlist);
 	g_object_unref(*playlistp);
 	*playlistp = NULL;
 }
@@ -274,9 +274,9 @@ static void playlist_destruction_failed(MafwPlaylistManager *manager,
 			       MafwProxyPlaylist **playlistp)
 {
 	/* Do the exact opposit of playlist_created(). */
-	fail_if(!playlist);
+	ck_assert(playlist);
 	g_assert(playlistp);
-	fail_if(*playlistp != playlist);
+	ck_assert(*playlistp == playlist);
 	*playlistp = NULL;
 }
 
@@ -312,27 +312,27 @@ START_TEST(test_playlist_destroyed)
 	g_assert(!playlist2);
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_DESTROY_PLAYLIST,
 					MAFW_DBUS_UINT32(101)));
-	fail_unless(mafw_playlist_manager_destroy_playlist(manager,
+	ck_assert(mafw_playlist_manager_destroy_playlist(manager,
 								  playlist1,
 								  NULL));
 
 	/* Unconfirmed, $playlist1 must still be in the manager's store.
 	 * Now confirm the destruction and expect playlist_destroyed()
 	 * to notice it. */
-	fail_unless(G_OBJECT(playlist1)->ref_count == 1);
+	ck_assert(G_OBJECT(playlist1)->ref_count == 1);
 
 	playlist2 = g_object_ref(playlist1);
 	mockbus_incoming(mafw_dbus_signal(MAFW_PLAYLIST_SIGNAL_PLAYLIST_DESTRUCTION_FAILED,
 					  MAFW_DBUS_UINT32(101)));
 	mockbus_deliver(NULL);
-	fail_unless(!playlist2);
+	ck_assert(!playlist2);
 
 	playlist2 = g_object_ref(playlist1);
 	mockbus_incoming(mafw_dbus_signal(
 				   MAFW_PLAYLIST_SIGNAL_PLAYLIST_DESTROYED,
 				   MAFW_DBUS_UINT32(101)));
 	mockbus_deliver(NULL);
-	fail_unless(!playlist2);
+	ck_assert(!playlist2);
 
 	/* By this time $playlist must have disappeared from the manager. */
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_LIST_PLAYLISTS,
@@ -340,8 +340,7 @@ START_TEST(test_playlist_destroyed)
 							  dbus_uint32_t,
 							  101)));
 	mockbus_reply(MAFW_DBUS_AST("us"));
-	fail_if(mafw_playlist_manager_get_playlist(manager, 101,
-							  NULL));
+	ck_assert(!mafw_playlist_manager_get_playlist(manager, 101, NULL));
 
 	/* Finally simulate the daemon notifying the manager about the
 	 * destruction of a playlist we never heard about.  Our signal
@@ -392,8 +391,8 @@ START_TEST(test_get_playlist)
 	error = NULL;
 	playlist1 = mafw_playlist_manager_get_playlist(manager,
 							      101, &error);
-	fail_if(playlist1);
-	fail_if(!error);
+	ck_assert(!playlist1);
+	ck_assert(error);
 	g_error_free(error);
 	error=NULL;
 
@@ -407,17 +406,16 @@ START_TEST(test_get_playlist)
 			MAFW_DBUS_UINT32(101),
 			MAFW_DBUS_STRING("Entyem-pentyem"))));
 	error = NULL;
-	playlist1 = mafw_playlist_manager_get_playlist(manager,
-							      101, &error);
-	fail_if(!playlist1);
-	fail_if(mafw_proxy_playlist_get_id(playlist1) != 101);
-	fail_if(error);
+	playlist1 = mafw_playlist_manager_get_playlist(manager, 101, &error);
+	ck_assert(playlist1);
+	ck_assert_int_eq(mafw_proxy_playlist_get_id(playlist1), 101);
+	ck_assert(!error);
 
 	/* By this time $playlist1 is known.  Look it up again
 	 * but expect no D-BUS activity this time. */
 	playlist2 = mafw_playlist_manager_get_playlist(manager,
 							      101, NULL);
-	fail_if(playlist2 != playlist1);
+	ck_assert(playlist2 == playlist1);
 	g_object_unref(playlist2);
 
 	/* Try to look up an nonexisting playlist.  This is not an error. */
@@ -426,10 +424,9 @@ START_TEST(test_get_playlist)
 							  dbus_uint32_t,
 							  404)));
 	mockbus_reply(MAFW_DBUS_AST("us"));
-	playlist2 = mafw_playlist_manager_get_playlist(manager,
-							      404, &error);
-	fail_if(playlist2);
-	fail_if(error);
+	playlist2 = mafw_playlist_manager_get_playlist(manager, 404, &error);
+	ck_assert(!playlist2);
+	ck_assert(!error);
 
 	mockbus_finish();
 }
@@ -457,8 +454,8 @@ START_TEST(test_get_playlists)
 		      MAFW_PLAYLIST_ERROR_PLAYLIST_NOT_FOUND, "Hihi");
 	error = NULL;
 	list = mafw_playlist_manager_get_playlists(manager, &error);
-	fail_if(list);
-	fail_if(!error);
+	ck_assert(!list);
+	ck_assert(error);
 	g_error_free(error);
 
 	/* Does manager accept the empty reply? */
@@ -466,9 +463,9 @@ START_TEST(test_get_playlists)
 	mockbus_reply(MAFW_DBUS_AST("us"));
 	error = NULL;
 	list = mafw_playlist_manager_get_playlists(manager, &error);
-	fail_if(!list);
-	fail_if(error);
-	fail_if(list->len > 0);
+	ck_assert(list);
+	ck_assert(!error);
+	ck_assert_uint_eq(list->len, 0);
 
 	/* Create two playlist to be returned lated. */
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_CREATE_PLAYLIST,
@@ -500,11 +497,11 @@ START_TEST(test_get_playlists)
 			MAFW_DBUS_UINT32(303),
 			MAFW_DBUS_STRING("Ratata"))));
 	list = mafw_playlist_manager_get_playlists(manager, NULL);
-	fail_if(!list);
-	fail_unless(list->len == 3);
-	fail_unless(list->pdata[0] == playlist1);
-	fail_unless(list->pdata[1] == playlist2);
-	fail_unless(mafw_proxy_playlist_get_id(list->pdata[2]) == 303);
+	ck_assert(list);
+	ck_assert(list->len == 3);
+	ck_assert(list->pdata[0] == playlist1);
+	ck_assert(list->pdata[1] == playlist2);
+	ck_assert(mafw_proxy_playlist_get_id(list->pdata[2]) == 303);
 
 	mockbus_finish();
 }
@@ -533,8 +530,8 @@ START_TEST(test_list_playlists)
 		      MAFW_PLAYLIST_ERROR_PLAYLIST_NOT_FOUND, "Hihi");
 	error = NULL;
 	list = mafw_playlist_manager_list_playlists(manager, &error);
-	fail_if(list);
-	fail_if(!error);
+	ck_assert(!list);
+	ck_assert(error);
 	g_error_free(error);
 
 	/* Does manager accept the empty reply? */
@@ -542,9 +539,9 @@ START_TEST(test_list_playlists)
 	mockbus_reply(MAFW_DBUS_AST("us"));
 	error = NULL;
 	list = mafw_playlist_manager_list_playlists(manager, &error);
-	fail_if(!list);
-	fail_if(error);
-	fail_if(list->len > 0);
+	ck_assert(list);
+	ck_assert(!error);
+	ck_assert_uint_eq(list->len, 0);
 	mafw_playlist_manager_free_list_of_playlists(list);
 	/* See if the manager can parse an ordinary reply. */
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_LIST_PLAYLISTS));
@@ -559,21 +556,21 @@ START_TEST(test_list_playlists)
 			MAFW_DBUS_UINT32(303),
 			MAFW_DBUS_STRING("Ratata"))));
 	list = mafw_playlist_manager_list_playlists(manager, NULL);
-	fail_if(!list);
-	fail_unless(list->len == 3);
-	fail_unless(g_array_index(list, MafwPlaylistManagerItem, 0).id
+	ck_assert(list);
+	ck_assert(list->len == 3);
+	ck_assert(g_array_index(list, MafwPlaylistManagerItem, 0).id
 		    == 101);
-	fail_unless(!strcmp(
+	ck_assert(!strcmp(
 		g_array_index(list, MafwPlaylistManagerItem, 0).name,
 	       	"Entyem-pentyem"));
-	fail_unless(g_array_index(list, MafwPlaylistManagerItem, 1).id
+	ck_assert(g_array_index(list, MafwPlaylistManagerItem, 1).id
 		    == 404);
-	fail_unless(!strcmp(
+	ck_assert(!strcmp(
 		g_array_index(list, MafwPlaylistManagerItem, 1).name,
 	       	"Etyepetyelepetye"));
-	fail_unless(g_array_index(list, MafwPlaylistManagerItem, 2).id
+	ck_assert(g_array_index(list, MafwPlaylistManagerItem, 2).id
 		    == 303);
-	fail_unless(!strcmp(
+	ck_assert(!strcmp(
 		g_array_index(list, MafwPlaylistManagerItem, 2).name,
 	       	"Ratata"));
 
@@ -611,11 +608,10 @@ GError *error;
 			MAFW_DBUS_UINT32(101),
 			MAFW_DBUS_STRING("Entyem-pentyem"))));
 	error = NULL;
-	playlist1 = mafw_playlist_manager_get_playlist(manager,
-							      101, &error);
-	fail_if(!playlist1);
-	fail_if(mafw_proxy_playlist_get_id(playlist1) != 101);
-	fail_if(error);
+	playlist1 = mafw_playlist_manager_get_playlist(manager, 101, &error);
+	ck_assert(playlist1);
+	ck_assert_int_eq(mafw_proxy_playlist_get_id(playlist1), 101);
+	ck_assert(!error);
 
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_DUP_PLAYLIST,
 					MAFW_DBUS_UINT32(101),
@@ -624,8 +620,8 @@ GError *error;
 	playlist2 = mafw_playlist_manager_dup_playlist(manager, playlist1,
                                                        "newname",
                                                        &error);
-	fail_if(error);
-	fail_if(!playlist2);
+	ck_assert(!error);
+	ck_assert(playlist2);
 
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_DUP_PLAYLIST,
 					MAFW_DBUS_UINT32(101),
@@ -635,8 +631,8 @@ GError *error;
 	playlist2 = mafw_playlist_manager_dup_playlist(manager, playlist1,
                                                        "newname",
                                                        &error);
-	fail_if(!error);
-	fail_if(playlist2);
+	ck_assert(error);
+	ck_assert(!playlist2);
 	g_error_free(error);
 
 	mockbus_finish();
@@ -652,9 +648,9 @@ static void pl_import_cb(MafwPlaylistManager *self,
 					  gpointer user_data,
 					  const GError *error)
 {
-	fail_if(import_id != n_import_id);
-	fail_if(!playlist);
-	fail_if(error);
+	ck_assert_uint_eq(import_id, n_import_id);
+	ck_assert(playlist);
+	ck_assert(!error);
 	import_cb_called = TRUE;
 	checkmore_stop_loop();
 }
@@ -665,9 +661,9 @@ static void pl_import_error_cb(MafwPlaylistManager *self,
 					  gpointer user_data,
 					  const GError *error)
 {
-	fail_if(import_id != n_import_id);
-	fail_if(playlist);
-	fail_if(!error);
+	ck_assert_int_eq(import_id, n_import_id);
+	ck_assert(!playlist);
+	ck_assert(error);
 	import_cb_called = TRUE;
 	checkmore_stop_loop();
 }
@@ -706,10 +702,10 @@ START_TEST(test_import_playlist)
 	mockbus_error(MAFW_PLAYLIST_ERROR, 1, "testmsg");
 
 	error = NULL;
-	fail_if((n_import_id = mafw_playlist_manager_import(manager, "test",
+	ck_assert((n_import_id = mafw_playlist_manager_import(manager, "test",
 					NULL, pl_import_cb, NULL, &error))
-				!= MAFW_PLAYLIST_MANAGER_INVALID_IMPORT_ID);
-	fail_if(error == NULL);
+				== MAFW_PLAYLIST_MANAGER_INVALID_IMPORT_ID);
+	ck_assert(error);
 	g_error_free(error);
 
 	/* Check an error-free import*/
@@ -719,10 +715,10 @@ START_TEST(test_import_playlist)
 	mockbus_reply(MAFW_DBUS_UINT32(11));
 
 	error = NULL;
-	fail_if((n_import_id = mafw_playlist_manager_import(manager, "test",
+	ck_assert((n_import_id = mafw_playlist_manager_import(manager, "test",
 					NULL, pl_import_cb, NULL, &error))
-				== MAFW_PLAYLIST_MANAGER_INVALID_IMPORT_ID);
-	fail_if(error);
+				!= MAFW_PLAYLIST_MANAGER_INVALID_IMPORT_ID);
+	ck_assert(!error);
 
 	mockbus_incoming(
 		mafw_dbus_method(
@@ -732,7 +728,7 @@ START_TEST(test_import_playlist)
 
 	checkmore_spin_loop(-1);
 
-	fail_unless(import_cb_called);
+	ck_assert(import_cb_called);
 
 	/* What happens if a wrong cb comes? */
 	import_cb_called = FALSE;
@@ -744,7 +740,7 @@ START_TEST(test_import_playlist)
 
 	checkmore_spin_loop(500);
 
-	fail_unless(!import_cb_called);
+	ck_assert(!import_cb_called);
 
 	/* Good call, not error-free cb */
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_IMPORT_PLAYLIST,
@@ -752,10 +748,10 @@ START_TEST(test_import_playlist)
 				  MAFW_DBUS_STRING("")));
 	mockbus_reply(MAFW_DBUS_UINT32(11));
 
-	fail_if((n_import_id = mafw_playlist_manager_import(manager, "test",
+	ck_assert((n_import_id = mafw_playlist_manager_import(manager, "test",
 					NULL, pl_import_error_cb, NULL, &error))
-				== MAFW_PLAYLIST_MANAGER_INVALID_IMPORT_ID);
-	fail_if(error);
+				!= MAFW_PLAYLIST_MANAGER_INVALID_IMPORT_ID);
+	ck_assert(!error);
 
 	mockbus_incoming(
 		mafw_dbus_method(
@@ -767,7 +763,7 @@ START_TEST(test_import_playlist)
 
 	checkmore_spin_loop(-1);
 
-	fail_unless(import_cb_called);
+	ck_assert(import_cb_called);
 
 	/* Test cancel */
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_IMPORT_PLAYLIST,
@@ -775,21 +771,21 @@ START_TEST(test_import_playlist)
 				  MAFW_DBUS_STRING("")));
 	mockbus_reply(MAFW_DBUS_UINT32(11));
 
-	fail_if((n_import_id = mafw_playlist_manager_import(manager, "test",
+	ck_assert((n_import_id = mafw_playlist_manager_import(manager, "test",
 					NULL, pl_import_cb, NULL, &error))
-				!= 11);
-	fail_if(error);
-	fail_if((mafw_playlist_manager_cancel_import(manager, 2, &error))
-				== TRUE);
-	fail_if(error == NULL);
+				== 11);
+	ck_assert(!error);
+	ck_assert((mafw_playlist_manager_cancel_import(manager, 2, &error))
+				!= TRUE);
+	ck_assert(error);
 	g_error_free(error);
 	error = NULL;
 	mockbus_expect(mafw_dbus_method(MAFW_PLAYLIST_METHOD_CANCEL_IMPORT,
 				  MAFW_DBUS_UINT32(11)));
 	mockbus_reply();
-	fail_if((mafw_playlist_manager_cancel_import(manager, 11, &error))
-				== FALSE);
-	fail_if(error != NULL);
+	ck_assert((mafw_playlist_manager_cancel_import(manager, 11, &error))
+				!= FALSE);
+	ck_assert(!error);
 
 	mockbus_finish();
 }
@@ -801,9 +797,9 @@ static void check_destroyed(MafwPlaylistManager *manager,
 			       gpointer data)
 {
 	/* Do the exact opposit of playlist_created(). */
-	fail_if(!playlist);
-	fail_if(mafw_proxy_playlist_get_id(playlist) != 404);
-	fail_if(check_destroyed_called);
+	ck_assert(playlist);
+	ck_assert(mafw_proxy_playlist_get_id(playlist) == 404);
+	ck_assert(!check_destroyed_called);
 	check_destroyed_called = TRUE;
 }
 
@@ -893,7 +889,7 @@ START_TEST(test_crash)
 			MAFW_DBUS_UINT32(303),
 			MAFW_DBUS_STRING("Ratata"))));
 	mockbus_deliver(NULL);
-	fail_if(!check_destroyed_called);
+	ck_assert(check_destroyed_called);
 
 	mockbus_finish();
 }
