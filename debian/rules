@@ -2,9 +2,6 @@
 
 #export DH_VERBOSE=1
 
-# thumb
-CFLAGS += $(if $(findstring thumb,$(DEB_BUILD_OPTIONS)),-mthumb,)
-
 CFG_OPTS += $(if $(filter debug,$(DEB_BUILD_OPTIONS)),--enable-debug,--disable-debug)
 CFG_OPTS += $(if $(filter nocheck,$(DEB_BUILD_OPTIONS)),--disable-tests,--enable-tests)
 CFG_OPTS += $(if $(filter nodoc,$(DEB_BUILD_OPTIONS)),--disable-gtk-doc,--enable-gtk-doc)
@@ -13,7 +10,7 @@ CFG_OPTS += $(if $(filter lcov,$(DEB_BUILD_OPTIONS)),--enable-coverage)
 %:
 	dh $@ --with autoreconf
 
- override_dh_autoreconf:
+override_dh_autoreconf:
 	dh_autoreconf "NOCONFIGURE=1 ./autogen.sh"
 
 override_dh_auto_configure:
