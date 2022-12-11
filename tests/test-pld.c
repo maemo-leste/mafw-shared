@@ -192,7 +192,7 @@ START_TEST(test_diskfull)
 	g_usleep((3+2) * G_USEC_PER_SEC);
 	checkmore_stop();
 	/* Let the messages drain. */
-	checkmore_spin_loop(100);
+	checkmore_spin_loop(2000);
 
 	g_signal_connect(plm, "playlist-destroyed",
 			 G_CALLBACK(pls_destroyed), pls);
