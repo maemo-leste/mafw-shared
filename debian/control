@@ -6,7 +6,7 @@ Build-Depends: debhelper (>= 9),
                libglib2.0-dev (>= 2.8.6),
                libdbus-1-dev (>= 0.61),
                libdbus-glib-1-dev (>= 0.61),
-               libmafw0-dev (>= 0.1),
+               libmafw0-dev (>= 0.1), check (>= 0.11.0),
                checkmore, gtk-doc-tools, dbus, libtotem-plparser-dev, libxml2-dev
 Standards-Version: 3.7.2
 
