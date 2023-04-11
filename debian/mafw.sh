@@ -11,7 +11,7 @@ test -x $wrapper || exit 0;
 dsmetool='/usr/sbin/dsmetool';
 test -x $dsmetool || exit 0;
 if test -f /etc/osso-af-init/af-defines.sh; then
-        source /etc/osso-af-init/af-defines.sh 2>/dev/null;
+        . /etc/osso-af-init/af-defines.sh 2>/dev/null;
         export HOME='/home/user';
 fi
 nicearg=""
