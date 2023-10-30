@@ -87,9 +87,18 @@ START_TEST(test_extension_properties_list)
 		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
 				      MAFW_EXTENSION_INTERFACE,
 				      MAFW_EXTENSION_METHOD_LIST_PROPERTIES));
-	mockbus_reply(MAFW_DBUS_C_STRVZ("zidane", "cigany"),
-		      MAFW_DBUS_C_ARRAY(UINT32, guint32,
-					G_TYPE_INT, G_TYPE_DOUBLE));
+	if (sizeof(GType) == sizeof(guint32))
+	{
+		mockbus_reply(MAFW_DBUS_C_STRVZ("zidane", "cigany"),
+			      MAFW_DBUS_C_ARRAY(UINT32, GType,
+						G_TYPE_INT, G_TYPE_DOUBLE));
+	}
+	else
+	{
+		mockbus_reply(MAFW_DBUS_C_STRVZ("zidane", "cigany"),
+			      MAFW_DBUS_C_ARRAY(UINT64, GType,
+						G_TYPE_INT, G_TYPE_DOUBLE));
+	}
 
 	extension = MAFW_EXTENSION(mafw_proxy_source_new(
                                            UUID, "fake",
@@ -135,9 +144,18 @@ START_TEST(test_extension_properties_get_set)
 		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
 				      MAFW_EXTENSION_INTERFACE,
 				      MAFW_EXTENSION_METHOD_LIST_PROPERTIES));
-	mockbus_reply(MAFW_DBUS_C_STRVZ("zidane", "cigany"),
-		      MAFW_DBUS_C_ARRAY(UINT32, guint32,
-					G_TYPE_INT, G_TYPE_DOUBLE));
+	if (sizeof(GType) == sizeof(guint32))
+	{
+		mockbus_reply(MAFW_DBUS_C_STRVZ("zidane", "cigany"),
+			      MAFW_DBUS_C_ARRAY(UINT32, GType,
+						G_TYPE_INT, G_TYPE_DOUBLE));
+	}
+	else
+	{
+		mockbus_reply(MAFW_DBUS_C_STRVZ("zidane", "cigany"),
+			      MAFW_DBUS_C_ARRAY(UINT64, GType,
+						G_TYPE_INT, G_TYPE_DOUBLE));
+	}
 
 	extension = MAFW_EXTENSION(mafw_proxy_source_new(
                                            UUID, "fake",
@@ -213,9 +231,19 @@ START_TEST(test_errors)
 		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
 				      MAFW_EXTENSION_INTERFACE,
 				      MAFW_EXTENSION_METHOD_LIST_PROPERTIES));
-	mockbus_reply(MAFW_DBUS_C_STRVZ("zidane", "cigany"),
-		      MAFW_DBUS_C_ARRAY(UINT32, guint32,
-					G_TYPE_INT, G_TYPE_DOUBLE));
+	if (sizeof(GType) == sizeof(guint32))
+	{
+		mockbus_reply(MAFW_DBUS_C_STRVZ("zidane", "cigany"),
+			      MAFW_DBUS_C_ARRAY(UINT32, GType,
+						G_TYPE_INT, G_TYPE_DOUBLE));
+	}
+	else
+	{
+		mockbus_reply(MAFW_DBUS_C_STRVZ("zidane", "cigany"),
+			      MAFW_DBUS_C_ARRAY(UINT64, GType,
+						G_TYPE_INT, G_TYPE_DOUBLE));
+	}
+
 
 	ck_assert(mafw_extension_list_properties(src));
 
@@ -298,7 +326,17 @@ END_TEST
 
 static gboolean report_props(gpointer data)
 {
-	mockbus_reply(MAFW_DBUS_STRVZ(NULL), MAFW_DBUS_C_ARRAY(UINT32, guint));
+	if (sizeof(GType) == sizeof(guint32))
+	{
+		mockbus_reply(MAFW_DBUS_STRVZ(NULL),
+			      MAFW_DBUS_C_ARRAY(UINT32, GType));
+	}
+	else
+	{
+		mockbus_reply(MAFW_DBUS_STRVZ(NULL),
+			      MAFW_DBUS_C_ARRAY(UINT64, GType));
+	}
+
 	checkmore_stop_loop();
 	mockbus_send_stored_reply();
 	return FALSE;

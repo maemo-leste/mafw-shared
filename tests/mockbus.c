@@ -629,8 +629,16 @@ void mock_empty_props(const gchar *service, const gchar *object)
 	mockbus_expect(mafw_dbus_method_full(service, object,
 					     MAFW_EXTENSION_INTERFACE,
 					     MAFW_EXTENSION_METHOD_LIST_PROPERTIES));
-	mockbus_reply(MAFW_DBUS_STRVZ(NULL),
-		      MAFW_DBUS_C_ARRAY(UINT32, guint));
+	if (sizeof(GType) == sizeof(guint32))
+	{
+		mockbus_reply(MAFW_DBUS_STRVZ(NULL),
+			      MAFW_DBUS_C_ARRAY(UINT32, GType));
+	}
+	else
+	{
+		mockbus_reply(MAFW_DBUS_STRVZ(NULL),
+			      MAFW_DBUS_C_ARRAY(UINT64, GType));
+	}
 }
 
 /* libdbus overrides */

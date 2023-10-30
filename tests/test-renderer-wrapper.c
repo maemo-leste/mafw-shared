@@ -427,9 +427,19 @@ START_TEST(test_extension)
 		mafw_dbus_method_full(MAFW_DBUS_DESTINATION, MAFW_DBUS_PATH,
 				      MAFW_EXTENSION_INTERFACE,
 				      MAFW_EXTENSION_METHOD_LIST_PROPERTIES));
-	mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_STRVZ(names),
-					DBUS_TYPE_ARRAY, DBUS_TYPE_UINT32,
-					types, 1));
+	if (sizeof(GType) == sizeof(guint32))
+	{
+		mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_STRVZ(names),
+					       DBUS_TYPE_ARRAY, DBUS_TYPE_UINT32,
+					       types, 1));
+	}
+	else
+	{
+		mockbus_expect(mafw_dbus_reply(c, MAFW_DBUS_STRVZ(names),
+					       DBUS_TYPE_ARRAY, DBUS_TYPE_UINT64,
+					       types, 1));
+	}
+
 	mockbus_deliver(NULL);
 
 	mockbus_incoming(c =
