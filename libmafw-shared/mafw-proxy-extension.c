@@ -84,12 +84,15 @@ static gchar *get_extension_service(MafwExtension *self, const gchar *plugin)
 static void add_properties_to_extension(DBusMessage *msg, MafwExtension *self)
 {
 	gchar **names;
-	gint *types;
+	GType *types;
 	guint nlen, tlen, i;
+	int dbus_type = sizeof(GType) == sizeof(guint) ?
+				DBUS_TYPE_UINT32 :
+				DBUS_TYPE_UINT64;
 
 	mafw_dbus_parse(msg, DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
 			&names, &nlen,
-			DBUS_TYPE_ARRAY, DBUS_TYPE_UINT32,
+			DBUS_TYPE_ARRAY, dbus_type,
 			&types, &tlen);
 	g_assert(nlen == tlen);
 	for (i = 0; i < nlen; ++i)

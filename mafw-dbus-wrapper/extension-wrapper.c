@@ -358,6 +358,11 @@ static DBusHandlerResult handle_list_properties(DBusConnection *conn,
 	gchar **names;
 	GType *types;
 	guint i;
+	int dbus_type = sizeof(GType) == sizeof(guint) ?
+				DBUS_TYPE_UINT32 :
+				DBUS_TYPE_UINT64;
+	G_STATIC_ASSERT(sizeof(GType) == sizeof(guint) ||
+			sizeof(GType) == sizeof(guint64));
 
 	/* TODO memoize the results? */
 	props = mafw_extension_list_properties(MAFW_EXTENSION(ecomp->comp));
@@ -370,7 +375,8 @@ static DBusHandlerResult handle_list_properties(DBusConnection *conn,
 	mafw_dbus_send(conn,
 		       mafw_dbus_reply(msg,
 				       MAFW_DBUS_STRVZ(names),
-				       DBUS_TYPE_ARRAY, DBUS_TYPE_UINT32,
+				       DBUS_TYPE_ARRAY,
+				       dbus_type,
 				       types, props->len));
 	g_free(names);
 	g_free(types);
