@@ -1,3 +1,9 @@
+mafw-shared (0.4.3) unstable; urgency=low
+
+  * GType is not 32 bits on 64 bit platforms
+
+ -- Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>  Mon, 30 Oct 2023 16:13:33 +0200
+
 mafw-shared (0.4.2) unstable; urgency=low
 
   * start sbus daemons on the correct session bus
