@@ -1,3 +1,9 @@
+mafw-shared (0.4.4) unstable; urgency=low
+
+  * Fix test segfault by not freeing the manager
+
+ -- Merlijn Wajer <merlijn@wizzup.org>  Tue, 25 Nov 2025 15:10:38 +0100
+
 mafw-shared (0.4.3) unstable; urgency=low
 
   * GType is not 32 bits on 64 bit platforms
