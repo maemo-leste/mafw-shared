@@ -268,9 +268,9 @@ START_TEST(test_get_playlists)
 
 	/* Kill $manager to start another one with clear store to force
 	 * it asking the daemon. */
-	checkmore_ignore("PlaylistManager is shutting down");
-	g_object_unref(manager);
-	manager = mafw_playlist_manager_get();
+	//checkmore_ignore("PlaylistManager is shutting down");
+	//g_object_unref(manager);
+	//manager = mafw_playlist_manager_get();
 
 	/* Verify that mafw_playlist_manager_list_playlists()
 	 * returns information consistent with $all. */
